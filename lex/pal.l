@@ -69,7 +69,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
                                         DB_PRINTF("%s ", yytext); return STRING;
                                   }
  /* This next one conflicts with the above VAR so... */
-[A-Za-z][A-Za-z0-9]*              DB_PRINTF("VAR(%s) ", yytext); return VAR;
+[A-Za-z][A-Za-z0-9]*              DB_PRINTF("VAR(%s) ", yytext); return ID;
 [0-9]+                            DB_PRINTF("INT_CONST "); return INT_CONST;
 
  /* Operators ---------- */
