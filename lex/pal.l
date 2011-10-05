@@ -40,6 +40,8 @@ and                               DB_PRINTF("AND "); return AND;
 array                             DB_PRINTF("ARRAY "); return ARRAY;
 begin                             DB_PRINTF("BEGIN "); return BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
+true								DB_PRINTF("BOOL - TRUE "); return BOOL;
+false								DB_PRINTF("BOOL - FALSE "); return BOOL;
 continue                          DB_PRINTF("CONTINUE "); return CONTINUE;
 div                               DB_PRINTF("DIV "); return DIV;
 do                                DB_PRINTF("DO "); return DO;
@@ -61,16 +63,18 @@ var                               DB_PRINTF("VAR "); return VAR;
 while                             DB_PRINTF("WHILE "); return WHILE;
 
  /* Numbers and variables ---------- */
-(([0-9]+"."[0-9]+(E("-"|"+")?[0-9]+)?)|([0-9]+(E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL_CONST "); return REAL_CONST;
-"'"(.*?)"'"                       {
-                                        /* Strings may require some checking later             */
+(([0-9]+"."[0-9]+(E("-"|"+")?[0-9]+)?)|([0-9]+(E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
+
+\"[^\"\n]*\"   					DB_PRINTF( "%s", yytext); return STRING; /* returns properly terminate strings */
+\"[^\"\n]*$ 					{
+										DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */
+									}       
+                                        /* Strings may require some checking later            "'"(.*?)"'"  */
                                         /* Probably have to rip the single quotes off (yyleng) */
 
-                                        DB_PRINTF("%s ", yytext); return STRING;
-                                  }
  /* This next one conflicts with the above VAR so... */
-[A-Za-z][A-Za-z0-9]*              DB_PRINTF("VAR(%s) ", yytext); return VAR;
-[0-9]+                            DB_PRINTF("INT_CONST "); return INT_CONST;
+[A-Za-z][A-Za-z0-9]*       DB_PRINTF("ID(%s) ", yytext); return ID;
+[0-9]+                            DB_PRINTF("INT "); return INT;
 
  /* Operators ---------- */
 ":="                               DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
@@ -90,17 +94,18 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 "("                               DB_PRINTF("O_BRACKET "); return O_BRACKET;
 ")"                               DB_PRINTF("C_BRACKET "); return C_BRACKET;
 "."                               DB_PRINTF("PERIOD "); return PERIOD;
-";"                               DB_PRINTF("S_COLON"); return S_COLON;
+";"                               DB_PRINTF("S_COLON "); return S_COLON;
 ":"                               DB_PRINTF("COLON "); return COLON;
-"["                               DB_PRINTF("O_SBRACKET"); return O_SBRACKET;
-"]"                               DB_PRINTF("C_SBRACKET"); return C_SBRACKET;
+"["                               DB_PRINTF("O_SBRACKET "); return O_SBRACKET;
+"]"                               DB_PRINTF("C_SBRACKET "); return C_SBRACKET;
 ","                               DB_PRINTF("COMMA "); return COMMA;
+".."							  DB_PRINTF("DDOT "); return DDOT;
 
  /* Comments, newlines, garbage ---------- */                               
-\n                                DB_PRINTF("\n"); new_position_line();
+\n                                DB_PRINTF("\n "); new_position_line();
 "{"                               DB_PRINTF("START_COM ");
 "}"                               DB_PRINTF("END_COM ");
 [ \t]+                            /* ignore whitespace */;
-[//].*                            /* comment */
+[//].*\n                         /* comment    ----- must still accept multi-line comments ({}).  What is EOF in PAL? */   
 [!@#$%^*-_+{}\[\];"\<>,./]
 %%
