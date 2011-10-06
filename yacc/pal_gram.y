@@ -19,7 +19,7 @@
 %token  COMMA START_COM END_COM NSTRING DDOT
 
 /* Original tokens */
-%token  AND ARRAY BEGIN BOOL CHAR CONST CONTINUE DIV
+%token  AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
 %token  DO ELSE END EXIT FUNCTION ID IF INT MOD
 %token  NOT OF OR PROCEDURE PROGRAM REAL RECORD
 %token  STRING THEN TYPE VAR WHILE INT_CONST REAL_CONST
@@ -134,7 +134,7 @@ f_parm                  : ID COLON ID
                         | VAR ID COLON ID
                         ;
 
-compound_stat      : BEGIN stat_list END
+compound_stat      : P_BEGIN stat_list END
                         ;       
 
 stat_list               : error S_COLON				{yyerror("First statement discarded "); yyerrok;}

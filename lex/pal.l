@@ -10,9 +10,9 @@
 #include <string.h>
 
 /* This word was causing namespace conflicts, this is probably a bad solution */
-#ifdef BEGIN
-#undef BEGIN
-#endif
+//#ifdef BEGIN
+//#undef BEGIN
+//#endif
 
 #include "pal.h"
 #include "pal_gram.tab.h"
@@ -37,7 +37,7 @@
  /* Reserved words ---------- */
 and                               DB_PRINTF("AND "); return AND;
 array                             DB_PRINTF("ARRAY "); return ARRAY;
-begin                             DB_PRINTF("BEGIN "); return BEGIN;
+begin                             DB_PRINTF("P_BEGIN "); return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
 true								DB_PRINTF("BOOL - TRUE "); return BOOL;
 false								DB_PRINTF("BOOL - FALSE "); return BOOL;
