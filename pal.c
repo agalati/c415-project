@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lpal.h"
+#include "pal.h"
 #include "pal_gram.tab.h"
 
 void echo_file(void);

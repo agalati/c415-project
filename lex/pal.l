@@ -14,7 +14,7 @@
 #undef BEGIN
 #endif
 
-#include "lpal.h"
+#include "pal.h"
 #include "pal_gram.tab.h"
 
 #define YY_USER_ACTION update_position(strlen(yytext));
