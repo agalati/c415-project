@@ -23,7 +23,6 @@
 
 //#define YY_USER_INIT yylloc.first_line=1;
 
-#define DEBUG
 #ifdef DEBUG
 #define DB_PRINTF(format, a...) printf(format, ## a)
 #else
