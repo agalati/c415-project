@@ -84,9 +84,8 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                         | RECORD field_list END
                         ;
 
-array_type              : simple_type
-                        | expr DDOT expr
-                        ;
+array_type              : simple_type					/* removed expr .. expr because anonymous enums */
+                        ;											/* are not allowed as an index type */
 
 field_list              	 : field
                         | field_list S_COLON field
@@ -135,7 +134,7 @@ f_parm                  : ID COLON ID
                         | VAR ID COLON ID
                         ;
 
-compound_stat           : BEGIN stat_list END
+compound_stat      : BEGIN stat_list END
                         ;       
 
 stat_list               : error S_COLON				{yyerror("First statement discarded "); yyerrok;}
@@ -194,20 +193,23 @@ term                    	: factor
                         ;
 
 factor                  	: var
-                        | unsigned_const
+                        | simple_type
                         | O_BRACKET expr C_BRACKET
                         | func_invok
                         | NOT factor
+						| STRING							/* added STRING and NSTRING to compensate for unsigned_const */
+						| NSTRING						/* produce unterminated string warning here */ 
                         ;
 
-unsigned_const          : unsigned_num							/* straight up removed ID */
-                        | STRING
-						| NSTRING  									/* produce warning here */
-                        ;
+									/* unsigned_const          : unsigned_num		*/					
+									/* | ID															*/
+									/* | STRING													*/
+						            /* | NSTRING												*/  									
+                                    /* ;																*/
 
-unsigned_num            : INT
-                        | REAL
-                        ;
+									/* unsigned_num            : INT						*/
+									/* | REAL														*/
+									/* ;																*/
 
 func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
