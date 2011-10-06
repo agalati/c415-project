@@ -69,7 +69,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
                                         DB_PRINTF("%s ", yytext); return STRING;
                                   }
  /* This next one conflicts with the above VAR so... */
-[A-Za-z][A-Za-z0-9]*              DB_PRINTF("VAR(%s) ", yytext); return ID;
+[A-Za-z][A-Za-z0-9]*              DB_PRINTF("ID(%s) ", yytext); return ID;
 [0-9]+                            DB_PRINTF("INT_CONST "); return INT_CONST;
 
  /* Operators ---------- */
@@ -84,9 +84,12 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 "-"                                DB_PRINTF("MINUS "); return MINUS;
 "*"                                DB_PRINTF("MULTIPLY "); return MULTIPLY;
 "/"                                DB_PRINTF("DIVIDE "); return DIVIDE;
+".."                               DB_PRINTF("ARRAY_DOTS"); return ARRAY_DOTS;
  /* div and mod are under reserved words */
 
  /* Other lexical characters ---------- */
+[().;:\[\],]                            return yytext[0];
+ /*
 "("                               DB_PRINTF("O_BRACKET "); return O_BRACKET;
 ")"                               DB_PRINTF("C_BRACKET "); return C_BRACKET;
 "."                               DB_PRINTF("PERIOD "); return PERIOD;
@@ -95,6 +98,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 "["                               DB_PRINTF("O_SBRACKET"); return O_SBRACKET;
 "]"                               DB_PRINTF("C_SBRACKET"); return C_SBRACKET;
 ","                               DB_PRINTF("COMMA "); return COMMA;
+ */
 
  /* Comments, newlines, garbage ---------- */                               
 \n                                DB_PRINTF("\n"); new_position_line();

@@ -8,12 +8,12 @@
 void
 yyerror (char const *s)
 {
-  printf("\n");
+  // todo: read line of source corresponding to error line and print it
   int c = 1;
   for (; c < yylloc.first_column; ++c)
     printf(" ");
   printf("^\n");
-  printf("Error on line %d at column %d: %s\n", yylloc.first_line, yylloc.first_column, s);
+  printf("Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
 }
 
 void usage()
@@ -45,6 +45,7 @@ main (  int     argc,
 
   // assume the arg passed was the file to compile
   freopen(argv[1], "r", stdin);
+  prog_file = fopen(argv[1], "r");
   int ret =  yyparse ();
   fclose(stdin);
   return ret;
