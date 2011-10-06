@@ -1,8 +1,7 @@
 program main(input, output);
-    label 1;
     var n, oddcount, evencount : integer;
     procedure ODD ( x : integer );
-        procedure EVEN;
+        procedure EVEN();
         begin
             if x <> 0 then begin
                 evencount := evencount + 1;
@@ -42,4 +41,3 @@ program main(input, output);
         else EVEN(n);
     end;
 end.
-        
