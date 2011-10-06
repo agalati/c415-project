@@ -8,6 +8,7 @@
 FILE* prog_file;
 off_t* line_offsets;
 unsigned int num_lines;
+int do_listing;
 
 int yylex (void);
 void yyerror (char const *);
@@ -16,7 +17,9 @@ void yyerror (char const *);
 void update_position(int distance);
 void new_position_line(void);
 
+void parse_args(int argc, char** argv);
 void usage(void);
+
 void find_line_offsets(void);
 
 #endif

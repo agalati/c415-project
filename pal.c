@@ -11,44 +11,79 @@ int
 main (  int     argc,
         char**  argv)
 {
-  if (argc < 2) usage();
-  // for now, until we actually parse the other options
-  if (argc > 2) usage();
-
-  // assume the arg passed was the file to compile
-  freopen(argv[1], "r", stdin);
-  prog_file = fopen(argv[1], "r");
-  find_line_offsets();
-  //echo_file();
-
+  parse_args(argc, argv);
   int ret =  yyparse ();
   fclose(stdin);
+  if (do_listing)
+    fclose(prog_file);
   return ret;
 }
 
 void
 yyerror (char const *s)
 {
-  size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
-  char* linebuf = (char*)malloc(linesize*sizeof(char));
-  fseek(prog_file, line_offsets[yylloc.first_line-1], SEEK_SET);
-  fread(linebuf, sizeof(char), linesize, prog_file);
-  linebuf[linesize-1] = '\0';
+  if (do_listing)
+  {
+    size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
+    char* linebuf = (char*)malloc(linesize*sizeof(char));
+    fseek(prog_file, line_offsets[yylloc.first_line-1], SEEK_SET);
+    fread(linebuf, sizeof(char), linesize, prog_file);
+    linebuf[linesize-1] = '\0';
 
-  printf("%s\n", linebuf);
-  free(linebuf);
+    printf("%s\n", linebuf);
+    free(linebuf);
 
-  int c = 1;
-  for (; c < yylloc.first_column; ++c)
-    printf(" ");
-  printf("^\n");
+    int c = 1;
+    for (; c < yylloc.first_column; ++c)
+      printf(" ");
+    printf("^\n");
+  }
+
   printf("Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
+}
+
+void parse_args(int argc, char** argv)
+{
+  if (argc < 2) usage();
+  if (argc > 5) usage();
+
+  freopen(argv[argc-1], "r", stdin);
+  do_listing = 1;
+
+  int narg;
+  char* arg;
+  for (narg = 1; narg < argc-1; ++narg)
+  {
+    arg = argv[narg];
+    if (strcmp(arg, "-S") == 0)
+      printf("-S option not implemented yet, ignoring...\n");
+    else if (strcmp(arg, "-a") == 0)
+      printf("-a option not implemented yet, ignoring...\n");
+    else if (strcmp(arg, "-n") == 0)
+      do_listing = 0;
+    else
+    {
+      printf("Unrecognized option: %s\n", arg);
+      usage();
+    }
+  }
+
+  if (do_listing)
+  {
+    prog_file = fopen(argv[argc-1], "r");
+    find_line_offsets();
+    //echo_file();
+  }
 }
 
 void
 usage(void)
 {
   printf("Usage:\npal [options] file\n");
+  printf("Options:\n");
+  printf("\t-S\tLeave ASC code in file.asc instead of removing it (not implemented)\n");
+  printf("\t-n\tDo not produce a program listing.\n");
+  printf("\t-a\tDo not generate run-time array subscript bounds checking.\n");
   exit(1);
 }
 
