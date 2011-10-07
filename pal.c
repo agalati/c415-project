@@ -19,7 +19,7 @@ main (  int     argc,
   return ret;
 }
 
-void lexerror(char const* s, char const* invalid)
+void lexerror(char const* invalid)
 {
   size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
   char* linebuf = (char*)malloc(linesize*sizeof(char));
@@ -35,7 +35,7 @@ void lexerror(char const* s, char const* invalid)
     fprintf(stderr, " ");
   fprintf(stderr, "^\n");
 
-  fprintf(stderr, "Invalid character '%s' on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
+  fprintf(stderr, "Invalid character '%s' on line %d at column %d\n\n", invalid, yylloc.first_line, yylloc.first_column);
 }
 
 void

@@ -11,7 +11,7 @@ unsigned int num_lines;
 int do_listing;
 
 int yylex (void);
-void lexerror(char const*, char const*);
+void lexerror(char const*);
 void yyerror (char const *);
 
 // position tracking functions
