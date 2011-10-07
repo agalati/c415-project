@@ -109,5 +109,6 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 \n                                DB_PRINTF("\n "); new_position_line();
 [ \t]+                            /* ignore whitespace */;
 [//].*\n                          new_position_line(); /* comment   What is EOF in PAL? */   
+[\{[.*\n*]*\}]				/* don't know how to update line position for multi-line comments */
 [!@#$%^*-_+{}\[\];"\<>,./]
 %%

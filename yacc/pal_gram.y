@@ -4,6 +4,7 @@
  */
 
 %{
+#define YYDEBUG 1
 %}
 
 %locations
@@ -27,6 +28,7 @@
 %% /* Start of grammer */
 
 program                 : program_head decls compound_stat PERIOD
+						| error						{yyerrok;}
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
@@ -84,8 +86,10 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                         | RECORD field_list END
                         ;
 
-array_type              : simple_type					/* removed expr .. expr because anonymous enums */
-                        ;											/* are not allowed as an index type */
+array_type              : simple_type
+						| INT DDOT INT
+						| ID DDOT ID
+                        ;											
 
 field_list              	 : field
                         | field_list S_COLON field
@@ -167,14 +171,17 @@ subscripted_var         : var O_SBRACKET expr
                         ;
 
 expr                    	  : simple_expr
-                        | expr EQUALS     simple_expr
-                        | expr NOT_EQUAL simple_expr
-                        | expr LESS_EQUAL simple_expr
-                        | expr LESS_THAN     simple_expr
-                        | expr GREATER_EQUAL simple_expr
-                        | expr GREATER_THAN     simple_expr
+                        | simple_expr operator expr
 						| error simple_expr			{yyerrok;}
                         ;
+						
+operator				: EQUALS
+						| NOT_EQUAL
+						| LESS_EQUAL
+						| LESS_THAN
+						| GREATER_EQUAL
+						| GREATER_THAN
+						;
 
 simple_expr             : term
                         | PLUS term
@@ -192,8 +199,10 @@ term                    	: factor
                         | term AND factor
                         ;
 
-factor                  	: var
-                        | simple_type
+factor                  	: var												/* removed simple_type and added it's applicable atoms */
+                        | INT									
+                        | REAL
+						| BOOL
                         | O_BRACKET expr C_BRACKET
                         | func_invok
                         | NOT factor
@@ -219,11 +228,11 @@ plist_finvok            : ID O_BRACKET parm
                         | plist_finvok COMMA parm
                         ;
 
-parm                    : expr
+parm                    : expr 
 						;
 
-struct_stat             : IF expr THEN matched_stat ELSE stat
-                        | IF expr THEN stat
+struct_stat             : IF expr THEN stat
+                        | IF expr THEN matched_stat ELSE stat
                         | WHILE expr DO stat
                         | CONTINUE
                         | EXIT
