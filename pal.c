@@ -19,6 +19,10 @@ main (  int     argc,
   return ret;
 }
 
+void lexerror(char const* s, char const* invalid)
+{
+}
+
 void
 yyerror (char const *s)
 {
