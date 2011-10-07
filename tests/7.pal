@@ -1,0 +1,53 @@
+// errors on lines 14, 25, and 39
+
+program main;
+		label 1;
+		var n, oddcount, evencount : integer;
+		procedure ODD ( x: integer );
+		begin
+				if x <> 0 then begin
+						evencount := evencount +1;
+						x := x div 2;
+						if odd ( x ) then ODD ( x )
+						else EVEN
+						
+				end;;									// double semi-colons
+		end;
+		
+		begin
+				oddcount := oddcount +1;
+				x := x div 2;
+				if odd ( x ) then ODD ( x )
+				else EVEN
+		end;
+		
+		procedure EVEN ( x : integer );
+				procedure ( var x : integer );			// procedure is never named
+														// should be "ODD ()"
+				begin 
+						oddcount := oddcount + 1 ;
+						x := x div 2;
+						if odd ( x ) then ODD ( x )
+						else EVEN ( x )
+				end;
+				
+		begin
+				if x <> 0 then begin
+						evencount := evencount + 1;
+						x := x div 2;
+						if odd ( x ) then ODD ( x )
+						else EVEN [ x ]					// should be "( x )" instead of square brackets
+				end;
+		end;
+		
+		begin 
+		1: read ( n );
+		if n >= 0 then begin
+				oddcount := 0;
+				evencount := 0;
+				if odd ( n ) then ODD ( n )
+				else EVEN ( n);
+				writeln ('n = ', n, ' o = ', oddcount, ' e = ', evencount );
+				goto 1;
+		end;
+		end.
