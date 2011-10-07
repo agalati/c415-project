@@ -5,8 +5,6 @@
 #include "pal.h"
 #include "pal_gram.tab.h"
 
-void echo_file(void);
-
 int
 main (  int     argc,
         char**  argv)
@@ -184,22 +182,6 @@ find_line_offsets(void)
       line_offsets[lineno] = offset;
     }
     c = fgetc(prog_file);
-  }
-}
-
-void echo_file(void)
-{
-  int i;
-  int linesize;
-  char* linebuf;
-  for (i = 0; i < num_lines-1; ++i)
-  {
-    linesize = line_offsets[i+1]-line_offsets[i];
-    linebuf = (char*)malloc(linesize*sizeof(char));
-    fseek(prog_file, line_offsets[i], SEEK_SET);
-    fread(linebuf, sizeof(char), linesize, prog_file);
-    linebuf[linesize-1] = '\0';
-    printf("%s\n", linebuf);
   }
 }
 
