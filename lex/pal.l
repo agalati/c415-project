@@ -69,10 +69,9 @@ while                             DB_PRINTF("WHILE "); return WHILE;
  /* Numbers and variables ---------- */
 (([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
 
-\'[^\'\n]*\'   					DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
-\'[^\'\n]*$ 					{
-										DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */
-									}       
+
+\'(\\(n|t|'|\\)|[^\\'])*\'			DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
+\'[^\'\n]*$ 					{DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */}       
                                         /* Strings may require some checking later            "'"(.*?)"'"  */
                                         /* Probably have to rip the single quotes off (yyleng) */
 
