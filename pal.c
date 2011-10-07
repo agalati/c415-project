@@ -14,19 +14,16 @@ main (  int     argc,
   parse_args(argc, argv);
   int ret =  yyparse ();
   fclose(stdin);
+  fclose(prog_file);
   if (do_listing)
-    fclose(prog_file);
+    fclose(lst_file);
   return ret;
 }
 
-void lexerror(char const* invalid)
+void
+lexerror(char const* invalid)
 {
-  size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
-  char* linebuf = (char*)malloc(linesize*sizeof(char));
-  fseek(prog_file, line_offsets[yylloc.first_line-1], SEEK_SET);
-  fread(linebuf, sizeof(char), linesize, prog_file);
-  linebuf[linesize-1] = '\0';
-
+  char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s\n", linebuf);
   free(linebuf);
 
@@ -35,36 +32,40 @@ void lexerror(char const* invalid)
     fprintf(stderr, " ");
   fprintf(stderr, "^\n");
 
-  fprintf(stderr, "Invalid character '%s' on line %d at column %d\n\n", invalid, yylloc.first_line, yylloc.first_column);
+  fprintf(stderr, "Invalid token '%s' on line %d at column %d\n\n", invalid, yylloc.first_line, yylloc.first_column);
+  if (do_listing)
+    fprintf(lst_file, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
 }
 
 void
 yyerror (char const *s)
 {
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s\n", linebuf);
+  free(linebuf);
+
+  int c = 1;
+  for (; c < yylloc.first_column; ++c)
+    fprintf(stderr, " ");
+  fprintf(stderr, "^\n");
+
+  fprintf(stderr, "Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
   if (do_listing)
-  {
-    size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
-    char* linebuf = (char*)malloc(linesize*sizeof(char));
-    fseek(prog_file, line_offsets[yylloc.first_line-1], SEEK_SET);
-    fread(linebuf, sizeof(char), linesize, prog_file);
-    linebuf[linesize-1] = '\0';
-
-    printf("%s\n", linebuf);
-    free(linebuf);
-
-    int c = 1;
-    for (; c < yylloc.first_column; ++c)
-      printf(" ");
-    printf("^\n");
-  }
-
-  printf("Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
+    fprintf(lst_file, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, s);
 }
 
 void parse_args(int argc, char** argv)
 {
   if (argc < 2) usage();
   if (argc > 5) usage();
+
+  prog_file = fopen(argv[argc-1], "r");
+  if (!prog_file)
+  {
+    fprintf(stderr, "Cannot find file %s\n", argv[argc-1]);
+    exit(-2);
+  }
+  find_line_offsets();
 
   freopen(argv[argc-1], "r", stdin);
   do_listing = 1;
@@ -89,21 +90,42 @@ void parse_args(int argc, char** argv)
 
   if (do_listing)
   {
-    prog_file = fopen(argv[argc-1], "r");
-    find_line_offsets();
-    //echo_file();
+    // find the last . in the filename, remove the extension, and append .lst to it
+    const char* ext = strrchr(argv[argc-1], '.');
+    unsigned long stripped_length = (unsigned long)ext - (unsigned long)argv[argc-1];
+    char* temp = (char*)malloc((stripped_length+4+1)*sizeof(char));
+    strncpy(temp, argv[argc-1], stripped_length);
+    temp[stripped_length] = '\0';
+    strcat(temp, ".lst");
+
+    char* token  = strtok(temp, "/");
+    char* lst_filename = token;
+    while (token != NULL)
+    {
+      lst_filename = token;
+      token = strtok(NULL, "/");
+    }
+
+    lst_file = fopen(lst_filename, "w");
+    if (!lst_file)
+    {
+      fprintf(stderr, "Cannot open file %s\n", lst_filename);
+      exit(-3);
+    }
+
+    free(temp);
   }
 }
 
 void
 usage(void)
 {
-  printf("Usage:\npal [options] file\n");
+  printf("pal [options] file\n");
   printf("Options:\n");
   printf("\t-S\tLeave ASC code in file.asc instead of removing it (not implemented)\n");
   printf("\t-n\tDo not produce a program listing.\n");
   printf("\t-a\tDo not generate run-time array subscript bounds checking.\n");
-  exit(1);
+  exit(-1);
 }
 
 void
@@ -116,6 +138,12 @@ update_position(int distance)
 void
 new_position_line(void)
 {
+  if (do_listing)
+  {
+    char* linebuf = get_prog_line(yylloc.first_line);
+    fprintf(lst_file, "%s\n", linebuf);
+    free(linebuf);
+  }
   yylloc.first_column = 1;
   yylloc.last_column = 1;
   ++yylloc.first_line;
@@ -173,4 +201,14 @@ void echo_file(void)
     linebuf[linesize-1] = '\0';
     printf("%s\n", linebuf);
   }
+}
+
+char* get_prog_line(int lineno)
+{
+  size_t linesize = line_offsets[lineno]-line_offsets[lineno-1];
+  char* linebuf = (char*)malloc(linesize*sizeof(char));
+  fseek(prog_file, line_offsets[lineno-1], SEEK_SET);
+  fread(linebuf, sizeof(char), linesize, prog_file);
+  linebuf[linesize-1] = '\0';
+  return linebuf;
 }
