@@ -28,7 +28,7 @@
 %% /* Start of grammer */
 
 program                 : program_head decls compound_stat PERIOD
-						| error						{yyerrok;}
+			/*| error						{yyerrok;}*/
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
