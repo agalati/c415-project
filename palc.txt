@@ -1,0 +1,38 @@
+.TH palc 1 "Oct 7, 2011" "version 0.1" 
+.SH NAME
+palc - compiles programs for the PAL language; a subset of Pascal 
+				
+.SH SYNOPSIS
+		palc
+.B [
+.I OPTIONS
+.B ] [
+.I FILENAME
+.B ]
+				
+.SH DESCRIPTION
+palc takes the named file and compiles it into machine code suitable for running the program.
+Depending on the options used it will output any warnings or errors encountered during
+attempted compilation of the code.  By default palc will print to stdout all program listings.   
+				
+.SH OPTIONS
+-S,  Leave ASC code in file.asc instead of removing it.
+.PP		
+-n,  Do not produce a program listing.
+.PP		
+-a,  Do not generate run-time array subscript bounds checking.
+				
+.SH BUGS
+Currently the -S option is not enabled.  This is as yet a compiler skeleton that takes in code
+and puts out warnings.  No actual machine code is generated.
+				
+.SH AUTHOR
+Matthew Low		"mlow@ualberta.ca"
+Anthony Galati		"agalati@ualberta.ca"
+Stevan Clement	"sclement@ualberta.ca"
+Mike Bujold			"mnbujold@ualberta.ca"
+				
+.SH SEE ALSO
+gcc(1)
+cc(2)
+				
