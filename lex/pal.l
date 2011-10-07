@@ -9,11 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* This word was causing namespace conflicts, this is probably a bad solution */
-//#ifdef BEGIN
-//#undef BEGIN
-//#endif
-
 #include "pal.h"
 #include "pal_gram.tab.h"
 
@@ -23,6 +18,7 @@
 
 //#define YY_USER_INIT yylloc.first_line=1;
 
+//#define DEBUG
 #ifdef DEBUG
 #define DB_PRINTF(format, a...) printf(format, ## a)
 #else
@@ -32,8 +28,17 @@
 %}
 
 %option noyywrap
-
+%x COMMENT
 %%
+ /* Handles { comments \n\n\n } */
+^[ \t]*"{"                        DB_PRINTF("Entering COMMENT----- "); BEGIN COMMENT; /* Gotta get that comment */
+^[ \t]*"{".*"}"[ \t]*\n           new_position_line(); /* One line comment */
+<COMMENT>"}"[ \t]*\n              BEGIN 0; new_position_line();
+<COMMENT>"}"                      BEGIN 0;
+<COMMENT>\n                       DB_PRINTF("NEWLINE----- "); new_position_line();
+<COMMENT>.                        ;
+"{".*"}"                          DB_PRINTF("(Single line COMMENT) ");
+
  /* Reserved words ---------- */
 and                               DB_PRINTF("AND "); return AND;
 array                             DB_PRINTF("ARRAY "); return ARRAY;
@@ -64,7 +69,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
  /* Numbers and variables ---------- */
 (([0-9]+"."[0-9]+(E("-"|"+")?[0-9]+)?)|([0-9]+(E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
 
-\'[^\'\n]*\'   					DB_PRINTF( "%s", yytext); return STRING; /* returns properly terminate strings */
+\'[^\'\n]*\'   					DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
 \'[^\'\n]*$ 					{
 										DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */
 									}       
@@ -102,9 +107,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 
  /* Comments, newlines, garbage ---------- */                               
 \n                                DB_PRINTF("\n "); new_position_line();
-"{"                               DB_PRINTF("START_COM ");
-"}"                               DB_PRINTF("END_COM ");
 [ \t]+                            /* ignore whitespace */;
-[//].*\n                         /* comment    ----- must still accept multi-line comments ({}).  What is EOF in PAL? */   
+[//].*\n                          new_position_line(); /* comment   What is EOF in PAL? */   
 [!@#$%^*-_+{}\[\];"\<>,./]
 %%
