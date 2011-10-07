@@ -7,6 +7,7 @@
 #define YYDEBUG 1
 %}
 
+%expect 1			/* bison knows to expect 1 s/r conflict */
 %locations
 %error-verbose
 	/* free discarded tokens */
