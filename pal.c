@@ -21,6 +21,21 @@ main (  int     argc,
 
 void lexerror(char const* s, char const* invalid)
 {
+  size_t linesize = line_offsets[yylloc.first_line]-line_offsets[yylloc.first_line-1];
+  char* linebuf = (char*)malloc(linesize*sizeof(char));
+  fseek(prog_file, line_offsets[yylloc.first_line-1], SEEK_SET);
+  fread(linebuf, sizeof(char), linesize, prog_file);
+  linebuf[linesize-1] = '\0';
+
+  fprintf(stderr, "%s\n", linebuf);
+  free(linebuf);
+
+  int c = 1;
+  for (; c < yylloc.first_column; ++c)
+    fprintf(stderr, " ");
+  fprintf(stderr, "^\n");
+
+  fprintf(stderr, "Invalid character '%s' on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
 }
 
 void
