@@ -4,6 +4,9 @@ var
         s: String;
 
 begin
-        s := 'Hello, \'world ;
+        s := 'Hello, \'world ' ;
+\
+
+#
         
 end.
