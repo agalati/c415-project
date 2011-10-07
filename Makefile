@@ -2,7 +2,7 @@
 
 CC = gcc
 
-all: palc
+all: pal
 
 pal: lex/pal.l yacc/pal_gram.y pal.c
 	flex lex/pal.l
