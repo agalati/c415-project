@@ -1,3 +1,5 @@
+// error on line 1
+
 program main ( id, id )
 begin
 end.

@@ -1,53 +1,50 @@
-// errors on lines 30, 38, and 45
+// errors on lines 29, 37, and 44
 
 program main;
-		label 1;
-		var n, oddcount, evencount : integer;
-		procedure ODD ( x: integer );
-		begin
-				if x <> 0 then begin
-						evencount := evencount +1;
-						x := x div 2;
-						if odd ( x ) then ODD ( x )
-						else EVEN
-						
-				end;
-		end;
-		
-		begin
-				oddcount := oddcount +1;
-				x := x div 2;
-				if odd ( x ) then ODD ( x )
-				else EVEN
-		end;
-		/* This is not a proper comment! */			
-		procedure EVEN ( x : integer );				
-				procedure ODD ( var x : integer );
-				
-				begin 
-						oddcount := oddcount + 1 ;
-						x := x div 2;
-						if odd ( x ) then ODD ( #x# )			// "#" character not part of language
-						else EVEN ( x )
-				end;
-				
-		begin
-				if x <> 0 then begin
-						evencount := evencount + 1;
-						x := x div 2;
-						if odd ( x ) thEn ODD ( x )  // language is case sensitive- should be "then"
-						else EVEN ( x )
-				end;
-		end;
-		
-		begin 
-		1: read ( n );
-		if n >= 0 then b3g1n						// reserved word is "begin" 
-				oddcount := 0;
-				evencount := 0;
-				if odd ( n ) then ODD ( n )
-				else EVEN ( n);
-				writeln ('n = ', n, ' o = ', oddcount, ' e = ', evencount );
-				goto 1;
-		end;
-		end.
+    var n, oddcount, evencount : integer;
+    procedure ODD ( x: integer );
+    begin
+        if x <> 0 then begin
+            evencount := evencount +1;
+            x := x div 2;
+            if odd ( x ) then ODD ( x )
+            else EVEN
+            
+        end;
+    end;
+    
+    begin
+        oddcount := oddcount +1;
+        x := x div 2;
+        if odd ( x ) then ODD ( x )
+        else EVEN
+    end;
+    /* This is not a proper comment! */     
+    procedure EVEN ( x : integer );       
+        procedure ODD ( var x : integer );
+        
+        begin 
+            oddcount := oddcount + 1 ;
+            x := x div 2;
+            if odd ( x ) then ODD ( #x# )     // "#" character not part of language
+            else EVEN ( x )
+        end;
+        
+    begin
+        if x <> 0 then begin
+            evencount := evencount + 1;
+            x := x div 2;
+            if odd ( x ) thEn ODD ( x )  // language is case sensitive- should be "then"
+            else EVEN ( x )
+        end;
+    end;
+    
+    begin 
+    if n >= 0 then b3g1n            // reserved word is "begin" 
+        oddcount := 0;
+        evencount := 0;
+        if odd ( n ) then ODD ( n )
+        else EVEN ( n);
+        writeln ('n = ', n, ' o = ', oddcount, ' e = ', evencount );
+    end;
+    end.

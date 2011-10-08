@@ -1,7 +1,6 @@
 // errors on lines 13, 16, 17, 18, 28, 41, and 50
 
 program main;
-		label 1;
 		var n, oddcount, evencount : integer;
 		procedure ODD ( x: integer );
 		begin
@@ -47,13 +46,11 @@ program main;
 		end;
 		
 		begin 
-		1; read ( n );						// colon operator replaced with semi-colon
 		if n >= 0 then begin
 				oddcount := 0;
 				evencount := 0;
 				if odd ( n ) then ODD ( n )
 				else EVEN ( n);
 				writeln ('n = ', n, ' o = ', oddcount, ' e = ', evencount );
-				goto 1;
 		end;
 		end.
