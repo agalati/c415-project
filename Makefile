@@ -7,13 +7,13 @@ all: pal
 pal: lex/pal.l yacc/pal_gram.y pal.c
 	flex lex/pal.l
 	bison -d yacc/pal_gram.y
-	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal
+	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal -DDEBUG
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
 
-debug: lex/pal.l yacc/pal_gram.y pal.c
+nodebug: lex/pal.l yacc/pal_gram.y pal.c
 	flex lex/pal.l
 	bison -d yacc/pal_gram.y
-	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal -DDEBUG
+	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
 
 clean:
