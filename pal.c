@@ -9,6 +9,7 @@ int
 main (  int     argc,
         char**  argv)
 {
+  err_buf = NULL;
   parse_args(argc, argv);
   int ret =  yyparse ();
   fclose(stdin);
@@ -32,7 +33,11 @@ lexerror(char const* invalid)
 
   fprintf(stderr, "Invalid token '%s' on line %d at column %d\n\n", invalid, yylloc.first_line, yylloc.first_column);
   if (do_listing)
-    fprintf(lst_file, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+    add_err_to_buf(err);
+  }
 }
 
 void
@@ -141,6 +146,12 @@ new_position_line(void)
     char* linebuf = get_prog_line(yylloc.first_line);
     fprintf(lst_file, "%s\n", linebuf);
     free(linebuf);
+    linebuf = pop_err_from_buf();
+    if (linebuf)
+    {
+      fprintf(lst_file, "%s", linebuf);
+      free(linebuf);
+    }
   }
   yylloc.first_column = 1;
   yylloc.last_column = 1;
@@ -193,4 +204,35 @@ char* get_prog_line(int lineno)
   fread(linebuf, sizeof(char), linesize, prog_file);
   linebuf[linesize-1] = '\0';
   return linebuf;
+}
+
+void add_err_to_buf(char* err)
+{
+  struct error_msgs* last_err = err_buf;
+  if (last_err == NULL)
+  {
+    err_buf = (struct error_msgs*)malloc(sizeof(struct error_msgs));
+    err_buf->err = err;
+    err_buf->next = NULL;
+  }
+  else
+  {
+    while (last_err->next)
+      last_err = last_err->next;
+    last_err->next = (struct error_msgs*)malloc(sizeof(struct error_msgs));
+    last_err = last_err->next;
+    last_err->err = err;
+    last_err->next = NULL;
+  }
+}
+
+char* pop_err_from_buf(void)
+{
+  if (!err_buf)
+    return NULL;
+  char* ret = err_buf->err;
+  struct error_msgs* temp = err_buf->next;
+  free(err_buf);
+  err_buf = temp;
+  return ret;
 }
