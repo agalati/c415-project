@@ -4,18 +4,19 @@ CC = gcc
 
 all: pal
 
-debug: lex/pal.l yacc/pal_gram.y pal.c
-	flex lex/pal.l
-	bison -d yacc/pal_gram.y
-	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal -DDEBUG
-	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
-
 pal: lex/pal.l yacc/pal_gram.y pal.c
 	flex lex/pal.l
 	bison -d yacc/pal_gram.y
 	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
 
+debug: lex/pal.l yacc/pal_gram.y pal.c
+	flex lex/pal.l
+	bison -d yacc/pal_gram.y
+	$(CC) pal.c lex.yy.c pal_gram.tab.c -o pal -DDEBUG
+	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
+
 clean:
 	rm -f pal
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
+	rm -f *.lst

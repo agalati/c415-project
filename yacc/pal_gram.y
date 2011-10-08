@@ -7,10 +7,10 @@
 #define YYDEBUG 1
 %}
 
-%expect 1			/* bison knows to expect 1 s/r conflict */
+ //%expect 1     /* bison knows to expect 1 s/r conflict */
 %locations
 %error-verbose
-	/* free discarded tokens */
+  /* free discarded tokens */
 %destructor { printf ("free at %d %s\n",@$.first_line, $$); free($$); } <*>
 
 /* New tokens */
@@ -29,13 +29,13 @@
 %% /* Start of grammer */
 
 program                 : program_head decls compound_stat PERIOD
-			/*| error						{yyerrok;}*/
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
+                        | error
                         ;
 
-decls                   : const_decl_part					
+decls                   : const_decl_part         
                           type_decl_part        
                           var_decl_part
                           proc_decl_part
@@ -47,7 +47,7 @@ const_decl_part         : CONST const_decl_list S_COLON
 
 const_decl_list         : const_decl
                         | const_decl_list S_COLON const_decl
-						| error S_COLON					{yyerrok;}
+                        | error S_COLON         {yyerrok;}
                         ;
 
 const_decl              : ID EQUALS expr
@@ -88,31 +88,31 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                         ;
 
 array_type              : simple_type
-						| INT DDOT INT
-						| ID DDOT ID
-                        ;											
+                        | INT DDOT INT
+                        | ID DDOT ID
+                        ;                     
 
-field_list              	 : field
+field_list              : field
                         | field_list S_COLON field
                         ;
 
-field                   	 : ID COLON type
+field                   : ID COLON type
                         ;
 
 var_decl_part           : VAR var_decl_list S_COLON
                         |
                         ;
 
-var_decl_list             : var_decl
+var_decl_list           : var_decl
                         | var_decl_list S_COLON var_decl
-						| error S_COLON				{yyerrok;}
+                        | error S_COLON       {yyerrok;}
                         ;
 
-var_decl                  : ID COLON type
+var_decl                : ID COLON type
                         | ID COMMA var_decl
                         ;
 
-proc_decl_part         : proc_decl_list
+proc_decl_part          : proc_decl_list
                         |
                         ;
 
@@ -123,7 +123,7 @@ proc_decl_list          : proc_decl
 proc_decl               : proc_heading decls compound_stat S_COLON
                         ;
 
-proc_heading           : PROCEDURE ID f_parm_decl S_COLON
+proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                         ;
 
@@ -139,12 +139,10 @@ f_parm                  : ID COLON ID
                         | VAR ID COLON ID
                         ;
 
-compound_stat      : P_BEGIN stat_list END
+compound_stat           : P_BEGIN stat_list END
                         ;       
 
-stat_list               : error S_COLON				{yyerror("First statement discarded "); yyerrok;}
-						| stat_list error S_COLON		{yyerror("Second statement discarded "); yyerrok;}
-						| stat
+stat_list               : stat
                         | stat_list S_COLON stat
                         ;
 
@@ -162,7 +160,7 @@ proc_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
                         ;
 
-var                     	: ID
+var                     : ID
                         | var PERIOD ID
                         | subscripted_var C_SBRACKET
                         ;
@@ -171,18 +169,18 @@ subscripted_var         : var O_SBRACKET expr
                         | subscripted_var COMMA expr
                         ;
 
-expr                    	  : simple_expr
+expr                    : simple_expr
                         | simple_expr operator expr
-						| error simple_expr			{yyerrok;}
+                        | error simple_expr     {yyerrok;}
                         ;
-						
-operator				: EQUALS
-						| NOT_EQUAL
-						| LESS_EQUAL
-						| LESS_THAN
-						| GREATER_EQUAL
-						| GREATER_THAN
-						;
+            
+operator                : EQUALS
+                        | NOT_EQUAL
+                        | LESS_EQUAL
+                        | LESS_THAN
+                        | GREATER_EQUAL
+                        | GREATER_THAN
+                        ;
 
 simple_expr             : term
                         | PLUS term
@@ -192,7 +190,7 @@ simple_expr             : term
                         | simple_expr OR  term
                         ;
 
-term                    	: factor
+term                    : factor
                         | term MULTIPLY factor
                         | term DIVIDE factor
                         | term DIV factor
@@ -200,26 +198,26 @@ term                    	: factor
                         | term AND factor
                         ;
 
-factor                  	: var												/* removed simple_type and added it's applicable atoms */
-                        | INT									
+factor                  : var                       /* removed simple_type and added it's applicable atoms */
+                        | INT                 
                         | REAL
-						| BOOL
+                        | BOOL
                         | O_BRACKET expr C_BRACKET
                         | func_invok
                         | NOT factor
-						| STRING							/* added STRING and NSTRING to compensate for unsigned_const */
-						| NSTRING						/* produce unterminated string warning here */ 
+                        | STRING              /* added STRING and NSTRING to compensate for unsigned_const */
+                        | NSTRING           /* produce unterminated string warning here */ 
                         ;
 
-									/* unsigned_const          : unsigned_num		*/					
-									/* | ID															*/
-									/* | STRING													*/
-						            /* | NSTRING												*/  									
-                                    /* ;																*/
+                  /* unsigned_const          : unsigned_num   */          
+                  /* | ID                             */
+                  /* | STRING                         */
+                        /* | NSTRING                        */                    
+                                    /* ;                                */
 
-									/* unsigned_num            : INT						*/
-									/* | REAL														*/
-									/* ;																*/
+                  /* unsigned_num            : INT            */
+                  /* | REAL                           */
+                  /* ;                                */
 
 func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
@@ -230,7 +228,7 @@ plist_finvok            : ID O_BRACKET parm
                         ;
 
 parm                    : expr 
-						;
+                        ;
 
 struct_stat             : IF expr THEN stat
                         | IF expr THEN matched_stat ELSE stat
