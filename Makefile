@@ -1,4 +1,14 @@
-# very basic - I'll fix it soon
+# Authors
+#   Matthew Low
+#   Anthony Galati 
+#   Mike Bujold
+#   Stevan Clement
+#
+# Makefile for pal executable
+#
+# Compile with: 
+#    make
+#
 
 CC = gcc
 
