@@ -56,7 +56,7 @@ yyerror (char const *s)
   if (do_listing)
   {
     char* err = (char*)malloc(1024*sizeof(char));
-    sprintf(err, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+    sprintf(err, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, s);
     add_err_to_buf(err);
   }
 }
