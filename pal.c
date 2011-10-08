@@ -52,13 +52,15 @@ yyerror (char const *s)
     fprintf(stderr, " ");
   fprintf(stderr, "^\n");
 
-  fprintf(stderr, "Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
+  char* pretty = pretty_error(s);
+  fprintf(stderr, "Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, pretty);
   if (do_listing)
   {
     char* err = (char*)malloc(1024*sizeof(char));
-    sprintf(err, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, s);
+    sprintf(err, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, pretty);
     add_err_to_buf(err);
   }
+  free(pretty);
 }
 
 void parse_args(int argc, char** argv)
@@ -242,4 +244,46 @@ char* pop_err_from_buf(void)
   free(err_buf);
   err_buf = temp;
   return ret;
+}
+
+char* pretty_error(const char* s)
+{
+  char* pretty = (char*)malloc((strlen(s)+1)*sizeof(char));
+  strcpy (pretty, s);
+  replace_substr(pretty, "ASSIGNMENT", ":=");
+  replace_substr(pretty, "EQUALS", "=");
+  replace_substr(pretty, "NOT_EQUAL", "<>");
+  replace_substr(pretty, "LESS_THAN", "<");
+  replace_substr(pretty, "GREATER_THAN", ">");
+  replace_substr(pretty, "LESS_EQUAL", "<=");
+  replace_substr(pretty, "GREATER_EQUAL", ">=");
+  replace_substr(pretty, "PLUS", "+");
+  replace_substr(pretty, "MINUS", "-");
+  replace_substr(pretty, "MULTIPLY", "*");
+  replace_substr(pretty, "DIVIDE", "/");
+  replace_substr(pretty, "O_BRACKET", "(");
+  replace_substr(pretty, "C_BRACKET", ")");
+  replace_substr(pretty, "PERIOD", ".");
+  replace_substr(pretty, "S_COLON", ";");
+  replace_substr(pretty, "COLON", ":");
+  replace_substr(pretty, "O_SBRACKET", "[");
+  replace_substr(pretty, "C_SBRACKET", "]");
+  replace_substr(pretty, "COMMA", ",");
+  replace_substr(pretty, "START_COM", "{");
+  replace_substr(pretty, "END_COM", "}");
+  replace_substr(pretty, "DDOT", "..");
+  return pretty;
+}
+
+void replace_substr(char* pretty, const char* substr, const char* replacement)
+{
+  const char* loc = strstr(pretty, substr);
+  if (loc != NULL)
+  {
+    unsigned long l1 = (unsigned long)loc - (unsigned long)pretty;
+    pretty[l1] = '\0';
+    strcat(pretty, replacement);
+    loc = pretty + strlen(pretty);
+    strcat(pretty, loc);
+  }
 }
