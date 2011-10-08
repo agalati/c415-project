@@ -213,6 +213,7 @@ void add_err_to_buf(char* err)
   {
     err_buf = (struct error_msgs*)malloc(sizeof(struct error_msgs));
     err_buf->err = err;
+    err_buf->line = yylloc.first_line;
     err_buf->next = NULL;
   }
   else
@@ -222,6 +223,7 @@ void add_err_to_buf(char* err)
     last_err->next = (struct error_msgs*)malloc(sizeof(struct error_msgs));
     last_err = last_err->next;
     last_err->err = err;
+    last_err->line = yylloc.first_line;
     last_err->next = NULL;
   }
 }

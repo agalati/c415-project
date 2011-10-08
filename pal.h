@@ -17,6 +17,7 @@ struct error_msgs;
 struct error_msgs
 {
   char*               err;
+  int                 line;
   struct error_msgs*  next;
 };
 
