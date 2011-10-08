@@ -1,6 +1,12 @@
-/*
- * Filename
- * Here's the grammer, I just hooked it up so that I can use " return TOKEN; " in lex.
+/* pal_gram.y
+ *
+ * Defines the grammar for PAL and contains some extra rules for error reporting/handling.
+ *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
  */
 
 %{

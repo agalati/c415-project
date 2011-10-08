@@ -1,8 +1,12 @@
-/*
- * pal.l
- * 
- * Very basic initial lex file.
- * TODO: { multi-line comments } just going to get lex to eat these...
+/* pal.l
+ *
+ * Defines regular expressions for recognizing tokens. Does some error handling.
+ *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
  */
 
 %{

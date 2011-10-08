@@ -1,3 +1,14 @@
+/* pal.h
+ *
+ * Defines function names and shared variables.
+ *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
+ */
+
 #ifndef LPAL_H
 #define LPAL_H
 

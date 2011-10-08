@@ -1,3 +1,15 @@
+/* pal.c
+ *
+ * This file contains current C code shared between the lex
+ * and grammar files. It also contains the main() function.
+ *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
