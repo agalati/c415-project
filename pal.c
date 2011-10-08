@@ -56,7 +56,7 @@ yyerror (char const *s)
   if (do_listing)
   {
     char* err = (char*)malloc(1024*sizeof(char));
-    sprintf(err, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+    sprintf(err, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, s);
     add_err_to_buf(err);
   }
 }
@@ -151,10 +151,11 @@ new_position_line(void)
     fprintf(lst_file, "%s\n", linebuf);
     free(linebuf);
     linebuf = pop_err_from_buf();
-    if (linebuf)
+    while (linebuf)
     {
       fprintf(lst_file, "%s", linebuf);
       free(linebuf);
+      linebuf = pop_err_from_buf();
     }
   }
   yylloc.first_column = 1;

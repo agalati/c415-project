@@ -32,7 +32,7 @@ program                 : program_head decls compound_stat PERIOD
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
-                        | error
+                        | error { yyclearin; }
                         ;
 
 decls                   : const_decl_part         
@@ -47,7 +47,7 @@ const_decl_part         : CONST const_decl_list S_COLON
 
 const_decl_list         : const_decl
                         | const_decl_list S_COLON const_decl
-                        | error S_COLON         {yyerrok;}
+                        | error S_COLON { yyclearin; }
                         ;
 
 const_decl              : ID EQUALS expr
@@ -74,6 +74,7 @@ simple_type             : scalar_type
                         ;
 
 scalar_type             : O_BRACKET scalar_list C_BRACKET
+                        | O_BRACKET error C_BRACKET
                         | INT
                         | BOOL
                         | CHAR
@@ -84,6 +85,7 @@ scalar_list             : ID
                         ;
 
 structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
+                        | ARRAY O_SBRACKET error C_SBRACKET OF type
                         | RECORD field_list END
                         ;
 
@@ -105,7 +107,7 @@ var_decl_part           : VAR var_decl_list S_COLON
 
 var_decl_list           : var_decl
                         | var_decl_list S_COLON var_decl
-                        | error S_COLON       {yyerrok;}
+                        | error S_COLON { yyclearin; }
                         ;
 
 var_decl                : ID COLON type
@@ -171,7 +173,6 @@ subscripted_var         : var O_SBRACKET expr
 
 expr                    : simple_expr
                         | simple_expr operator expr
-                        | error simple_expr     {yyerrok;}
                         ;
             
 operator                : EQUALS
@@ -231,15 +232,22 @@ parm                    : expr
                         ;
 
 struct_stat             : IF expr THEN stat
+                        | IF error THEN stat { yyclearin; }
                         | IF expr THEN matched_stat ELSE stat
+                        | IF error THEN matched_stat ELSE stat
+                        | IF expr THEN error ELSE stat { yyclearin; }
                         | WHILE expr DO stat
+                        | WHILE error DO  { yyclearin; }
                         | CONTINUE
                         | EXIT
                         ;
 
 matched_stat            : simple_stat
                         | IF expr THEN matched_stat ELSE matched_stat
+                        | IF error THEN matched_stat ELSE matched_stat { yyclearin; }
+                        | IF expr THEN error ELSE matched_stat { yyclearin; }
                         | WHILE expr DO matched_stat
+                        | WHILE error DO matched_stat { yyclearin; }
                         | CONTINUE
                         | EXIT
                         ;
