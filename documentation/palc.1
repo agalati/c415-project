@@ -1,0 +1,41 @@
+pal(1)                                                                  pal(1)
+
+
+
+NNAAMMEE
+       pal  -  compiles  programs  for  the  PAL  language; a subset of Pascal
+
+
+SSYYNNOOPPSSIISS
+       pal [[ _O_P_T_I_O_N_S ]] [[ _F_I_L_E_N_A_M_E ]]
+
+DDEESSCCRRIIPPTTIIOONN
+       pal takes the named file and compiles it into machine code suitable for
+       running  the  program. Depending on the options used it will output any
+       warnings or errors encountered  during  attempted  compilation  of  the
+       code.  By default pal will print to stdout all program listings.
+
+OOPPTTIIOONNSS
+       --SS Leave ASC code in file.asc instead of removing it.
+
+       --nn     Do not produce a program listing.
+
+       --aa     Do not generate run-time array subscript bounds checking.
+
+BBUUGGSS
+       Currently  the  -S  option  is  not enabled.  This is as yet a compiler
+       skeleton that takes in code and puts out warnings.  No  actual  machine
+       code is generated.
+
+AAUUTTHHOORRSS
+       Matthew Low    "mlow@ualberta.ca"
+       Anthony Galati "agalati@ualberta.ca"
+       Stevan Clement "sclement@ualberta.ca"
+       Mike Bujold    "mnbujold@ualberta.ca"
+
+SSEEEE AALLSSOO
+       gcc(1) cc(2)
+
+
+
+version 0.1                       Oct 7, 2011                           pal(1)
