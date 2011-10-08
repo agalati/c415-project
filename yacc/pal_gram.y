@@ -47,7 +47,7 @@ const_decl_part         : CONST const_decl_list S_COLON
 
 const_decl_list         : const_decl
                         | const_decl_list S_COLON const_decl
-                        | error S_COLON         {yyerrok;}
+                        | error S_COLON
                         ;
 
 const_decl              : ID EQUALS expr
@@ -105,7 +105,7 @@ var_decl_part           : VAR var_decl_list S_COLON
 
 var_decl_list           : var_decl
                         | var_decl_list S_COLON var_decl
-                        | error S_COLON       {yyerrok;}
+                        | error S_COLON
                         ;
 
 var_decl                : ID COLON type
@@ -171,7 +171,7 @@ subscripted_var         : var O_SBRACKET expr
 
 expr                    : simple_expr
                         | simple_expr operator expr
-                        | error simple_expr     {yyerrok;}
+                        | error simple_expr
                         ;
             
 operator                : EQUALS
