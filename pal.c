@@ -151,10 +151,11 @@ new_position_line(void)
     fprintf(lst_file, "%s\n", linebuf);
     free(linebuf);
     linebuf = pop_err_from_buf();
-    if (linebuf)
+    while (linebuf)
     {
       fprintf(lst_file, "%s", linebuf);
       free(linebuf);
+      linebuf = pop_err_from_buf();
     }
   }
   yylloc.first_column = 1;
