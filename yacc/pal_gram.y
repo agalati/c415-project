@@ -7,7 +7,7 @@
 #define YYDEBUG 1
 %}
 
-%expect 1     /* bison knows to expect 1 s/r conflict */
+ //%expect 1     /* bison knows to expect 1 s/r conflict */
 %locations
 %error-verbose
   /* free discarded tokens */
@@ -32,6 +32,7 @@ program                 : program_head decls compound_stat PERIOD
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
+                        | error
                         ;
 
 decls                   : const_decl_part         
@@ -141,9 +142,7 @@ f_parm                  : ID COLON ID
 compound_stat           : P_BEGIN stat_list END
                         ;       
 
-stat_list               : error S_COLON           {yyerror("First statement discarded "); yyerrok;}
-                        | stat_list error S_COLON {yyerror("Second statement discarded "); yyerrok;}
-                        | stat
+stat_list               : stat
                         | stat_list S_COLON stat
                         ;
 
