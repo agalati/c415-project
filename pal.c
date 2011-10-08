@@ -54,7 +54,11 @@ yyerror (char const *s)
 
   fprintf(stderr, "Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, s);
   if (do_listing)
-    fprintf(lst_file, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, s);
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+    add_err_to_buf(err);
+  }
 }
 
 void parse_args(int argc, char** argv)
