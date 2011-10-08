@@ -1,9 +1,8 @@
-.TH palc 1 "Oct 7, 2011" "version 0.1" 
+.TH pal 1 "Oct 7, 2011" "version 0.1" 
 .SH NAME
-palc - compiles programs for the PAL language; a subset of Pascal 
-				
+pal - compiles programs for the PAL language; a subset of Pascal 				
 .SH SYNOPSIS
-		palc
+pal
 .B [
 .I OPTIONS
 .B ] [
@@ -11,28 +10,26 @@ palc - compiles programs for the PAL language; a subset of Pascal
 .B ]
 				
 .SH DESCRIPTION
-palc takes the named file and compiles it into machine code suitable for running the program.
-Depending on the options used it will output any warnings or errors encountered during
-attempted compilation of the code.  By default palc will print to stdout all program listings.   
-				
+pal takes the named file and compiles it into machine code suitable for running the program. Depending on the options used it will output any warnings or errors encountered during attempted compilation of the code.  By default pal will print to stdout all program listings.
 .SH OPTIONS
--S,  Leave ASC code in file.asc instead of removing it.
-.PP		
--n,  Do not produce a program listing.
-.PP		
--a,  Do not generate run-time array subscript bounds checking.
-				
+.B -S
+Leave ASC code in file.asc instead of removing it.
+.TP
+.B -n
+Do not produce a program listing.
+.TP
+.B -a
+Do not generate run-time array subscript bounds checking.
 .SH BUGS
-Currently the -S option is not enabled.  This is as yet a compiler skeleton that takes in code
-and puts out warnings.  No actual machine code is generated.
-				
-.SH AUTHOR
-Matthew Low		"mlow@ualberta.ca"
-Anthony Galati		"agalati@ualberta.ca"
+Currently the -S option is not enabled.  This is as yet a compiler skeleton that takes in code and puts out warnings.  No actual machine code is generated.
+.SH AUTHORS
+Matthew Low    "mlow@ualberta.ca"
+.br
+Anthony Galati	"agalati@ualberta.ca"
+.br
 Stevan Clement	"sclement@ualberta.ca"
-Mike Bujold			"mnbujold@ualberta.ca"
-				
+.br
+Mike Bujold	"mnbujold@ualberta.ca"
 .SH SEE ALSO
 gcc(1)
 cc(2)
-				
