@@ -51,4 +51,7 @@ char* get_prog_line(int lineno);
 void add_err_to_buf(char*);
 char* pop_err_from_buf(void);
 
+char* pretty_error(const char*);
+void replace_substr(char* pretty, const char* substr, const char* replacement);
+
 #endif
