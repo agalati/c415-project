@@ -1,16 +1,16 @@
-// errors on lines 5, 22, and 52
+// error on line 5, two errors on line 22
 
 program main(input, output);
     var n, oddcount, evencount : integer;
-    procedure ÓDD ( x : integer );        // unrecognized symbol in procedure declaration
-        procedure EVEN;
+    procedure @DD ( x : integer );        // unrecognized symbol in procedure declaration
+        procedure EVEN();
         
         begin
             if x <> 0 then begin
                   evencount := evencount + 1 ;
                   x := x div 2;
                   if odd(x) then ODD ( x )
-                  else EVEN
+                  else EVEN()
             end;
         end;
         
@@ -18,8 +18,8 @@ program main(input, output);
           oddcount := oddcount + 1;
           x := x div 2;
           if odd(x) then ODD ( x )
-          else EVEN
-          ^&*                     // garbage characters on newline
+          else EVEN()
+          ^&                      // garbage characters on newline
     end;
     
     procedure EVEN ( x : integer );
