@@ -112,5 +112,6 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 \n                                DB_PRINTF("\n "); new_position_line();
 [ \t]+                            /* ignore whitespace */;
 [//].*\n                          new_position_line(); /* comment   What is EOF in PAL? */   
-[!@#$%^{}"/]		        DB_PRINTF("Garbage character "); lexerror(yytext);
+[&!@#$%^{}"/]		        DB_PRINTF("Garbage character "); lexerror(yytext);
+.                   DB_PRINTF("Garbage character "); lexerror(yytext);
 %%
