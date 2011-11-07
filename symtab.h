@@ -9,41 +9,104 @@
 #ifndef SYMTAB_H
 #define SYMTAB_H
 
+/*
+ * Basic type class declarations - everything is
+ * just an expansion of these.
+ */
+
+#define TC_INTEGER  0
+#define TC_REAL     1
+#define TC_CHAR     2
+#define TC_BOOLEAN  3
+#define TC_STRING   4
+#define TC_SCALAR   5
+#define TC_ARRAY    6
+#define TC_RECORD   7
+#define TC_SUBRANGE 8
+
+#define OC_CONST    0
+#define OC_VAR      1
+#define OC_FUNC     2
+#define OC_PROC     3
+#define OC_PARM     4
+#define OC_TYPE     5
+
+struct tc_integer {
+  int length;
+};
+
+struct tc_real {
+  int length;
+};
+
+struct tc_char {};
+struct tc_boolean {};
+struct tc_string {};
+struct tc_scalar {};
+struct tc_array {};
+struct tc_record {};
+struct tc_subrange {};
+
+/*
+ * cont field declarations in sym_rec structure
+ */
 struct const_cont {
-  sym_rec* type;
+  struct sym_rec* type;
   double   value;
 };
 
 struct var_cont {
-  sym_rec* type;
+  struct sym_rec* type;
   int      location;
 };
 
 struct func_cont {
-  sym_rec* type;
-  sym_rec* parms;
+  struct sym_rec* type;
+  struct sym_rec* parms;
 };
 
 struct proc_cont {
-  sym_rec* parms;    /* Points to the first parm (then check parm_next for NULL)*/
+  struct sym_rec* parms;    /* Points to the first parm (then check parm_next for NULL) */
 };
 
 struct parm_cont {
-  sym_rec* type;
+  struct sym_rec* type;
   int      location;
-  sym_rec* next_parm;
+  struct sym_rec* next_parm;
 };
 
 struct type_cont {
-  sym_rec* type_description;
+  int    type_class;
+  union {
+    struct tc_integer*  integer;
+    struct tc_real*     real;
+    struct tc_char*     character;
+    struct tc_boolean*  boolean;
+    struct tc_string*   string;
+    struct tc_scalar*   scalar;
+    struct tc_array*    array;
+    struct tc_record*   record;
+    struct tc_subrange* subrange;
+  } type_description;
 };
+
+/*
+ * sym_rec structure declaration
+ */
 
 struct sym_rec {
   char *name;        /* Name of symbol */
+  int  level;        /* Level of symbol */
   int  class;        /* Options: const, type, var, proc, func */
-  union {            /* Depending on which class, a pointer to another struct. */
-    const_cont 
+  union {            /* Another struct, depending on which class */
+    struct const_cont const_attr;
+    struct var_cont   var_attr;
+    struct func_cont  func_attr;
+    struct proc_cont  proc_attr;
+    struct parm_cont  parm_attr;
+    struct type_cont  type_attr;
   } cont;
+  struct sym_rec* next;
 };
 
 #endif
