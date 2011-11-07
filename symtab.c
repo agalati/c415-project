@@ -20,6 +20,26 @@ sym_rec *globallookup()
 {
 }
 
-sym_rec *addsym()
+sym_rec *addconst() {}
+
+sym_rec *addvar()
 {
 }
+
+sym_rec *addfunc()
+{
+}
+
+sym_rec *addproc()
+{
+}
+
+sym_rec *addtype()
+{
+}
+
+/* Not sure if we need this last one */
+sym_rec *addparm()
+{
+}
+

@@ -14,6 +14,10 @@
  * just an expansion of these.
  */
 
+/* The purpose of the following definitions is to allow
+ * one to know which field of the union to use
+ */
+
 #define TC_INTEGER  0
 #define TC_REAL     1
 #define TC_CHAR     2
@@ -32,32 +36,55 @@
 #define OC_TYPE     5
 
 struct tc_integer {
-  int length;
+  int length = 1;
 };
 
 struct tc_real {
+  int length = 1;
+};
+
+struct tc_char {
+  int length = 1;
+};
+
+struct tc_boolean {
+  int length = 1;
+};
+
+struct tc_string {
   int length;
 };
 
-struct tc_char {};
-struct tc_boolean {};
-struct tc_string {};
-struct tc_scalar {};
-struct tc_array {};
-struct tc_record {};
-struct tc_subrange {};
+struct tc_scalar {
+  struct sym_rec* const_list;
+};
+
+struct tc_array {
+  struct type_cont* index_type;
+  struct type_cont* object_type;
+};
+
+struct tc_record {
+  struct sym_rec* field_list;
+};
+
+struct tc_subrange {
+  struct type_cont* mother_type;
+  int               low;
+  int               high;
+};
 
 /*
  * cont field declarations in sym_rec structure
  */
 struct const_cont {
   struct sym_rec* type;
-  double   value;
+  double          value;
 };
 
 struct var_cont {
-  struct sym_rec* type;
-  int      location;
+  struct type_cont* type;
+  int               location;
 };
 
 struct func_cont {
@@ -76,7 +103,7 @@ struct parm_cont {
 };
 
 struct type_cont {
-  int    type_class;
+  int    type_class;        /* eg. TC_INTEGER as declared above */
   union {
     struct tc_integer*  integer;
     struct tc_real*     real;
@@ -97,7 +124,7 @@ struct type_cont {
 struct sym_rec {
   char *name;        /* Name of symbol */
   int  level;        /* Level of symbol */
-  int  class;        /* Options: const, type, var, proc, func */
+  int  class;        /* eg. OC_CONST as declared above */
   union {            /* Another struct, depending on which class */
     struct const_cont const_attr;
     struct var_cont   var_attr;
