@@ -1,4 +1,4 @@
-.TH pal 1 "Oct 7, 2011" "version 0.1" 
+.TH pal 1 "Nov 7, 2011" "version 0.2" 
 .SH NAME
 pal - compiles programs for the PAL language; a subset of Pascal 				
 .SH SYNOPSIS

@@ -208,25 +208,23 @@ term                    : factor
                         ;
 
 factor                  : var                       /* removed simple_type and added it's applicable atoms */
+						| unsigned_const
                         | INT                 
                         | REAL
                         | BOOL
                         | O_BRACKET expr C_BRACKET
                         | func_invok
                         | NOT factor
-                        | STRING              /* added STRING and NSTRING to compensate for unsigned_const */
-                        | NSTRING           /* produce unterminated string warning here */ 
                         ;
 
-                  /* unsigned_const          : unsigned_num   */          
-                  /* | ID                             */
-                  /* | STRING                         */
-                        /* | NSTRING                        */                    
-                                    /* ;                                */
+unsigned_const    : unsigned_num                    
+						| STRING                         
+						| NSTRING   			/* Non-terminated string warning here */                                        
+                         ;                                
 
-                  /* unsigned_num            : INT            */
-                  /* | REAL                           */
-                  /* ;                                */
+unsigned_num     : INT_CONST            
+						| REAL_CONST                           
+						;                                
 
 func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
