@@ -151,9 +151,6 @@ struct sym_rec {
 #define MAX_LEVEL 17
 #define INIT_ITEMS 5
 
-extern int current_level;
-extern struct sym_rec *sym_tab[MAX_LEVEL + 1];
-
 void printsym(void);
 
 void printlevel(void);

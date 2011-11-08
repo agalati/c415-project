@@ -125,7 +125,7 @@ struct sym_rec *locallookup(char* name)
   if ( sym_tab[current_level] != NULL) {
     for (s = sym_tab[current_level]; s != NULL; s = s->next) {
       if ( strncmp(name, s->name, strlen(name)) == 0 )
-	return s;
+	      return s;
     }
   }
   return NULL;
@@ -210,6 +210,10 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
 
+#ifdef DEBUG_SYM
+  printsym();
+#endif
+
   return s;
 }
 
@@ -285,7 +289,7 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
 
   s = malloc(sizeof(struct sym_rec));
   if (s == NULL) {
-    fprintf(stderr, "Error: malloc failed in addvar()\n");
+    fprintf(stderr, "Error: malloc failed in addparm()\n");
     exit(EXIT_FAILURE);
   }
 
