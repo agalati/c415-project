@@ -2,8 +2,13 @@
  * symtab.h
  *
  * What are the different values for const? (see struct const_cont)
- * Should location be a struct { int level; int offset } to denote offset[level] ???
+ * Should location be a struct { int level; int offset } to denote offset[current_level - 1] ???
  *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
  */
 
 #ifndef SYMTAB_H
@@ -52,7 +57,7 @@ struct tc_boolean {
 };
 
 struct tc_string {
-  int length;
+  int high;
 };
 
 struct tc_scalar {
@@ -78,8 +83,12 @@ struct tc_subrange {
  * cont field declarations in sym_rec structure
  */
 struct const_cont {
-  struct sym_rec* type;
-  double          value;
+  struct type_cont* type;
+  union {            /* Another struct, depending on which class */
+    int integer;
+    double real;
+    char* string;
+  } value;
 };
 
 struct var_cont {
@@ -88,7 +97,7 @@ struct var_cont {
 };
 
 struct func_cont {
-  struct sym_rec* type;
+  struct type_cont* return_type;
   struct sym_rec* parms;
 };
 
@@ -97,7 +106,7 @@ struct proc_cont {
 };
 
 struct parm_cont {
-  struct sym_rec* type;
+  struct type_cont* type;
   int      location;
   struct sym_rec* next_parm;
 };
@@ -154,17 +163,17 @@ struct sym_rec *locallookup(char* name);
 
 struct sym_rec *globallookup(char* name);
 
-struct sym_rec *addconst(void);
+struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int integer, double real);
 
 struct sym_rec *addvar(char* name, struct type_cont* type);
 
-struct sym_rec *addfunc(void);
+struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct type_cont* return_type);
 
-struct sym_rec *addproc(void);
+struct sym_rec *addproc(char* name, struct sym_rec* parm_list);
 
-struct sym_rec *addtype(void);
+struct sym_rec *addtype(char* name, struct type_cont* type);
 
 /* Not sure if we need this last one */
-struct sym_rec *addparm(void);
+struct sym_rec *addparm(char* name, struct type_cont* type, struct sym_rec* parm_list);
 
 #endif

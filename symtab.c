@@ -2,6 +2,12 @@
  * sym_tab.c
  *
  * Contains the functions for the symbol table.
+ *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
  */
 
 #include <stdio.h>
@@ -25,11 +31,14 @@ void printsym() {
   int i;
   struct sym_rec *s;
 
-  for (i = 0; i < INIT_ITEMS; i++) {
+  for (i = 0; i < MAX_LEVEL; i++) {
     if ( sym_tab[i] != NULL) {
+      printf("LEVEL %d\n", i - 1);
+      printf("--------\n");
       for (s = sym_tab[i]; s != NULL; s = s->next) {
-        printf("Name: %s | Level: %d | Class: %d\n", s->name, s->level, s->class);
+        printf("Name: %-17s | Level: %d | Class: %d\n", s->name, s->level, s->class);
       }
+      printf("--------\n");
     }
   }
 }
@@ -136,7 +145,42 @@ struct sym_rec *globallookup(char* name)
   return NULL;
 }
 
-struct sym_rec *addconst() {}
+struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int integer, double real)
+{
+  struct sym_rec *s;
+
+  s = malloc(sizeof(struct sym_rec));
+  if (s == NULL) {
+    fprintf(stderr, "Error: malloc failed in addconst()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_CONST;
+  s->cont.const_attr.type = type;
+  
+  switch (type->type_class)
+    {
+    case TC_INTEGER :
+      s->cont.const_attr.value.integer = integer;
+      break;
+    case TC_REAL :
+      s->cont.const_attr.value.real = real;
+      break;
+    case TC_STRING :
+      s->cont.const_attr.value.string = strdup(string);
+      break;
+    default :
+      fprintf(stderr, "Error: constant type failed in addconst()\n");
+      exit(EXIT_FAILURE);
+    }
+
+  s->next = sym_tab[current_level];
+  sym_tab[current_level] = s;
+
+  return s;
+}
 
 struct sym_rec *addvar(char* name, struct type_cont* type)
 {
@@ -155,22 +199,110 @@ struct sym_rec *addvar(char* name, struct type_cont* type)
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
+
+  return s;
 }
 
-struct sym_rec *addfunc()
+struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct type_cont* return_type)
 {
+  struct sym_rec *s;
+
+  s = malloc(sizeof(struct sym_rec));
+  if (s == NULL) {
+    fprintf(stderr, "Error: malloc failed in addfunc()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_FUNC;
+  s->cont.func_attr.parms = parm_list;
+  s->cont.func_attr.return_type = return_type;
+
+  s->next = sym_tab[current_level];
+  sym_tab[current_level] = s;
+
+  return s;
 }
 
-struct sym_rec *addproc()
+struct sym_rec *addproc(char* name, struct sym_rec* parm_list)
 {
+  struct sym_rec *s;
+
+  s = malloc(sizeof(struct sym_rec));
+  if (s == NULL) {
+    fprintf(stderr, "Error: malloc failed in addproc()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_PROC;
+  s->cont.proc_attr.parms = parm_list;
+
+  s->next = sym_tab[current_level];
+  sym_tab[current_level] = s;
+
+  return s;
 }
 
-struct sym_rec *addtype()
+struct sym_rec *addtype(char* name, struct type_cont* type)
 {
+  struct sym_rec *s;
+
+  s = malloc(sizeof(struct sym_rec));
+  if (s == NULL) {
+    fprintf(stderr, "Error: malloc failed in addtype()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_TYPE;
+  s->cont.type_attr = *type;
+
+  s->next = sym_tab[current_level];
+  sym_tab[current_level] = s;
+
+  return s;
 }
 
-/* Not sure if we need this last one */
-struct sym_rec *addparm()
+/* Add parameters to the parameter list and also add the values to the next level */
+struct sym_rec *addparm(char* name, struct type_cont* type, struct sym_rec* parm_list)
 {
-}
+  struct sym_rec *s;
+  struct sym_rec *t;
 
+  s = malloc(sizeof(struct sym_rec));
+  if (s == NULL) {
+    fprintf(stderr, "Error: malloc failed in addvar()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_VAR;
+  s->cont.var_attr.type = type;
+
+  /* Add to next level of symbol table */
+  s->next = sym_tab[current_level + 1];
+  sym_tab[current_level + 1] = s;
+
+  /* Adds a copy to the current parameter list (var_attr.location should be the same) */
+  t = malloc(sizeof(struct sym_rec));
+  if (t == NULL) {
+    fprintf(stderr, "Error: malloc failed in addparm()\n");
+    exit(EXIT_FAILURE);
+  }
+
+  s->name = strdup(name);
+  s->level = current_level - 1;
+  s->class = OC_VAR;
+  s->cont.var_attr.type = type;
+
+  t->next = parm_list;
+  parm_list = t;
+
+  /* Return the parameter list */
+  return t;
+}
