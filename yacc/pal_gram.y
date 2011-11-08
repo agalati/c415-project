@@ -11,6 +11,8 @@
 
 %{
 #define YYDEBUG 1
+
+#include "symtab.h"
 %}
 
  //%expect 1     /* bison knows to expect 1 s/r conflict */
