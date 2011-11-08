@@ -35,6 +35,7 @@ struct error_msgs
 struct error_msgs* err_buf;
 
 int yylex (void);
+void semantic_error(char const*);
 void lexerror(char const*);
 void yyerror (char const *);
 

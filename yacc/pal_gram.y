@@ -20,7 +20,7 @@
 %error-verbose
   /* free discarded tokens */
 //%destructor { printf ("free at %d %s\n",@$.first_line, $$); free($$); } <*>
-%destructor { free($$); } <*>
+//%destructor { free($$); } <*>
 
 %union {
   char* name;
@@ -127,7 +127,6 @@ var_decl_list           : var_decl
 
 var_decl                : ID COLON type
                           { 
-                            printf("Trying to add var %s\n", $1);
                             if(locallookup($1) == NULL)
                             {
                               addvar($1, NULL);
