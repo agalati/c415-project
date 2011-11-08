@@ -149,7 +149,8 @@ struct sym_rec {
 /* Function definitions */
 
 #define MAX_LEVEL 17
-#define INIT_ITEMS 5
+
+int get_current_level(void);
 
 void printsym(void);
 
