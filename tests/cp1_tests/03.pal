@@ -1,0 +1,55 @@
+//Test various commenting styles. Make sure they have the right scope.
+//3 Errors 
+
+
+program  {comment as a token separator} example( input, output );
+
+begin
+
+{ c	o	mme	nts		}
+		// another comment
+
+{{{{{{{{{{{{{{{{{{{{{{{{{this comment is also OK}
+
+//comment to the end of the line
+//comment with another //comment
+
+//{ commented out start comment
+					
+#					//ERROR: this isn't inside a comment
+//} commented out end
+
+{ proper comment }
+
+{
+proper comment
+}
+
+{
+multi-line comment
+//}
+
+
+
+{ nested { comments don't } work }	//ERROR: comments don't nest
+
+{
+proper
+} // proper
+
+					//ERROR, likely from the extra 'work' identifier on line 28
+c := 1;
+
+{ more comments }
+
+d := 1;
+
+{ whatever }  a:= b; { more curly }
+
+{ whatever }  c:= d; //other
+
+{ whatever }  c:= d; { more curly } //other
+
+
+end.
+//trailing comment ended with eof

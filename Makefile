@@ -11,7 +11,7 @@
 #
 
 CC = gcc
-FLAGS =
+FLAGS = -g
 
 all: pal
 
@@ -32,7 +32,6 @@ debug_sym: lex/pal.l yacc/pal_gram.y pal.c symtab.c
 	bison -d yacc/pal_gram.y
 	$(CC) $(FLAGS) symtab.c pal.c lex.yy.c pal_gram.tab.c -o pal -DDEBUG_SYM
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
-
 
 clean:
 	rm -f pal

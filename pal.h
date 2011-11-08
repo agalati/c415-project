@@ -38,6 +38,8 @@ int yylex (void);
 void lexerror(char const*);
 void yyerror (char const *);
 
+int ID_or_reserved(char const*);
+
 // position tracking functions
 void update_position(int distance);
 void new_position_line(void);

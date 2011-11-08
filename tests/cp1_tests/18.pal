@@ -1,0 +1,69 @@
+//handles error within the while condition or statement
+//8 errors on lines 13, 18, 23, 24, 28, 29, ..,..
+
+program err(input, output);
+var x : integer;
+begin
+
+	while x > 0 do
+		x := x-1;
+
+	while(false) do begin end;
+
+	while 1 = do 				//ERROR: invalid expression
+		begin end;
+
+	while(true) do
+	begin
+		x := ; 				//ERROR: invalid expression
+	end
+
+	x := 0;
+
+	while 1 = do  				// ERROR: invalid expression
+		x := ;  			  // ERROR: Missing expr
+
+	x := 0;
+
+	while 1 = do 				 // ERROR: invalid expression
+	begin
+		x := ; 				   // ERROR: Missing expr
+	end
+
+	{nested while loops}
+	while(false) do begin 
+	while(false) do begin 
+	while(false) do begin 
+	end;
+	end;
+	end;
+
+
+	while(false) do begin 
+		if (true) then 
+			while(false) do begin end;
+		else
+			exit;
+	end;
+
+
+	while(false) do begin 
+	exit;					//Error: exit comes just as a matches stat
+	end;
+
+	while(false) do begin 
+	if(true) then 
+	exit; 
+	else ;		
+	end;
+
+	while(false) do begin 
+	continue;				//Error: continue comes just as a matches stat
+	end;
+
+	while(false) do begin 
+	if(true) then 
+	exit; 
+	continue ;		
+	end;
+end.

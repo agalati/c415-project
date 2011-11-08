@@ -1,0 +1,110 @@
+//tests comparisons
+//4 errors at least 
+
+program p(intput, output);
+
+type	str1 = array[1..1] of char;
+		str2 = array[1..2] of char;
+		str3 = array[1..3] of char;
+		str4 = array[1..4] of char;
+		str5 = array[1..5] of char;
+		str6 = array[1..6] of char;
+		str7 = array[1..7] of char;
+
+var a,b : integer;
+	c : boolean;
+		s1 : str1;
+		s2 : str2;
+		s3 : str3;
+		s7 : str7;
+		nl : char;
+		aa : char;
+
+begin
+	a := 1;
+	b := 2;
+
+	c := a = b;
+	c := 1 = 2;
+	c := a = 1;
+	c := 1 = a;
+	
+	c := (a+1) = b;
+	c := (a+1) = 1;
+	c := a = (b+1);
+	c := 1 = (b+1);
+	c := (a+1) = (b+1);
+
+	c := a >< b;		//ERROR , invalid operator
+	c := a <> b;
+	c := a < b;
+	c := a <= b;
+	c := a > b;
+	c := a >= b;
+
+	c := c or c;
+	c := c and c;
+	c := (c or c and c or c or c or c or (c and c) or (c) and (c or c)) or c;
+
+	c := (a < b) or (a > b) or (a = b) or (a >= b) or (a <= b) or (a <> b);
+	c := c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or
+	(c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or
+	(c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or
+	(c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c or (c)
+	)))))))))))))))))))))))))))))))))))))))))))))))));
+
+	c := a < = b; //is this an ERROR?, space in operator, I think not
+
+	c := 1;
+
+	c := a or 'asdf'; // is this a syntactic ERROR?, can't or a string, I think not
+
+	c := 1;
+
+	c := a or b); //ERROR, unmatched closing paranthesis
+
+	c := 1;
+
+	c := (a or b; //ERROR, unmatched opening paranthesis
+
+
+
+
+	s1 := '5';
+	s2 := '45';
+	s7 := '1234567';
+	nl := '\n';
+
+	writeln('s1 =  "5"', (s1 =  '5'));
+	writeln('s1 <  "5"', (s1 <  '5'));
+	writeln('s1 <= "5"', (s1 <= '5'));
+	writeln('s1 >  "5"', (s1 >  '5'));
+	writeln('s1 >= "5"', (s1 >= '5'));
+
+	writeln('s1 =  "3"', (s1 =  '3'));
+	writeln('s1 <  "3"', (s1 <  '3'));
+	writeln('s1 <= "3"', (s1 <= '3'));
+	writeln('s1 >  "3"', (s1 >  '3'));
+	writeln('s1 >= "3"', (s1 >= '3'));
+
+
+	writeln('s2 =  "45"', (s2 =  '45'));
+	writeln('s2 <  "45"', (s2 <  '45'));
+	writeln('s2 <= "45"', (s2 <= '45'));
+	writeln('s2 >  "45"', (s2 >  '45'));
+	writeln('s2 >= "45"', (s2 >= '45'));
+
+	writeln('s2 =  "34"', (s2 =  '34'));
+	writeln('s2 <  "34"', (s2 <  '34'));
+	writeln('s2 <= "34"', (s2 <= '34'));
+	writeln('s2 >  "34"', (s2 >  '34'));
+	writeln('s2 >= "34"', (s2 >= '34'));
+
+	aa := aa > 'asdf'; //syntactically valid, not semantically valid
+
+	i := i + 'asdf'; //is this an ERROR?, can't add identifier and string, , I think not
+
+	i := 'asdf' < while; //ERROR, can't compare string with keyword
+end.
+
+

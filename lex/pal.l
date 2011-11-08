@@ -48,8 +48,8 @@ and                               DB_PRINTF("AND "); return AND;
 array                             DB_PRINTF("ARRAY "); return ARRAY;
 begin                             DB_PRINTF("P_BEGIN "); return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
-true								DB_PRINTF("BOOL - TRUE "); return BOOL;
-false								DB_PRINTF("BOOL - FALSE "); return BOOL;
+true                              DB_PRINTF("BOOL - TRUE "); return BOOL;
+false                             DB_PRINTF("BOOL - FALSE "); return BOOL;
 continue                          DB_PRINTF("CONTINUE "); return CONTINUE;
 div                               DB_PRINTF("DIV "); return DIV;
 do                                DB_PRINTF("DO "); return DO;
@@ -74,27 +74,27 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 (([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
 
 
-\'(\\(n|t|'|\\)|[^\\'])*\'			DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
-\'(\\(n|t|'|\\)|[^\\'])*\n                      {DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */}       
+\'(\\(n|t|'|\\)|[^\\'])*\'        DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
+\'(\\(n|t|'|\\)|[^\\'])*\n        {DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */}       
                                         /* Strings may require some checking later            "'"(.*?)"'"  */
                                         /* Probably have to rip the single quotes off (yyleng) */
 
  /* This next one conflicts with the above VAR so... */
-[A-Za-z][A-Za-z0-9]*       DB_PRINTF("ID(%s) ", yytext); return ID;
+[A-Za-z][A-Za-z0-9]*              return ID_or_reserved(yytext); //DB_PRINTF("ID(%s) ", yytext); return ID;
 [0-9]+                            DB_PRINTF("INT "); return INT;
 
  /* Operators ---------- */
-":="                               DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
-"="                                DB_PRINTF("EQUALS "); return EQUALS;
-"<>"                               DB_PRINTF("NOT_EQUAL "); return NOT_EQUAL;
-"<"                                DB_PRINTF("LESS_THAN "); return LESS_THAN;
-">"                                DB_PRINTF("GREATER_THAN "); return GREATER_THAN;
-"<="                               DB_PRINTF("LESS_EQUAL"); return LESS_EQUAL;
-">="                               DB_PRINTF("GREATER_EQUAL"); return GREATER_EQUAL; 
-"+"                                DB_PRINTF("PLUS "); return PLUS;
-"-"                                DB_PRINTF("MINUS "); return MINUS;
-"*"                                DB_PRINTF("MULTIPLY "); return MULTIPLY;
-"/"                                DB_PRINTF("DIVIDE "); return DIVIDE;
+":="                              DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
+"="                               DB_PRINTF("EQUALS "); return EQUALS;
+"<>"                              DB_PRINTF("NOT_EQUAL "); return NOT_EQUAL;
+"<"                               DB_PRINTF("LESS_THAN "); return LESS_THAN;
+">"                               DB_PRINTF("GREATER_THAN "); return GREATER_THAN;
+"<="                              DB_PRINTF("LESS_EQUAL"); return LESS_EQUAL;
+">="                              DB_PRINTF("GREATER_EQUAL"); return GREATER_EQUAL; 
+"+"                               DB_PRINTF("PLUS "); return PLUS;
+"-"                               DB_PRINTF("MINUS "); return MINUS;
+"*"                               DB_PRINTF("MULTIPLY "); return MULTIPLY;
+"/"                               DB_PRINTF("DIVIDE "); return DIVIDE;
  /* div and mod are under reserved words */
 
  /* Other lexical characters ---------- */
@@ -106,12 +106,12 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 "["                               DB_PRINTF("O_SBRACKET "); return O_SBRACKET;
 "]"                               DB_PRINTF("C_SBRACKET "); return C_SBRACKET;
 ","                               DB_PRINTF("COMMA "); return COMMA;
-".."							  DB_PRINTF("DDOT "); return DDOT;
+".."                              DB_PRINTF("DDOT "); return DDOT;
 
  /* Comments, newlines, garbage ---------- */                               
 \n                                DB_PRINTF("\n "); new_position_line();
 [ \t]+                            /* ignore whitespace */;
-[//].*\n                          new_position_line(); /* comment   What is EOF in PAL? */   
-[&!@#$%^{}"/]		        DB_PRINTF("Garbage character "); lexerror(yytext);
-.                   DB_PRINTF("Garbage character "); lexerror(yytext);
+\/\/.*\n                          new_position_line(); /* comment   What is EOF in PAL? */ 
+[&!@#$%^{}"]                      DB_PRINTF("Garbage character "); lexerror(yytext);
+.                                 DB_PRINTF("Garbage character "); lexerror(yytext);
 %%

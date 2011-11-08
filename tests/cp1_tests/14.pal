@@ -1,0 +1,51 @@
+//test variable declarations
+// 11 errors
+
+program vartest(in, out);
+
+	var
+		x : integer;     
+		y : integer;       
+		x, y, z : integer;
+
+		x, y;							//ERROR
+		x, y, z : integer;
+		x, y, z : integer					//ERROR
+		x, y, z : integer;
+		x, y, z, : integer;					//ERROR
+		x, y, z : integer;
+
+		xz : integer;			//it is OK
+		x, y, z : int;						//ERROR	
+		x, y, z : integer;
+		x : array[char] of integer;
+
+
+		x, y z : integer; 				//ERROR: syntax, missing comma
+
+		x : integer; //valid
+
+		x integer; 					//ERROR: syntax, missing ':'
+
+		x : integer; //valid
+
+		x : : integer;					 //ERROR: syntax, two ':'s
+
+		x : integer; //valid
+
+		x = integer;					 //ERROR: syntax, = instead of :
+
+		x : integer; //valid
+
+		x := integer; 					//ERROR: syntax, := instead of :
+
+		x : integer; //valid
+
+		1 integer; 					//ERROR: syntax, int instead of id
+
+		x : integer; //valid
+
+		x : function; 				//ERROR, function is a keyword, not type
+
+begin
+end.

@@ -1,0 +1,76 @@
+//tests deep nested functions and function paramaters
+//2 errors on lines 71, 73
+
+program p(intput, output);
+
+type scalar = (big, small);
+
+var a,b,c,d : scalar;
+	e : integer;
+	f : real;
+	g : boolean;
+
+procedure q1(var b: integer);
+		procedure q2(var b: integer);
+				procedure q3(var b: integer);
+						procedure q4(var b: integer);
+								procedure q5(var b: integer);
+										procedure q6(var b: integer);
+												procedure q7(var b: integer);
+														procedure q8(var b: integer);
+														begin
+																b := b + 1;
+														end;
+												begin
+														q8(b);
+												end;
+										begin
+												q7(b);
+										end;
+								begin
+										q6(b);
+								end;
+						begin
+								q5(b);
+						end;
+				begin
+						q4(b);
+				end;
+		begin
+				q3(b);
+		end;
+begin
+		q2(b);
+end;
+
+
+begin
+
+	q1(1);
+	q2(1);
+	q3(1);
+	q4(1);
+	q5(1);
+	q6(1);
+	q7(1);
+	q8(1);
+
+	test();
+	test(true);
+	test(1);
+	test('a');
+	test('asdf');
+	test(1,1);
+	test(1,false);
+	test(1, 1+2);
+	test(a+b);
+	test(a+b, a-b);
+	test(g or g, g and g, (g or g) and (g and not g), a = b);
+	test(a,b,c,d,e,f,g);
+
+	test(a;b); //Error, invalid use of semicolon
+
+	test2(a := b); //Error, invalid assignment
+end.
+
+

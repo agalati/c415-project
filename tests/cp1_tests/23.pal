@@ -1,0 +1,420 @@
+// 3 errors : syntax errors in lines 374, 387, 400
+{
+// by ...
+
+this is the general error file.  It is designed to test almost all of the 
+grammer. first, without errors and then a few select cases with errors.
+all of the errors in this file, are at the bottom.  there are no errors 
+with any of the type definitions or const's or vars.
+
+
+
+error 1 - line 
+// This error is designed to test the simple expression and 
+// term rules to make certain that something isn't funny.
+//
+// the expected behavior is for the compiler to error on or
+// and quickly catch it.
+
+error 2 - line
+// This error is designed to test the and in term in combination
+// with other stuff
+//
+// the expected behavior is for the compiler to error on the 
+// and because at the point it should be expecting a factor 
+// and 'and' is not a factor.
+
+error 3 - line
+// this error is designed to cause and error in the factor statment, 
+// because as soon as it sees not, it looks for an unsigend const  
+// doesn't find it.
+//
+// the error should be on the - from the 47, and it should recover 
+// after this line is done.
+
+
+}
+
+
+
+program testProj (input, output);
+
+
+const
+  testConst = 1234;
+  nottrue  = FALSE;
+  bigint   = 3276 * 10 + 7; 
+  smallint = -bigint;  
+  pi       = 3.14167;
+  arraySize = 20;
+
+
+type
+   daysofweek = (Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday);
+   int        = integer;  // This will let us pretend we're writing C!
+   float      = real;
+   truthtable = array[smallint..bigint] of boolean;
+   month      = array[1..5] of daysofweek;
+//   year       = array[(January, Febuary, March, April, May, June, July, August, September, October, November, December)] of month;
+      // Some seminormal types:
+      inttype = integer;     // INT TYPE
+      realtype = real;   // REAL TYPE
+      booltype = boolean;   // BOOL TYPE
+      chartype = char;   // CHAR TYPE
+      newIntType = inttype;  // ID TYPE
+      singleEnum = ( fortytwo ); // Single-member enum.
+      // May trigger warning.  ENCAPSULATED_ID TYPE
+
+      // We now test some mangled names:
+      in2tty2SASDpe = integer;     // INT TYPE
+      re3alFA3SAtype = real;   // REAL TYPE
+      boo8ASASDASlD7t6ype = boolean;   // BOOL TYPE
+      cASDh4a5rtyFSpe2234 = char;   // CHAR TYPE
+      ne2w2ASDI34Ant556Typ23e4 = inttype;  // ID TYPE
+      siasdnADFf3325465gleEnum234 = ( forty242two ); // Single-member enum.
+      // May trigger warning.  ENCAPSULATED_ID TYPE
+
+      // Now, we define a real enumerated type:
+      terribleSecretOfSpaceType = (PAK, CHOOIE, UNF);
+
+      // We will also try a more aggressive enumerated type:
+
+      // Array type:
+      simpleArray  = array[char] of inttype;
+      simpleArray2   = array[0..1] of realtype;
+      simpleArray5   = array[terribleSecretOfSpaceType] of boolean;
+      simpleArra42y = array[boolean] of terribleSecretOfSpaceType;
+
+      complexArray = array[0..5] of newIntType;
+      complexArray2 = array[-5..100] of boolean;
+        complexArray3 = array[0..(5*arraySize)] of terribleSecretOfSpaceType;
+
+      StringType = array[0..1024] of char;
+
+
+      // Records
+      stupidRec = record
+        meh: boolean
+      end;
+
+
+      ipRec = record
+          A : integer;
+          B : integer;
+          C : integer;
+          D : integer
+      end;
+
+      IpTable = record
+      school : ipRec;
+      home   : ipRec;
+      laptop : ipRec
+      end;
+
+      phoneArray = array[1..7] of integer;
+        phoneBook = array[1..3] of phoneArray;
+
+      ipArray = array[0..10] of ipRec;
+
+      phoneList = record
+                home : phoneArray;
+                cell : phoneArray;
+                work : phoneArray
+              end;
+
+
+      shredderRec = record
+       weight : real;
+        temp : integer;
+       working : boolean;
+       name : StringType;  // Use an array in a Record!  w00t!
+       history : array[0..100] of record
+         date  : record
+      day : integer;
+      month : integer;
+      year  : integer
+      end;
+      temp : integer;
+      pagesShred : integer
+       end
+    end;
+
+
+var
+  a : integer;
+  b : integer;
+  a2 : integer;
+  b2 : integer;
+	ar : real;
+  br : real;
+//  event :  string[50];
+  myIP    : ipRec;
+  myNum   : phoneArray;
+  n     : integer;
+  myTable : IpTable;
+  myBook  : phoneBook;
+  myarr   : ipArray;
+  mylist  : phoneList;
+  test : integer;
+  test2 : integer;
+  realtest1 : real;
+  realtest2 : real;
+  index : integer;
+  sum : integer;
+
+
+
+// look !  some procedure function stuff.
+procedure testProcWithManyArgs ( var int1 : integer;
+        var int2 : integer;
+        var real1 : real;
+        var real2 : real;
+        int3 : integer;
+        real3 : real );
+const
+  sureConst = 6;
+
+type
+  blah = integer;
+
+var
+  temp : char;
+
+begin
+  int1 := int3;
+  int2 := int3;
+  real1 := real3;
+  real2 := real3;
+end;
+
+
+procedure blahsure (); 
+begin
+  test := 1;
+end;
+
+
+
+function woohoo ():integer;  
+begin
+  woohoo := 2;
+end;
+
+
+
+procedure testProcWithManyArgs2 ( int1 : integer;
+                                int2 : integer;
+                                 real1 : real;
+                                 real2 :real;
+        char1 : char;
+                                 char2 : char);
+begin
+  int1 := int2 + 123;
+  real1 := real1 + real2;
+  char1 := char2;
+end;
+
+function coolFunction( a : integer;
+      b : integer): integer;
+begin
+  coolFunction := a + b;
+end;
+
+
+
+
+begin
+
+// detailed test of math grammer stuff.
+// this should work just fine.
+  a := 12;
+  b := 13;
+  a2 := a;
+  b2 := b;
+  b2 := 123 + 5;
+  a := 122412;
+  b := -13;
+  b2 := b;
+  a := -14;
+  b2 := +4;
+  a2 := b - a;
+  b2 := a + b;
+  write(a, b);
+  a := testConst;
+  b := (testConst + 5) - 9;
+  b := 3 * 4;
+  a := 4 mod 3;
+  b := 54 div 2;
+  a := a;
+  a := -a;
+  a := +a;
+  a := -a + a;
+  a := a + (-a);
+
+// this next section is made to test some real stuff
+  br:= 1.2;
+  ar :=3.2;
+  br:=1.2E3;
+  br := 1.2E+2;
+  br := 1.2E-3;
+  br := 12.34521E-123142;
+  br := ar + 4.2;
+  br := ar - 32.123;
+  br := ar / 31.41;
+  br := ar * 3.1;
+  br := 312.321 - ar;
+
+// tests structure stuff
+  myNum := phoneArray[4,3,6,4,1,1,7];
+  n := myIP.A;
+  n := myIP.B;
+  n := myIP.C;
+  n := myIP.D;
+
+  n := myNum[4];
+  n := myNum[3];
+  n := myNum[6];
+  n := myNum[4];
+  n := myNum[1];
+  n := myNum[1];
+  n := myNum[7];
+
+
+  myBook := phoneBook[phoneArray[4,3,6,4,1,1,7], phoneArray[9,0,3,9,5,3,3], phoneArray[4,5,9,4,2,7,3]];
+
+  n := myTable.home.A;
+  n := myBook[1,7];
+
+  n := myarr[4].B;
+  n := mylist.home[2];
+
+
+// some procedure & function calls
+  testProcWithManyArgs2 ( 1, 2, 1.3, 42.5, 'a', 'B' );
+  testProcWithManyArgs(test, test2, realtest1, realtest2, 6, 1);
+  begin
+    begin
+      test := coolFunction(1, 2);
+    end;
+  end;
+
+
+// a whole bunch of crazzy structure stuff 
+// this should all pass
+  index := 0;
+  sum := 0;
+
+  if (sum <= index) then
+    begin
+    while (index < 23) do
+      begin
+        sum := sum + index;
+        index := index + 1;
+      end
+    end;
+
+  if sum > 5 then
+    begin
+    index := sum;
+    end
+  else //big else
+    begin
+    if sum >= 5 then
+      begin
+      index := sum
+      end
+    else //small else
+      begin
+      if (sum <> 5) or (sum = 3) then
+        begin
+  if (not(index > 2300)) and (sum > 45678) then
+          begin
+          index := sum
+          end;
+        end;
+      end; //small else
+    end; // end big else
+
+
+  index := 0;
+
+  while index < 23 do
+    begin
+      if index = 12 then
+        begin
+        continue;
+        end;
+      index := index + 1;
+      if index = 13 then
+        begin
+        exit;
+        end;
+    end;
+
+  index := 0;
+  while index < 23 do
+    begin
+    continue;
+    exit;
+    end;
+
+
+
+
+
+{*************************************************************
+
+this is where the error section starts.  after this point, there 
+should be errors reporting.  Everything before this point should
+compleatly error free.
+
+************************************************************}
+
+
+z:=true and or true;
+
+// This error is designed to test the simple expression and 
+// term rules to make certain that something isn't funny.
+//
+// the expected behavior is for the compiler to error on or
+// and quickly catch it.
+
+
+// this statment is used to stabilize the compiler to recover
+z:=not (not a < 7);
+
+
+z := not (and true);
+
+// This error is designed to test the and in term in combination
+// with other stuff
+//
+// the expected behavior is for the compiler to error on the 
+// and because at the point it should be expecting a factor 
+// and 'and' is not a factor.
+
+// this statment is meant to stablize again.
+hi := there;
+
+
+wickedcool := not -47 or 7;
+
+// this error is designed to cause and error in the factor statment, 
+// because as soon as it sees not, it looks for an unsigend const  
+// doesn't find it.
+//
+// the error should be on the - from the 47, and it should recover 
+// after this line is done.
+
+
+// woo hoo another line to make certian the compiler revovers
+a := 5+5;
+
+
+
+end.
+
+
+
+
+
