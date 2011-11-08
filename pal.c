@@ -24,6 +24,7 @@ main (  int     argc,
 {
   err_buf = NULL;
   parse_args(argc, argv);
+  sym_tab_init();
   int ret =  yyparse ();
   new_position_line();
   fclose(stdin);
