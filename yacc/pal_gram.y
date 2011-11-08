@@ -131,7 +131,7 @@ var_decl                : ID COLON type
                             if(locallookup($1) == NULL)
                             {
                               addvar($1, NULL);
-                              $$ = $3;
+                              //$$ = $3;
                             }
                             printsym();
                           }
