@@ -151,7 +151,7 @@ struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int i
 
   s = malloc(sizeof(struct sym_rec));
   if (s == NULL) {
-    fprintf(stderr, "Error: malloc failed in addvar()\n");
+    fprintf(stderr, "Error: malloc failed in addconst()\n");
     exit(EXIT_FAILURE);
   }
 
@@ -252,7 +252,7 @@ struct sym_rec *addtype(char* name, struct type_cont* type)
 
   s = malloc(sizeof(struct sym_rec));
   if (s == NULL) {
-    fprintf(stderr, "Error: malloc failed in addvar()\n");
+    fprintf(stderr, "Error: malloc failed in addtype()\n");
     exit(EXIT_FAILURE);
   }
 
@@ -291,7 +291,7 @@ struct sym_rec *addparm(char* name, struct type_cont* type, struct sym_rec* parm
   /* Adds a copy to the current parameter list (var_attr.location should be the same) */
   t = malloc(sizeof(struct sym_rec));
   if (t == NULL) {
-    fprintf(stderr, "Error: malloc failed in addvar()\n");
+    fprintf(stderr, "Error: malloc failed in addparm()\n");
     exit(EXIT_FAILURE);
   }
 
