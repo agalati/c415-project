@@ -36,19 +36,19 @@
 #define OC_TYPE     5
 
 struct tc_integer {
-  int length = 1;
+  int length;
 };
 
 struct tc_real {
-  int length = 1;
+  int length;
 };
 
 struct tc_char {
-  int length = 1;
+  int length;
 };
 
 struct tc_boolean {
-  int length = 1;
+  int length;
 };
 
 struct tc_string {
@@ -135,5 +135,36 @@ struct sym_rec {
   } cont;
   struct sym_rec* next;
 };
+
+/* Function definitions */
+
+#define MAX_LEVEL 17
+#define INIT_ITEMS 5
+
+extern int current_level;
+extern struct sym_rec *sym_tab[MAX_LEVEL + 1];
+
+void proof(void);
+
+void pushlevel(void);
+
+void poplevel(void);
+
+struct sym_rec *locallookup(char* name);
+
+struct sym_rec *globallookup(char* name);
+
+struct sym_rec *addconst(void);
+
+struct sym_rec *addvar(char* name, struct type_cont* type);
+
+struct sym_rec *addfunc(void);
+
+struct sym_rec *addproc(void);
+
+struct sym_rec *addtype(void);
+
+/* Not sure if we need this last one */
+struct sym_rec *addparm(void);
 
 #endif
