@@ -12,6 +12,7 @@
 %{
 #define YYDEBUG 1
 
+#include "semantics.h"
 #include "symtab.h"
 %}
 
@@ -24,6 +25,7 @@
 
 %union {
   char* name;
+  struct sym_rec* symrec;
   }
 
 /* New tokens */
@@ -128,16 +130,8 @@ var_decl_list           : var_decl
                         | error S_COLON var_decl { yyerrok; yyclearin; }
                         ;
 
-var_decl                : ID COLON type
-                          { 
-                            if(locallookup($1) == NULL)
-                            {
-                              addvar($1, NULL);
-                              //$$ = $3;
-                            }
-                            printsym();
-                          }
-                        | ID COMMA var_decl
+var_decl                : ID COLON type     { declare_variable($1); /* $$ = $3; */}
+                        | ID COMMA var_decl { declare_variable($1); /* $$ = $3; */}
                         ;
 
 proc_decl_part          : proc_decl_list
