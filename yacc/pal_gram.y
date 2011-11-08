@@ -19,20 +19,27 @@
 %locations
 %error-verbose
   /* free discarded tokens */
-%destructor { printf ("free at %d %s\n",@$.first_line, $$); free($$); } <*>
+//%destructor { printf ("free at %d %s\n",@$.first_line, $$); free($$); } <*>
+//%destructor { free($$); } <*>
+
+%union {
+  char* name;
+  }
 
 /* New tokens */
-%token  ASSIGNMENT EQUALS NOT_EQUAL LESS_THAN
-%token  GREATER_THAN LESS_EQUAL GREATER_EQUAL
-%token  PLUS MINUS MULTIPLY DIVIDE O_BRACKET C_BRACKET
-%token  PERIOD S_COLON COLON O_SBRACKET C_SBRACKET
-%token  COMMA START_COM END_COM NSTRING DDOT
+%token        ASSIGNMENT EQUALS NOT_EQUAL LESS_THAN
+%token        GREATER_THAN LESS_EQUAL GREATER_EQUAL
+%token        PLUS MINUS MULTIPLY DIVIDE O_BRACKET C_BRACKET
+%token        PERIOD S_COLON COLON O_SBRACKET C_SBRACKET
+%token        COMMA START_COM END_COM NSTRING DDOT
 
 /* Original tokens */
-%token  AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
-%token  DO ELSE END EXIT FUNCTION ID IF INT MOD
-%token  NOT OF OR PROCEDURE PROGRAM REAL RECORD
-%token  STRING THEN TYPE VAR WHILE INT_CONST REAL_CONST
+%token        AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
+%token        DO ELSE END EXIT
+%token <name> ID FUNCTION PROCEDURE 
+%token        IF INT MOD
+%token        NOT OF OR PROGRAM REAL RECORD
+%token        STRING THEN TYPE VAR WHILE INT_CONST REAL_CONST
 
 %% /* Start of grammer */
 
@@ -122,6 +129,14 @@ var_decl_list           : var_decl
                         ;
 
 var_decl                : ID COLON type
+                          { 
+                            if(locallookup($1) == NULL)
+                            {
+                              addvar($1, NULL);
+                              //$$ = $3;
+                            }
+                            printsym();
+                          }
                         | ID COMMA var_decl
                         ;
 
@@ -215,25 +230,23 @@ term                    : factor
                         ;
 
 factor                  : var                       /* removed simple_type and added it's applicable atoms */
+						            | unsigned_const
                         | INT                 
                         | REAL
                         | BOOL
                         | O_BRACKET expr C_BRACKET
                         | func_invok
                         | NOT factor
-                        | STRING              /* added STRING and NSTRING to compensate for unsigned_const */
-                        | NSTRING           /* produce unterminated string warning here */ 
                         ;
 
-                  /* unsigned_const          : unsigned_num   */          
-                  /* | ID                             */
-                  /* | STRING                         */
-                        /* | NSTRING                        */                    
-                                    /* ;                                */
+unsigned_const          : unsigned_num                    
+						            | STRING                         
+						            | NSTRING   			/* Non-terminated string warning here */                                        
+                        ;                                
 
-                  /* unsigned_num            : INT            */
-                  /* | REAL                           */
-                  /* ;                                */
+unsigned_num            : INT_CONST            
+						            | REAL_CONST                           
+						            ;                                
 
 func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET

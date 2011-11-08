@@ -2,8 +2,13 @@
  * symtab.h
  *
  * What are the different values for const? (see struct const_cont)
- * Should location be a struct { int level; int offset } to denote offset[level] ???
+ * Should location be a struct { int level; int offset } to denote offset[current_level - 1] ???
  *
+ * Authors
+ *   - Matthew Low
+ *   - Anthony Galati
+ *   - Mike Bujold
+ *   - Stevan Clement
  */
 
 #ifndef SYMTAB_H
@@ -52,7 +57,7 @@ struct tc_boolean {
 };
 
 struct tc_string {
-  int length;
+  int high;
 };
 
 struct tc_scalar {
@@ -60,8 +65,8 @@ struct tc_scalar {
 };
 
 struct tc_array {
-  struct type_cont* index_type;
-  struct type_cont* object_type;
+  struct sym_rec* index_type;
+  struct sym_rec* object_type;
 };
 
 struct tc_record {
@@ -69,7 +74,7 @@ struct tc_record {
 };
 
 struct tc_subrange {
-  struct type_cont* mother_type;
+  struct sym_rec*   mother_type;
   int               low;
   int               high;
 };
@@ -79,16 +84,21 @@ struct tc_subrange {
  */
 struct const_cont {
   struct sym_rec* type;
-  double          value;
+//  
+//  union {            /* Another struct, depending on which class */
+//    int integer;
+//    double real;
+//    char* string;
+//  } value;
 };
 
 struct var_cont {
-  struct type_cont* type;
+  struct sym_rec*   type;
   int               location;
 };
 
 struct func_cont {
-  struct sym_rec* type;
+  struct sym_rec* return_type;
   struct sym_rec* parms;
 };
 
@@ -139,12 +149,12 @@ struct sym_rec {
 /* Function definitions */
 
 #define MAX_LEVEL 17
-#define INIT_ITEMS 5
 
-extern int current_level;
-extern struct sym_rec *sym_tab[MAX_LEVEL + 1];
+int get_current_level(void);
 
-void proof(void);
+void printsym(void);
+
+void printlevel(void);
 
 void pushlevel(void);
 
@@ -154,17 +164,17 @@ struct sym_rec *locallookup(char* name);
 
 struct sym_rec *globallookup(char* name);
 
-struct sym_rec *addconst(void);
+struct sym_rec *addconst(char* name, struct sym_rec* type);
 
-struct sym_rec *addvar(char* name, struct type_cont* type);
+struct sym_rec *addvar(char* name, struct sym_rec* type);
 
-struct sym_rec *addfunc(void);
+struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* return_type);
 
-struct sym_rec *addproc(void);
+struct sym_rec *addproc(char* name, struct sym_rec* parm_list);
 
-struct sym_rec *addtype(void);
+struct sym_rec *addtype(char* name, struct type_cont* type);
 
 /* Not sure if we need this last one */
-struct sym_rec *addparm(void);
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list);
 
 #endif

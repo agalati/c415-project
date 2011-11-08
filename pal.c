@@ -24,7 +24,6 @@ main (  int     argc,
 {
   err_buf = NULL;
   parse_args(argc, argv);
-  sym_tab_init();
   int ret =  yyparse ();
   new_position_line();
   fclose(stdin);
@@ -32,6 +31,13 @@ main (  int     argc,
   if (do_listing)
     fclose(lst_file);
   return ret;
+}
+
+void semantic_error(char const* errmsg)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s\n", linebuf);
+  free(linebuf);
 }
 
 void
