@@ -44,6 +44,13 @@ void printsym() {
 }
 
 /*****************************************
+ * Print current level - use it to debug
+ */
+void printlevel() {
+  printf("Current level = %d\n", current_level - 1);
+}
+
+/*****************************************
  * Symbol table initialization - sets up level -1
  */
 void sym_tab_init()
@@ -145,7 +152,7 @@ struct sym_rec *globallookup(char* name)
   return NULL;
 }
 
-struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int integer, double real)
+struct sym_rec *addconst(char* name, struct sym_rec* type)
 {
   struct sym_rec *s;
 
@@ -159,7 +166,9 @@ struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int i
   s->level = current_level - 1;
   s->class = OC_CONST;
   s->cont.const_attr.type = type;
-  
+
+  /* Constants currently don't have a value */
+  /*
   switch (type->type_class)
     {
     case TC_INTEGER :
@@ -175,14 +184,15 @@ struct sym_rec *addconst(char* name, struct type_cont* type, char* string, int i
       fprintf(stderr, "Error: constant type failed in addconst()\n");
       exit(EXIT_FAILURE);
     }
-
+  */
+  
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
 
   return s;
 }
 
-struct sym_rec *addvar(char* name, struct type_cont* type)
+struct sym_rec *addvar(char* name, struct sym_rec* type)
 {
   struct sym_rec *s;
 
@@ -203,7 +213,7 @@ struct sym_rec *addvar(char* name, struct type_cont* type)
   return s;
 }
 
-struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct type_cont* return_type)
+struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* return_type)
 {
   struct sym_rec *s;
 
@@ -267,8 +277,8 @@ struct sym_rec *addtype(char* name, struct type_cont* type)
   return s;
 }
 
-/* Add parameters to the parameter list and also add the values to the next level */
-struct sym_rec *addparm(char* name, struct type_cont* type, struct sym_rec* parm_list)
+/* Add parameters to the parameter list and also add the variable to the next level */
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list)
 {
   struct sym_rec *s;
   struct sym_rec *t;
@@ -295,10 +305,10 @@ struct sym_rec *addparm(char* name, struct type_cont* type, struct sym_rec* parm
     exit(EXIT_FAILURE);
   }
 
-  s->name = strdup(name);
-  s->level = current_level - 1;
-  s->class = OC_VAR;
-  s->cont.var_attr.type = type;
+  t->name = strdup(name);
+  t->level = current_level - 1;
+  t->class = OC_VAR;
+  t->cont.var_attr.type = type;
 
   t->next = parm_list;
   parm_list = t;
