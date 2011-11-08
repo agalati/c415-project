@@ -21,18 +21,24 @@
   /* free discarded tokens */
 %destructor { printf ("free at %d %s\n",@$.first_line, $$); free($$); } <*>
 
+%union {
+  char* name;
+  }
+
 /* New tokens */
-%token  ASSIGNMENT EQUALS NOT_EQUAL LESS_THAN
-%token  GREATER_THAN LESS_EQUAL GREATER_EQUAL
-%token  PLUS MINUS MULTIPLY DIVIDE O_BRACKET C_BRACKET
-%token  PERIOD S_COLON COLON O_SBRACKET C_SBRACKET
-%token  COMMA START_COM END_COM NSTRING DDOT
+%token        ASSIGNMENT EQUALS NOT_EQUAL LESS_THAN
+%token        GREATER_THAN LESS_EQUAL GREATER_EQUAL
+%token        PLUS MINUS MULTIPLY DIVIDE O_BRACKET C_BRACKET
+%token        PERIOD S_COLON COLON O_SBRACKET C_SBRACKET
+%token        COMMA START_COM END_COM NSTRING DDOT
 
 /* Original tokens */
-%token  AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
-%token  DO ELSE END EXIT FUNCTION ID IF INT MOD
-%token  NOT OF OR PROCEDURE PROGRAM REAL RECORD
-%token  STRING THEN TYPE VAR WHILE INT_CONST REAL_CONST
+%token        AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
+%token        DO ELSE END EXIT
+%token <name> ID FUNCTION PROCEDURE 
+%token        IF INT MOD
+%token        NOT OF OR PROGRAM REAL RECORD
+%token        STRING THEN TYPE VAR WHILE INT_CONST REAL_CONST
 
 %% /* Start of grammer */
 
@@ -208,7 +214,7 @@ term                    : factor
                         ;
 
 factor                  : var                       /* removed simple_type and added it's applicable atoms */
-						| unsigned_const
+						            | unsigned_const
                         | INT                 
                         | REAL
                         | BOOL
@@ -217,14 +223,14 @@ factor                  : var                       /* removed simple_type and a
                         | NOT factor
                         ;
 
-unsigned_const    : unsigned_num                    
-						| STRING                         
-						| NSTRING   			/* Non-terminated string warning here */                                        
-                         ;                                
+unsigned_const          : unsigned_num                    
+						            | STRING                         
+						            | NSTRING   			/* Non-terminated string warning here */                                        
+                        ;                                
 
-unsigned_num     : INT_CONST            
-						| REAL_CONST                           
-						;                                
+unsigned_num            : INT_CONST            
+						            | REAL_CONST                           
+						            ;                                
 
 func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
