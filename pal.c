@@ -37,8 +37,16 @@ main (  int     argc,
 void semantic_error(char const* errmsg)
 {
   char* linebuf = get_prog_line(yylloc.first_line);
-  fprintf(stderr, "%s\n", linebuf);
+  fprintf(stderr, "%s", linebuf);
   free(linebuf);
+
+  fprintf(stderr, "Semantic error on line %d: %s\n\n", yylloc.first_line, errmsg);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##semantic:%d: %s\n", yylloc.first_line, errmsg);
+    add_err_to_buf(err);
+  }
 }
 
 void
