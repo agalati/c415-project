@@ -23,6 +23,53 @@ int current_level = 1;
 /* The symbol table : levels -1 through 15 are available and map to [n+1] */
 struct sym_rec *sym_tab[MAX_LEVEL + 1];
 
+/* Yes, I am actually doing the following */
+/* Base level structures */
+
+struct tc_integer   base_integer;
+struct tc_real      base_real;
+struct tc_char      base_character;
+struct tc_boolean   base_boolean;
+//  struct tc_string    string;
+//  struct tc_scalar    scalar;
+//  struct tc_array     array;
+//  struct tc_record    record;
+//  struct tc_subrange  subrange;
+
+#define INIT_ITEMS 24
+
+struct sym_rec init_items[] = {
+  /* Predefined Types */
+  [0] = { .name = "integer", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_INTEGER, .cont.type_attr.type_description.integer = &base_integer },
+  [1] = { .name = "char", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_CHAR, .cont.type_attr.type_description.character = &base_character },
+  [2] = { .name = "boolean", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_BOOLEAN, .cont.type_attr.type_description.boolean = &base_boolean },
+  [3] = { .name = "real", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_REAL, .cont.type_attr.type_description.real = &base_real },
+
+  /* Predefined Constants */
+  [4] = { .name = "true", .level = -1, .class = OC_CONST, .cont.const_attr.type = NULL },
+  [5] = { .name = "false", .level = -1, .class = OC_CONST, .cont.const_attr.type = NULL },
+  [6] = { .name = "maxint", .level = -1, .class = OC_CONST, .cont.const_attr.type = NULL },
+  
+  /* Predefined Procedures */
+  [7] = { .name = "writeln", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [8] = { .name = "write", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [9] = { .name = "readln", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [10] = { .name = "read", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [11] = { .name = "ord", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [12] = { .name = "chr", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [13] = { .name = "trunc", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [14] = { .name = "round", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [15] = { .name = "succ", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [16] = { .name = "pred", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [17] = { .name = "odd", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [18] = { .name = "abs", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [19] = { .name = "sqr", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [20] = { .name = "sqrt", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [21] = { .name = "sin", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [22] = { .name = "exp", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+  [23] = { .name = "ln", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL },
+};
+
 /*****************************************
  * Print symbol table - use it to debug
  */
@@ -50,6 +97,11 @@ void printlevel() {
   printf("Current level = %d\n", current_level - 1);
 }
 
+int get_current_level()
+{
+  return current_level - 1;
+}
+
 /*****************************************
  * Symbol table initialization - sets up level -1
  */
@@ -60,29 +112,6 @@ void sym_tab_init()
   for (i = 0; i < MAX_LEVEL; i++) {
     sym_tab[i] = NULL;
   }
-
-  /* Base level structures */
-
-  struct tc_integer   base_integer;
-  struct tc_real      base_real;
-  struct tc_char      base_character;
-  struct tc_boolean   base_boolean;
-  //  struct tc_string    string;
-  //  struct tc_scalar    scalar;
-  //  struct tc_array     array;
-  //  struct tc_record    record;
-  //  struct tc_subrange  subrange;
-
-  struct sym_rec init_items[] = {
-    /* Predefined Types */
-    [0] = { .name = "integer", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_INTEGER, .cont.type_attr.type_description.integer = &base_integer },
-    [1] = { .name = "char", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_CHAR, .cont.type_attr.type_description.character = &base_character },
-    [2] = { .name = "boolean", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_BOOLEAN, .cont.type_attr.type_description.boolean = &base_boolean },
-    [3] = { .name = "real", .level = -1, .class = OC_TYPE, .cont.type_attr.type_class = TC_REAL, .cont.type_attr.type_description.real = &base_real },
-
-    /* Predefined Procedures */
-    [4] = { .name = "writeln", .level = -1, .class = OC_PROC, .cont.proc_attr.parms = NULL }
-  };
 
   /* Fill table with initial items */
   for (sym_tab[0] = &init_items[0], i = 1; i < INIT_ITEMS; i++) {
