@@ -132,7 +132,7 @@ simple_type             : scalar_type
                                   if ($$->class != OC_TYPE)
                                   {
                                     char error[1024];
-                                    sprintf(error, "'%s' is not a type.");
+                                    sprintf(error, "'%s' is not a type.", $1);
                                     semantic_error(error);
                                   }
                               }
@@ -382,7 +382,14 @@ proc_decl               : proc_heading decls compound_stat S_COLON
                         ;
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
+                          {
+                            addproc($2, parm_list);
+                          }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
+                          {
+                            struct sym_rec* ret = globallookup($5);
+                            addfunc($2, parm_list, 
+                          }
                         ;
 
 f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
