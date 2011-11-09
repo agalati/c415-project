@@ -1,11 +1,19 @@
 program test(in, out);
 type
+  ar = array [1..20] of boolean;
   a = record
         b : integer;
         c : integer
       end;
   d = record
-        d : integer
+        d : integer;
+        d : ar
       end;
+  d = record
+        d : integer;
+        e : ar;
+        f : boolean
+      end;
+  b = array [1..30] of a;
 begin
 end.

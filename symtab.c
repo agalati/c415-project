@@ -335,14 +335,26 @@ struct sym_rec *addtype(char* name, struct type_desc* type)
     exit(EXIT_FAILURE);
   }
 
-  s->name = strdup(name);
-  s->level = current_level - 1;
-  s->class = OC_TYPE;
-  s->desc.type_attr.type_class = type->type_class;
-  s->desc.type_attr.type_description = type->type_description;
+  if (type != NULL)
+  {
+    s->name = strdup(name);
+    s->level = current_level - 1;
+    s->class = OC_TYPE;
+    s->desc.type_attr.type_class = type->type_class;
+    s->desc.type_attr.type_description = type->type_description;
 
-  s->next = sym_tab[current_level];
-  sym_tab[current_level] = s;
+    s->next = sym_tab[current_level];
+    sym_tab[current_level] = s;
+  }
+  else
+  {
+    s->name = strdup(name);
+    s->level = current_level - 1;
+    s->class = OC_ERROR;
+
+    s->next = sym_tab[current_level];
+    sym_tab[current_level] = s;
+  }
 
   return s;
 }

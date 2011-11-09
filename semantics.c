@@ -19,24 +19,38 @@ void declare_const(char* name, struct sym_rec* s)
 
 void declare_type(char* name, struct sym_rec* s)
 {
-  printf("%s is at %p\n", name, s);
   if(locallookup(name) == NULL)
   {
     if (s && s->class == OC_TYPE)
     {
       addtype(name, &s->desc.type_attr);
     }
+    else if (s == NULL)
+    {
+      addtype(name, NULL);
+    }
   }
-}
-
-void declare_variable(char* name)
-{ 
-  if(locallookup(name) == NULL)
-    addvar(name, NULL);
   else
   {
     char error[1024];
-    sprintf(error, "Variable already declared: %s", name);
+    sprintf(error, "Type '%s' already declared at this scope.", name);
+    semantic_error(error);
+  }
+}
+
+void declare_variable(char* name, struct sym_rec* s)
+{ 
+  if(locallookup(name) == NULL)
+  {
+    if (s && s->class == OC_TYPE)
+      addvar(name, s);
+    else if (s == NULL)
+      addvar(name, NULL);
+  }
+  else
+  {
+    char error[1024];
+    sprintf(error, "Variable '%s' already declared.", name);
     semantic_error(error);
   }
 }

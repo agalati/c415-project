@@ -64,6 +64,7 @@ int search_fields = 0;
 %type   <symrec>  structured_type
 %type   <symrec>  field_list
 %type   <symrec>  field
+%type   <symrec>  var_decl
 
 %% /* Start of grammer */
 
@@ -300,11 +301,16 @@ field_list              : field
                           {
                             search_fields = 1;
                             $$ = $1;
+                            prev_fields = $$;
                           }
                         | field_list S_COLON field
                           {
-                            $3->next = $1;
-                            $$ = $3;
+                            if ($3)
+                            {
+                              $3->next = $1;
+                              $$ = $3;
+                              prev_fields = $$;
+                            }
                           }
                         | error S_COLON field { yyerrok; yyclearin; }
                         ;
@@ -347,8 +353,8 @@ var_decl_list           : var_decl
                         | error S_COLON var_decl { yyerrok; yyclearin; }
                         ;
 
-var_decl                : ID COLON type     { declare_variable($1); /* $$ = $3; */}
-                        | ID COMMA var_decl { declare_variable($1); /* $$ = $3; */}
+var_decl                : ID COLON type     { declare_variable($1, $3); $$ = $3; }
+                        | ID COMMA var_decl { declare_variable($1, $3); $$ = $3; }
                         ;
 
 proc_decl_part          : proc_decl_list
@@ -377,6 +383,26 @@ f_parm_list             : f_parm
                         ;
 
 f_parm                  : ID COLON ID
+                          {
+                            struct sym_rec* parm_list = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                            struct sym_rec* s = globallookup($3);
+                            if(s == NULL)
+                            {
+                              char error[1024]
+                              sprintf(error, "'%s' is not a declared type.", $3);
+                              semantic_error(error);
+                            }
+                            else if(s->class != OC_TYPE)
+                            {
+                              char error[1024]
+                              sprintf(error, "'%s' does not name a type.", $3);
+                              semantic_error(error);
+                            }
+                            else
+                            {
+                              addparm($1, s, parm_list);
+                            }
+                          }
                         | VAR ID COLON ID
                         ;
 

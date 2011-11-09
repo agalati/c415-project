@@ -39,6 +39,7 @@
 #define OC_PROC     3
 #define OC_PARM     4
 #define OC_TYPE     5
+#define OC_ERROR    6
 
 struct tc_integer {
   int length;
@@ -108,7 +109,7 @@ struct proc_desc {
 
 struct parm_desc {
   struct sym_rec* type;
-  int      location;
+  int    location;
   struct sym_rec* next_parm;
 };
 
