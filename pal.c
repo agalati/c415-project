@@ -26,6 +26,7 @@ main (  int     argc,
   parse_args(argc, argv);
   sym_tab_init();
   int ret =  yyparse ();
+  printsym();
   new_position_line();
   fclose(stdin);
   fclose(prog_file);

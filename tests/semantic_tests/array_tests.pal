@@ -1,0 +1,15 @@
+program test(in, out);
+type 
+  newtype = integer;
+  a = array [1..100] of char;
+  b = array [char] of boolean;
+  c = array [boolean] of char;
+  d = array [1..1] of integer;
+  e = array [1..2] of array [1..2] of boolean;
+  f = array [2..1] of integer;
+  g = array [1..10] of newtype;
+  h = array [1..10] of array [boolean] of array [char] of array [-50..1000] of array[1..1] of array [1..2] of newtype;
+var
+  new : a;
+begin
+end.

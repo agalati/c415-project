@@ -71,7 +71,7 @@ var                               DB_PRINTF("VAR "); return VAR;
 while                             DB_PRINTF("WHILE "); return WHILE;
 
  /* Numbers and variables ---------- */
-(([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
+(([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL_CONST;
 
 
 \'(\\(n|t|'|\\)|[^\\'])*\'			  DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
@@ -81,7 +81,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 
  /* This next one conflicts with the above VAR so... */
 [A-Za-z][A-Za-z0-9]*              DB_PRINTF("ID(%s) ", yytext); yylval.name = strdup(yytext); return ID;
-[0-9]+                            DB_PRINTF("INT "); return INT;
+[0-9]+                            DB_PRINTF("INT "); yylval.integer = atoi(yytext); return INT_CONST;
 
  /* Operators ---------- */
 ":="                              DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
@@ -101,7 +101,7 @@ while                             DB_PRINTF("WHILE "); return WHILE;
 "("                               DB_PRINTF("O_BRACKET "); return O_BRACKET;
 ")"                               DB_PRINTF("C_BRACKET "); return C_BRACKET;
 "."                               DB_PRINTF("PERIOD "); return PERIOD;
-";"                               DB_PRINTF("S_COLON "); return S_COLON;
+";"                               DB_PRINTF("S_COLON "); yylval.ch = ';'; return S_COLON;
 ":"                               DB_PRINTF("COLON "); return COLON;
 "["                               DB_PRINTF("O_SBRACKET "); return O_SBRACKET;
 "]"                               DB_PRINTF("C_SBRACKET "); return C_SBRACKET;

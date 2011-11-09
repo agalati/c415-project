@@ -1,0 +1,11 @@
+program test(in, out);
+type
+  a = record
+        b : integer;
+        c : integer
+      end;
+  d = record
+        d : integer
+      end;
+begin
+end.
