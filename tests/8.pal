@@ -98,7 +98,7 @@ begin
         shirts ::= gimme;        
         bananas := please;
        
-        if shirts < 0 then;             { error - extra semicolon }
+        if shirts < 0 then;                { error - extra semicolon }
            begin
                 apples := a + neg       { error - missing semicolon }
                 if apples < 0 then
@@ -125,12 +125,12 @@ end;
 
 { Begin Main }
 begin
-        myarray[0.5] := 1;              { error - attempting to assign to an illegal index }
+        myarray[0.5] := 1;             { error - attempting to assign to an illegal index }
         myarray['a'] := 1;              { error - attempting to assign to an illegal index }
 
-        bigreal = 12.4E12345;           { error - undeclared vars }
-	bigreal2 = 345E678;
-	bigreal3 = 100.3E+12;
+        bigreal = 12.4E12345;          { error - undeclared var }
+	bigreal2 = 345E678;					{ error - undeclared var }
+	bigreal3 = 100.3E+12;				{ error - undeclared var }
              
           
        

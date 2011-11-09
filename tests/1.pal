@@ -8,7 +8,7 @@ Written by: Group 4
 Location and Description of Errors
 -----------------------------------
 Error on line 29, attempted to declare a const using another
-const, but misspelling the name.  Line 31, an non-terminated string.
+const, but incorrect assignment operator.  Line 31, an non-terminated string.
 Line 38, missing semicolon.
 
 =====================================================}
@@ -26,7 +26,7 @@ const
         string1 = a + b + c + d;
         thisistrue = true;
         thisisfalse = false;
-        shouldbetrue = athissitrue; { Error, syntax error in declaring constant }
+        shouldbetrue == thisistrue; { Error, syntax error in declaring constant.  Double equals. }
         shouldbefalse = thisisfalse;
         testweirdstring = ' some \t \t escape cha\'rs  \'\'\'\'\'  \n  \\ ;     {error - non-terminated string }
         testlogic = not thisistrue;

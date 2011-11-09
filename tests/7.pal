@@ -6,9 +6,9 @@ Written by: Group 4
 
 Location and Description of Errors
 -----------------------------------
-Error on line 125, attempting to multiply variables containing strings.
-Error on line 126, attempting to assign to a real number array index.
-Error on line 127, attempting to assign to an array index at location char.
+Error on line 127, attempting to multiply variables containing strings.
+Error on line 128, attempting to assign to a real number array index.
+Error on line 129, attempting to assign to an array index at location char.
 
 =====================================================}
 

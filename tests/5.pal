@@ -124,7 +124,7 @@ end;
 { Begin Main }
 begin
 
-        while not astring do            { error - attempting to evaluate a string as a boolean }
+        while astring do            { error - attempting to evaluate a string as a boolean }
 	  begin
 		writeln('problem');
                 astring := 1;           { error - attemping to reassign const to different type }

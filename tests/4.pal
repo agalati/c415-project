@@ -7,8 +7,8 @@ Written by: Group 4
 Location and Description of Errors
 -----------------------------------
 Error on line 37, using integer division with real numbers.
-Error on line 118, string out of it's array bounds.
-Error on line 124, passing incorrect variables as arguments.
+Error on line 91, incorrect type assignment Boolean, should be boolean.
+Error on line 120, string length out of array bounds.
 
 =====================================================}
 
@@ -88,7 +88,7 @@ procedure LittleProc ( var gimme : int; please : ultimatepower );
 var
         shirts : int;
         shoes : integer;
-        none : Boolean;
+        none : Boolean;		{ error - incorrect type assignment Boolean, should be boolean }
         service : real;
         apples : int;
         bananas : ultimatepower;
@@ -122,8 +122,6 @@ begin
        
        shirts := 0;    
        shoes := 1;
-
-       LittleProc( shirts, shoes );     { error - incorrect parameter passing };
        
        
 end. 

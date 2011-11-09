@@ -8,7 +8,7 @@ Written by: Group 4
 Location and Description of Errors
 -----------------------------------
 Error on line 34, nonsense logical statement.
-Error on line 71, seriously flawed procedure declaration.  
+Error on line 71, procedure declaration uses an undeclared type.  
 Error on line 92, trying to add a string and two reals.
 
 =====================================================}
@@ -89,7 +89,7 @@ begin
         quality := areal + breal;
         pro := 'yup';
         
-        quality := quality + pro + quality;     { error - attempting to add a string and two reals }
+        quality := quality + pro + hoops;     { error - attempting to add a string and two reals }
         
 
        
