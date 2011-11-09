@@ -15,8 +15,11 @@
 #include "semantics.h"
 #include "symtab.h"
 
-struct sym_rec* prev_fields;
 int search_fields = 0;
+struct sym_rec* prev_fields;
+
+int clear_parm_list = 1;
+struct sym_rec* parm_list = NULL;
 
 %}
 
@@ -134,13 +137,18 @@ simple_type             : scalar_type
 
 scalar_type             : O_BRACKET scalar_list C_BRACKET
                           {
-                            $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                            $$->next = NULL;
-                            $$->name = NULL;
-                            $$->class = OC_TYPE;
-                            $$->desc.type_attr.type_class = TC_SCALAR;
-                            $$->desc.type_attr.type_description.scalar = (struct tc_scalar*)malloc(sizeof(struct tc_scalar));
-                            $$->desc.type_attr.type_description.scalar->const_list = $2;
+                            if ($2 != NULL)
+                            {
+                              $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                              $$->next = NULL;
+                              $$->name = NULL;
+                              $$->class = OC_TYPE;
+                              $$->desc.type_attr.type_class = TC_SCALAR;
+                              $$->desc.type_attr.type_description.scalar = (struct tc_scalar*)malloc(sizeof(struct tc_scalar));
+                              $$->desc.type_attr.type_description.scalar->const_list = $2;
+                            }
+                            else
+                              $$ = NULL;
                           }
 
                         | O_BRACKET error C_BRACKET { yyerrok; yyclearin; }
@@ -162,6 +170,7 @@ scalar_list             : ID
                             }
                             else
                             {
+                              $$ = NULL;
                               char error[1024];
                               sprintf(error, "'%s' has already been declared in this scope.", $1);
                               semantic_error(error);
@@ -374,28 +383,33 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                         ;
 
 f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
+                          {
+                            clear_parm_list = 1;
+                          }
                         | O_BRACKET C_BRACKET
                         ;
 
 f_parm_list             : f_parm
+                          {
+                            clear_parm_list = 0;
+                          }
                         | f_parm_list S_COLON f_parm
                         | error S_COLON f_parm { yyerrok; yyclearin; }
                         ;
 
 f_parm                  : ID COLON ID
-                        /*
                           {
-                            struct sym_rec* parm_list = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                            if (clear_parm_list) parm_list = NULL;
                             struct sym_rec* s = globallookup($3);
                             if(s == NULL)
                             {
-                              char error[1024]
+                              char error[1024];
                               sprintf(error, "'%s' is not a declared type.", $3);
                               semantic_error(error);
                             }
                             else if(s->class != OC_TYPE)
                             {
-                              char error[1024]
+                              char error[1024];
                               sprintf(error, "'%s' does not name a type.", $3);
                               semantic_error(error);
                             }
@@ -403,9 +417,30 @@ f_parm                  : ID COLON ID
                             {
                               addparm($1, s, parm_list);
                             }
+                            $$ = parm_list;
                           }
-                        */
                         | VAR ID COLON ID
+                          {
+                            struct sym_rec* parm_list = NULL;
+                            struct sym_rec* s = globallookup($3);
+                            if(s == NULL)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' is not a declared type.", $3);
+                              semantic_error(error);
+                            }
+                            else if(s->class != OC_TYPE)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' does not name a type.", $3);
+                              semantic_error(error);
+                            }
+                            else
+                            {
+                              addparm($1, s, parm_list);
+                            }
+                            $$ = parm_list;
+                          }
                         ;
 
 compound_stat           : P_BEGIN stat_list END
