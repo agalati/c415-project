@@ -12,6 +12,8 @@
 %{
 #define YYDEBUG 1
 
+#include <stdlib.h>
+
 #include "semantics.h"
 #include "symtab.h"
 
@@ -417,9 +419,10 @@ f_parm                  : ID COLON ID
                             {
                               addparm($1, s, parm_list);
                             }
-                            $$ = parm_list;
+                            //$$ = parm_list;
                           }
                         | VAR ID COLON ID
+                          /*
                           {
                             struct sym_rec* parm_list = NULL;
                             struct sym_rec* s = globallookup($3);
@@ -441,6 +444,7 @@ f_parm                  : ID COLON ID
                             }
                             $$ = parm_list;
                           }
+                          */
                         ;
 
 compound_stat           : P_BEGIN stat_list END
