@@ -167,7 +167,7 @@ scalar_list             : ID
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = $1;
-                              $$->level = get_current_level()-1;
+                              $$->level = get_current_level();
                               $$->class = OC_CONST;
                               $$->desc.const_attr.type = builtinlookup("integer");
                             }
@@ -186,7 +186,7 @@ scalar_list             : ID
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = $1;
                               $$->name = $3;
-                              $$->level = get_current_level()-1;
+                              $$->level = get_current_level();
                               $$->class = OC_CONST;
                               $$->desc.const_attr.type = builtinlookup("integer");
                             }
@@ -343,6 +343,7 @@ field                   : ID COLON type
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = $1;
+                              $$->level = get_current_level();
                               $$->class = OC_VAR;
                               $$->desc.var_attr.type = $3;
                             }
@@ -388,7 +389,22 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
                             struct sym_rec* ret = globallookup($5);
-                            //addfunc($2, parm_list, 
+                            if(ret == NULL)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' is not a declared type.", $5);
+                              semantic_error(error);
+                            }
+                            else if(ret->class != OC_TYPE)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' does not name a type.", $5);
+                              semantic_error(error);
+                            }
+                            else
+                            {
+                              addfunc($2, parm_list, ret);
+                            }
                           }
                         ;
 
