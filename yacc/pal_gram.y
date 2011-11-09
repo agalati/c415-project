@@ -145,6 +145,7 @@ scalar_type             : O_BRACKET scalar_list C_BRACKET
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = NULL;
+                              $$->level = get_current_level();
                               $$->class = OC_TYPE;
                               $$->desc.type_attr.type_class = TC_SCALAR;
                               $$->desc.type_attr.type_description.scalar = (struct tc_scalar*)malloc(sizeof(struct tc_scalar));
@@ -206,6 +207,7 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = NULL;
+                              $$->level = get_current_level();
                               $$->class = OC_TYPE;
                               $$->desc.type_attr.type_class = TC_ARRAY;
                               $$->desc.type_attr.type_description.array = (struct tc_array*)malloc(sizeof(struct tc_array));
@@ -225,6 +227,7 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = NULL;
+                              $$->level = get_current_level();
                               $$->class = OC_TYPE;
                               $$->desc.type_attr.type_class = TC_RECORD;
                               $$->desc.type_attr.type_description.record = (struct tc_record*)malloc(sizeof(struct tc_record));
