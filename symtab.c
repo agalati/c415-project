@@ -73,7 +73,7 @@ struct sym_rec init_items[] = {
 /*****************************************
  * Print symbol table - use it to debug
  */
-
+void printrecord(struct sym_rec* s);
 void printtype(struct sym_rec* s) {
 
   struct sym_rec* t;
@@ -118,7 +118,7 @@ void printtype(struct sym_rec* s) {
     t = s->desc.type_attr.type_description.record->field_list;
     
     for (; t != NULL; t = t->next)
-      printf("\t  \n");
+      printrecord(t);
     break;
   case TC_ARRAY :
     printf("| Array at type %p ", s->desc.type_attr.type_description.array);
@@ -132,6 +132,37 @@ void printtype(struct sym_rec* s) {
     break;
   default :
     printf("\n## Symbol table is broken ##\n");
+  }
+}
+
+void printrecord(struct sym_rec* s) {
+  int i;
+  struct sym_rec *t = s;
+
+  for (; t != NULL; t = t->next) {
+    printf("\tName: %-17s | Level: %d | Class: %d ", t->name, t->level, t->class);
+
+    switch (t->class) {
+    case OC_CONST :
+      printtype(t->desc.const_attr.type);
+      break;
+    case OC_VAR :
+      printtype(t->desc.var_attr.type);
+      break;
+    case OC_FUNC :
+      break;
+    case OC_PROC :
+      break;
+    case OC_PARM :
+      break;
+    case OC_TYPE :
+      printtype(t);
+      break;
+    case OC_ERROR :
+      printf("| ERROR TOKEN");
+      break;
+    }
+    printf("\n");
   }
 }
 
