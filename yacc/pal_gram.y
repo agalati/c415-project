@@ -383,6 +383,7 @@ f_parm_list             : f_parm
                         ;
 
 f_parm                  : ID COLON ID
+                        /*
                           {
                             struct sym_rec* parm_list = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                             struct sym_rec* s = globallookup($3);
@@ -403,6 +404,7 @@ f_parm                  : ID COLON ID
                               addparm($1, s, parm_list);
                             }
                           }
+                        */
                         | VAR ID COLON ID
                         ;
 
