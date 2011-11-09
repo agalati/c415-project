@@ -139,31 +139,30 @@ void printrecord(struct sym_rec* s) {
   int i;
   struct sym_rec *t = s;
 
-  for (; t != NULL; t = t->next) {
-    printf("\tName: %-17s | Level: %d | Class: %d ", t->name, t->level, t->class);
-
-    switch (t->class) {
-    case OC_CONST :
-      printtype(t->desc.const_attr.type);
+  printf("\tName: %-17s | Level: %d | Class: %d ", t->name, t->level, t->class);
+  
+  switch (t->class) {
+  case OC_CONST :
+    printtype(t->desc.const_attr.type);
+    break;
+  case OC_VAR :
+    printtype(t->desc.var_attr.type);
       break;
-    case OC_VAR :
-      printtype(t->desc.var_attr.type);
-      break;
-    case OC_FUNC :
-      break;
-    case OC_PROC :
-      break;
-    case OC_PARM :
-      break;
-    case OC_TYPE :
-      printtype(t);
-      break;
-    case OC_ERROR :
-      printf("| ERROR TOKEN");
-      break;
-    }
-    printf("\n");
+  case OC_FUNC :
+    break;
+  case OC_PROC :
+    break;
+  case OC_PARM :
+    break;
+  case OC_TYPE :
+    printtype(t);
+    break;
+  case OC_ERROR :
+    printf("| ERROR TOKEN");
+    break;
   }
+  printf("\n");
+  
 }
 
 void printsym() {
