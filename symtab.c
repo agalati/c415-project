@@ -73,6 +73,56 @@ struct sym_rec init_items[] = {
 /*****************************************
  * Print symbol table - use it to debug
  */
+
+void printtype(struct sym_rec* s) {
+  if (s == NULL) {
+    printf("| Type is NULL ");
+    return;
+  }
+  if (s->name != NULL)
+    printf("| Type name: %s ", s->name);
+  switch (s->desc.type_attr.type_class) {
+  case TC_INTEGER :
+    printf("| Integer at type %p ", s->desc.type_attr.type_description.integer);
+    break;
+  case TC_REAL :
+    printf("| Real type at %p ", s->desc.type_attr.type_description.real);
+    break;
+  case TC_CHAR :
+    printf("| Char type at %p ", s->desc.type_attr.type_description.character);
+    break;
+  case TC_BOOLEAN :
+    printf("| Boolean type at %p ", s->desc.type_attr.type_description.boolean);
+    break;
+  case TC_STRING :
+    printf("| String at type %p ", s->desc.type_attr.type_description.string);
+    printf("| high = %d ", s->desc.type_attr.type_description.string->high);
+    break;
+  case TC_SCALAR :
+    printf("| Scalar at type %p ", s->desc.type_attr.type_description.scalar);
+    printf(" Featuring: \n");
+    
+    struct sym_rec* t = s->desc.type_attr.type_description.scalar->const_list;
+    
+    for (; t != NULL; t->next) {
+      printf("Name: %-17s | Level: %d | Class: %d ", s->name, s->level, s->class);
+    }
+    break;
+  case TC_ARRAY :
+    printf("| Array at type %p ", s->desc.type_attr.type_description.array);
+    printf("| Subrange at type %p ", s->desc.type_attr.type_description.array->subrange);
+    printf("| sub low = %d ", s->desc.type_attr.type_description.array->subrange->low);
+    printf("| sub high =  %d ", s->desc.type_attr.type_description.array->subrange->high);
+    printtype(s->desc.type_attr.type_description.array->subrange->mother_type);
+    break;
+  case TC_SUBRANGE :
+    printf("\n## Symbol table is broken (subrange being parsed) ##\n");
+    break;
+  default :
+    printf("\n## Symbol table is broken ##\n");
+  }
+}
+
 void printsym() {
 
   int i;
@@ -83,7 +133,29 @@ void printsym() {
       printf("LEVEL %d\n", i - 1);
       printf("--------\n");
       for (s = sym_tab[i]; s != NULL; s = s->next) {
-        printf("Name: %-17s | Level: %d | Class: %d\n", s->name, s->level, s->class);
+        printf("Name: %-17s | Level: %d | Class: %d ", s->name, s->level, s->class);
+
+        switch (s->class) {
+        case OC_CONST :
+          printtype(s->desc.const_attr.type);
+          break;
+        case OC_VAR :
+          printtype(s->desc.var_attr.type);
+          break;
+        case OC_FUNC :
+          break;
+        case OC_PROC :
+          break;
+        case OC_PARM :
+          break;
+        case OC_TYPE :
+          printtype(s);
+          break;
+        case OC_ERROR :
+          printf("| ERROR TOKEN");
+          break; 
+        }
+        printf("\n");
       }
       printf("--------\n");
     }
