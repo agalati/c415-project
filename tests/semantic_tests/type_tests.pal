@@ -1,0 +1,8 @@
+program test(in, out);
+type 
+  newtype = integer;
+  int = newtypea;
+  int = integer;
+  int = char;
+begin
+end.

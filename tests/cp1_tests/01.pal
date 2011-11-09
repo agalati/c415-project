@@ -1,0 +1,15 @@
+//very basic program,
+// I used one of 2011 tests
+//2 errors
+
+program consts(in, out);
+begin
+
+# % ^ 				//ERROR, unknown characters
+
+//from one 9.pal tests of 2011
+	foo[1][c + 2] := foo(bar, baz['abc']);
+	joe.black[a * 2 - ( 4 * 3) div k][2].qq := baz;				
+
+
+end				 //ERROR, missing .

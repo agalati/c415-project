@@ -48,8 +48,8 @@ and                               DB_PRINTF("AND "); return AND;
 array                             DB_PRINTF("ARRAY "); return ARRAY;
 begin                             DB_PRINTF("P_BEGIN "); return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
-true								DB_PRINTF("BOOL - TRUE "); return BOOL;
-false								DB_PRINTF("BOOL - FALSE "); return BOOL;
+ /*true								              DB_PRINTF("BOOL - TRUE "); return BOOL;     */
+ /*false								              DB_PRINTF("BOOL - FALSE "); return BOOL;  */
 continue                          DB_PRINTF("CONTINUE "); return CONTINUE;
 div                               DB_PRINTF("DIV "); return DIV;
 do                                DB_PRINTF("DO "); return DO;
@@ -71,47 +71,47 @@ var                               DB_PRINTF("VAR "); return VAR;
 while                             DB_PRINTF("WHILE "); return WHILE;
 
  /* Numbers and variables ---------- */
-(([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL;
+(([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL_CONST;
 
 
-\'(\\(n|t|'|\\)|[^\\'])*\'			DB_PRINTF( "%s ", yytext); return STRING; /* returns properly terminate strings */
-\'(\\(n|t|'|\\)|[^\\'])*\n                      {DB_PRINTF("Unterminated string "); return NSTRING; /* returns non-terminated strings */}       
+\'(\\(n|t|'|\\)|[^\\'])*\'			  DB_PRINTF( "%s ", yytext); yylval.name = strdup(yytext); return STRING; /* returns properly terminate strings */
+\'(\\(n|t|'|\\)|[^\\'])*\n        {DB_PRINTF("Unterminated string "); unterminated_string(); return NSTRING; /* returns non-terminated strings */}       
                                         /* Strings may require some checking later            "'"(.*?)"'"  */
                                         /* Probably have to rip the single quotes off (yyleng) */
 
  /* This next one conflicts with the above VAR so... */
-[A-Za-z][A-Za-z0-9]*       DB_PRINTF("ID(%s) ", yytext); return ID;
-[0-9]+                            DB_PRINTF("INT "); return INT;
+[A-Za-z][A-Za-z0-9]*              DB_PRINTF("ID(%s) ", yytext); yylval.name = strdup(yytext); return ID;
+[0-9]+                            DB_PRINTF("INT "); yylval.integer = atoi(yytext); return INT_CONST;
 
  /* Operators ---------- */
-":="                               DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
-"="                                DB_PRINTF("EQUALS "); return EQUALS;
-"<>"                               DB_PRINTF("NOT_EQUAL "); return NOT_EQUAL;
-"<"                                DB_PRINTF("LESS_THAN "); return LESS_THAN;
-">"                                DB_PRINTF("GREATER_THAN "); return GREATER_THAN;
-"<="                               DB_PRINTF("LESS_EQUAL"); return LESS_EQUAL;
-">="                               DB_PRINTF("GREATER_EQUAL"); return GREATER_EQUAL; 
-"+"                                DB_PRINTF("PLUS "); return PLUS;
-"-"                                DB_PRINTF("MINUS "); return MINUS;
-"*"                                DB_PRINTF("MULTIPLY "); return MULTIPLY;
-"/"                                DB_PRINTF("DIVIDE "); return DIVIDE;
+":="                              DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
+"="                               DB_PRINTF("EQUALS "); return EQUALS;
+"<>"                              DB_PRINTF("NOT_EQUAL "); return NOT_EQUAL;
+"<"                               DB_PRINTF("LESS_THAN "); return LESS_THAN;
+">"                               DB_PRINTF("GREATER_THAN "); return GREATER_THAN;
+"<="                              DB_PRINTF("LESS_EQUAL"); return LESS_EQUAL;
+">="                              DB_PRINTF("GREATER_EQUAL"); return GREATER_EQUAL; 
+"+"                               DB_PRINTF("PLUS "); return PLUS;
+"-"                               DB_PRINTF("MINUS "); return MINUS;
+"*"                               DB_PRINTF("MULTIPLY "); return MULTIPLY;
+"/"                               DB_PRINTF("DIVIDE "); return DIVIDE;
  /* div and mod are under reserved words */
 
  /* Other lexical characters ---------- */
 "("                               DB_PRINTF("O_BRACKET "); return O_BRACKET;
 ")"                               DB_PRINTF("C_BRACKET "); return C_BRACKET;
 "."                               DB_PRINTF("PERIOD "); return PERIOD;
-";"                               DB_PRINTF("S_COLON "); return S_COLON;
+";"                               DB_PRINTF("S_COLON "); yylval.ch = ';'; return S_COLON;
 ":"                               DB_PRINTF("COLON "); return COLON;
 "["                               DB_PRINTF("O_SBRACKET "); return O_SBRACKET;
 "]"                               DB_PRINTF("C_SBRACKET "); return C_SBRACKET;
 ","                               DB_PRINTF("COMMA "); return COMMA;
-".."							  DB_PRINTF("DDOT "); return DDOT;
+".."							                DB_PRINTF("DDOT "); return DDOT;
 
  /* Comments, newlines, garbage ---------- */                               
 \n                                DB_PRINTF("\n "); new_position_line();
 [ \t]+                            /* ignore whitespace */;
-[//].*\n                          new_position_line(); /* comment   What is EOF in PAL? */   
-[&!@#$%^{}"/]		        DB_PRINTF("Garbage character "); lexerror(yytext);
-.                   DB_PRINTF("Garbage character "); lexerror(yytext);
+\/\/.*\n                          new_position_line(); /* comment   What is EOF in PAL? */ 
+[&!@#$%^{}"]                      DB_PRINTF("Garbage character "); lexerror(yytext);
+.                                 DB_PRINTF("Garbage character "); lexerror(yytext);
 %%

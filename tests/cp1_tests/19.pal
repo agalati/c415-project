@@ -1,0 +1,44 @@
+// Tests that numbers are parsed properly
+// 6 errors 
+
+program numbers(in, out);
+var
+	x : integer;
+	r, badr : real;
+
+begin
+	i := 0;
+	i := 1;
+	i := 1000000000;
+
+	r := 1.0;
+	r := 1.5;
+	r := 1.00005;
+	r := 1.2E10;
+	r := 1.2E-5;
+	r := 1.2E+13;
+
+	r := 0.1;
+	r := 0.0000;
+
+	badr := 100.; 				//ERROR: invalid real
+	badr := 999.E10;			 //ERROR: invalid real
+	badr := .999;				 //ERROR: invalid real
+
+	i := r := 3; 				//ERROR: chained assignment
+
+	r := 1.2E0;
+	r := 1.2E+0;
+	r := 1.2E-0;
+	
+	r := +1.2E-5;
+	r := -1.2E+13;
+
+	r := 0E0;
+	r := 1.2E+13;
+
+	r := 1.0000000000000000000009;		//Error?
+	1 = 2;					//ERROR
+
+end.
+

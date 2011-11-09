@@ -1,0 +1,5 @@
+program divtest(in, out);
+const
+  c = a / b;
+begin
+end.

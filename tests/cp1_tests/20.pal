@@ -1,0 +1,90 @@
+//tests math errors
+//3 errors on lines 78, 82, 86
+
+program p(intput, output);
+
+const ca = 534; 
+	  cb = 227;
+
+var a,b,c : integer;
+	i : integer;
+	r : real;
+	x : boolean;
+
+begin
+	a := ca;
+	b := cb;
+
+
+//  - const + const - shouldn't happen, precompute instead
+	c := ca+cb;
+//  - var   + var   - push a, push b
+	c := a+b;
+
+//  - const + var   - push a, push b
+	c := 1+a;
+//  - var   + const - push a, push b
+	c := a+1;
+
+//  - anon  + const - push b
+	c := (a+b)+1;
+//  - anon  + var   - push b
+	c := (a+b)+a;
+
+//  - const + anon  - dup, adjust, push a, adjust
+	c := 1+(a+b);
+//  - var   + anon  - dup, adjust, push a, adjust
+	c := a+(a+b);
+
+
+//  - anon  + anon  - already done
+	c := (a+b)+(a+b);
+
+
+	writeln('a = ', a, ', b = ', b);
+	writeln('a+b = ', a+b);
+	writeln('a*b = ', a*b);
+	writeln('a-b = ', a-b);
+	writeln('a/b = ', a/b);
+	writeln('a div b = ', a div b);
+	writeln('a mod b = ', a mod b);
+	writeln('const a mod b = ', ca mod cb);
+	writeln('(a*1) mod (b*1) = ', ((a*1) mod (b*1)));
+	writeln('a mod (b*1) = ', (a mod (b*1)));
+	writeln('(a*1) mod b = ', ((a*1) mod b));
+
+	i := 1;
+	r := 1;
+	i := -i;
+	r := -r;
+	i := +i;
+	r := +r;
+	i := i + i;
+	r := i + r;
+	i := i - i;
+	r := i - r;
+	i := i div i;
+	i := i mod i;
+	i := i / i; // *** semantic error, incompatible types
+	r := i mod i;
+	r := i / i;
+	r := i / r;
+	r := r / r;
+	r := r mod 0; // *** semantic error, divide by zero
+	i := i * i;
+	r := i * r;
+	r := i * i;
+	
+	i := i + function; 			//ERROR, can't add to a keyword
+
+	i := i; //valid
+
+	i + i; 					//ERROR, unknown context
+
+	i := i; //valid
+
+	i++ ; 					//ERROR, ++ isn't defined in PAL
+
+end.
+
+

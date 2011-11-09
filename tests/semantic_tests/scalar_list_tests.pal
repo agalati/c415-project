@@ -1,0 +1,9 @@
+program test(in, out);
+type 
+  a = (this, was, A, huge, pain);
+  b = (single);
+  c = (b);
+var
+  new : b;
+begin
+end.

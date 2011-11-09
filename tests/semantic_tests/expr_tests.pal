@@ -1,0 +1,14 @@
+program test(in, out);
+const
+  a = 9;
+var
+  c : integer;
+  d : boolean;
+begin
+  d := false;
+  c := 1 div 9;
+  d := not not d;
+  c := a + 1;
+  c := 1 + 1;
+  c := a;
+end.

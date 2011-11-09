@@ -1,0 +1,45 @@
+//2 errors
+program HelloCMPUT415 (input, output);
+    {need to make this an awesome test
+	So far: missing final '.', one of the end's is missing the semicolon between it and the next statement}
+    const
+	course = '\\CMPUT 415\\';
+    type
+	fun = real;
+    var
+	greeting : string;
+	number   : fun;
+	favourite : fun;
+    
+    { this function says asks for a number }
+    function getNumber () : fun;
+	var
+	    fullMessage : string;
+	begin
+	    getNumber := 1.0E19;
+	    write('please tell me a number: ');
+	    read(number);
+	    getNumber := number;
+	end;
+    // this procedure says hi
+    procedure sayGreeting (myMessage : string);
+	begin
+	    writeln(myMessage, ' ', course);
+	end;
+    begin
+	greeting := 'Hello there';
+	sayGreeting(greeting);
+	favourite := getNumber();
+	while favourite <= 12
+	    do begin
+		if favourite > 12
+		    then writeln('I like that number! It is my favourite!')
+		    else begin
+			writeln('that isn\'t my favourite number but i like it too!');
+			writeln('pick another number please!');
+		    end				// ERROR missing semicolon
+		    favourite := getNumber();
+	    end;
+	writeln('I like that number! It is my favourite!');
+    end						//ERROR: missing .
+    

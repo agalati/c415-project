@@ -26,6 +26,8 @@ main (  int     argc,
   parse_args(argc, argv);
   sym_tab_init();
   int ret =  yyparse ();
+  //printsym();
+  new_position_line();
   fclose(stdin);
   fclose(prog_file);
   if (do_listing)
@@ -33,23 +35,49 @@ main (  int     argc,
   return ret;
 }
 
+void semantic_error(char const* errmsg)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s", linebuf);
+  free(linebuf);
+
+  fprintf(stderr, "Semantic error on line %d: %s\n\n", yylloc.first_line, errmsg);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##semantic:%d: %s\n", yylloc.first_line, errmsg);
+    add_err_to_buf(err);
+  }
+}
+
 void
 lexerror(char const* invalid)
 {
   char* linebuf = get_prog_line(yylloc.first_line);
-  fprintf(stderr, "%s\n", linebuf);
+  fprintf(stderr, "%s", linebuf);
   free(linebuf);
 
-  int c = 1;
-  for (; c < yylloc.first_column; ++c)
-    fprintf(stderr, " ");
-  fprintf(stderr, "^\n");
-
-  fprintf(stderr, "Invalid token '%s' on line %d at column %d\n\n", invalid, yylloc.first_line, yylloc.first_column);
+  fprintf(stderr, "Invalid token '%s' on line %d\n\n", invalid, yylloc.first_line);
   if (do_listing)
   {
     char* err = (char*)malloc(1024*sizeof(char));
-    sprintf(err, "##lexer:%d.%d: Invalid token.\n", yylloc.first_line, yylloc.first_column);
+    sprintf(err, "##lexer:%d: Invalid token.\n", yylloc.first_line);
+    add_err_to_buf(err);
+  }
+}
+
+void
+unterminated_string(void)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s", linebuf);
+  free(linebuf);
+
+  fprintf(stderr, "Unterminated string on line %d\n\n", yylloc.first_line);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d: Unterminated string.\n", yylloc.first_line);
     add_err_to_buf(err);
   }
 }
@@ -58,20 +86,15 @@ void
 yyerror (char const *s)
 {
   char* linebuf = get_prog_line(yylloc.first_line);
-  fprintf(stderr, "%s\n", linebuf);
+  fprintf(stderr, "%s", linebuf);
   free(linebuf);
 
-  int c = 1;
-  for (; c < yylloc.first_column; ++c)
-    fprintf(stderr, " ");
-  fprintf(stderr, "^\n");
-
   char* pretty = pretty_error(s);
-  fprintf(stderr, "Error on line %d at column %d: %s\n\n", yylloc.first_line, yylloc.first_column, pretty);
+  fprintf(stderr, "Error on line %d: %s\n\n", yylloc.first_line, pretty);
   if (do_listing)
   {
     char* err = (char*)malloc(1024*sizeof(char));
-    sprintf(err, "##parser:%d.%d: %s\n", yylloc.first_line, yylloc.first_column, pretty);
+    sprintf(err, "##parser:%d: %s\n", yylloc.first_line, pretty);
     add_err_to_buf(err);
   }
   free(pretty);
@@ -151,6 +174,66 @@ usage(void)
   exit(-1);
 }
 
+int
+ID_or_reserved(char const* s)
+{
+  if (strcmp(s, "and") == 0)
+    return AND;
+  else if (strcmp(s, "array") == 0)
+    return ARRAY;
+  else if (strcmp(s, "begin") == 0)
+    return P_BEGIN;
+  else if (strcmp(s, "const") == 0)
+    return CONST;
+  else if (strcmp(s, "true") == 0)
+    return BOOL;
+  else if (strcmp(s, "false") == 0)
+    return BOOL;
+  else if (strcmp(s, "continue") == 0)
+    return CONTINUE;
+  else if (strcmp(s, "div") == 0)
+  {
+    fprintf(stderr, "div found!\n");
+    return DIV;
+  }
+  else if (strcmp(s, "do") == 0)
+    return DO;
+  else if (strcmp(s, "else") == 0)
+    return ELSE;
+  else if (strcmp(s, "end") == 0)
+    return END;
+  else if (strcmp(s, "exit") == 0)
+    return EXIT;
+  else if (strcmp(s, "function") == 0)
+    return FUNCTION;
+  else if (strcmp(s, "if") == 0)
+    return IF;
+  else if (strcmp(s, "mod") == 0)
+    return MOD;
+  else if (strcmp(s, "not") == 0)
+    return NOT;
+  else if (strcmp(s, "of") == 0)
+    return OF;
+  else if (strcmp(s, "or") == 0)
+    return OR;
+  else if (strcmp(s, "procedure") == 0)
+    return PROCEDURE;
+  else if (strcmp(s, "program") == 0)
+    return PROGRAM;
+  else if (strcmp(s, "record") == 0)
+    return RECORD;
+  else if (strcmp(s, "then") == 0)
+    return THEN;
+  else if (strcmp(s, "type") == 0)
+    return TYPE;
+  else if (strcmp(s, "var") == 0)
+    return VAR;
+  else if (strcmp(s, "while") == 0)
+    return WHILE;
+
+  return ID;
+}
+
 void
 update_position(int distance)
 {
@@ -164,7 +247,8 @@ new_position_line(void)
   if (do_listing)
   {
     char* linebuf = get_prog_line(yylloc.first_line);
-    fprintf(lst_file, "%s\n", linebuf);
+    if (linebuf != "")
+      fprintf(lst_file, "%s", linebuf);
     free(linebuf);
     linebuf = pop_err_from_buf();
     while (linebuf)
@@ -196,9 +280,9 @@ find_line_offsets(void)
   }
   ++num_lines;
 
-  line_offsets = (off_t*)malloc(num_lines*sizeof(off_t));
+  line_offsets = (off_t*)malloc((num_lines+1)*sizeof(off_t));
   fseek(prog_file, 0, SEEK_END);
-  line_offsets[num_lines-1] = ftell(prog_file);
+  line_offsets[num_lines] = ftell(prog_file);
 
   rewind(prog_file);
   line_offsets[0] = 0;
@@ -215,15 +299,17 @@ find_line_offsets(void)
     }
     c = fgetc(prog_file);
   }
+  ++lineno;
+  line_offsets[lineno] = offset;
 }
 
 char* get_prog_line(int lineno)
 {
   size_t linesize = line_offsets[lineno]-line_offsets[lineno-1];
-  char* linebuf = (char*)malloc(linesize*sizeof(char));
+  char* linebuf = (char*)malloc((linesize+1)*sizeof(char));
   fseek(prog_file, line_offsets[lineno-1], SEEK_SET);
   fread(linebuf, sizeof(char), linesize, prog_file);
-  linebuf[linesize-1] = '\0';
+  linebuf[linesize] = '\0';
   return linebuf;
 }
 
