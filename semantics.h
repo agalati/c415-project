@@ -9,7 +9,10 @@ struct plist_t
 {
   struct sym_rec* parmlist;
   int counter;
+  int max;
 };
+
+int compare_types(struct sym_rec* s, struct sym_rec* t);
 
 void declare_const(char* name, struct sym_rec*);
 void declare_type(char* name, struct sym_rec*);

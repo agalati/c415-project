@@ -163,6 +163,11 @@ scalar_type             : O_BRACKET scalar_list C_BRACKET
                               $$->desc.type_attr.type_class = TC_SCALAR;
                               $$->desc.type_attr.type_description.scalar = (struct tc_scalar*)malloc(sizeof(struct tc_scalar));
                               $$->desc.type_attr.type_description.scalar->const_list = $2;
+
+                              // THIS MAY NOT BE LEGIT
+                              struct sym_rec* members = $2;
+                              for (; members != NULL; members = members->next)
+                                members->desc.const_attr.type = $$;
                             }
                             else
                               $$ = NULL;
@@ -992,6 +997,42 @@ func_invok              : plist_finvok C_BRACKET
                         ;
 
 plist_finvok            : ID O_BRACKET parm
+                          {
+                            struct sym_rec* func = globallookup($1);
+                            if (func)
+                            {
+                              if (func->class == OC_FUNC)
+                              {
+                                $$ = (struct plist_t*)malloc(sizeof(struct plist_t));
+                                $$->parmlist = func->desc.func_attr.parms;
+                                $$->counter = 0;
+                                struct sym_rec* last_parm = NULL;
+                                for(func = $$->parmlist; func != NULL; func = func->next)
+                                {
+                                  $$->counter = $$->counter + 1; 
+                                  last_parm = func;
+                                }
+                                $$->max = $$->counter;
+
+                                if ($3)
+                                  if (!compare_types($3, last_parm))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                    semantic_error(error);
+                                  }
+
+                                $$->counter = $$->counter - 1;
+                              }
+                            }
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Function or procedure '%s' not declared here.", $1);
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
                         | plist_finvok COMMA parm
                         ;
 

@@ -1,0 +1,7 @@
+program main(in, out);
+  function test ( x : integer ) : integer;
+  begin
+  end;
+begin
+  test(200.0);
+end.
