@@ -70,6 +70,7 @@ struct sym_rec* parm_list = NULL;
 %type   <symrec>  field_list
 %type   <symrec>  field
 %type   <symrec>  var_decl
+%type   <symrec>  f_parm
 
 %% /* Start of grammer */
 
@@ -333,7 +334,7 @@ field                   : ID COLON type
                             {
                               struct sym_rec* prev = prev_fields;
                               for (; prev != NULL; prev = prev->next) {
-                                if (strcmp($1, prev->name) == 0)
+                                if ($1 && prev->name && strcmp($1, prev->name) == 0)
                                   found = 1;
                               }
                             }
@@ -419,32 +420,30 @@ f_parm                  : ID COLON ID
                             {
                               addparm($1, s, parm_list);
                             }
-                            //$$ = parm_list;
+                            $$ = s;
                           }
                         | VAR ID COLON ID
-                          /*
                           {
                             struct sym_rec* parm_list = NULL;
-                            struct sym_rec* s = globallookup($3);
+                            struct sym_rec* s = globallookup($4);
                             if(s == NULL)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' is not a declared type.", $3);
+                              sprintf(error, "'%s' is not a declared type.", $4);
                               semantic_error(error);
                             }
                             else if(s->class != OC_TYPE)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' does not name a type.", $3);
+                              sprintf(error, "'%s' does not name a type.", $4);
                               semantic_error(error);
                             }
                             else
                             {
-                              addparm($1, s, parm_list);
+                              addparm($2, s, parm_list);
                             }
-                            $$ = parm_list;
+                            $$ = s;
                           }
-                          */
                         ;
 
 compound_stat           : P_BEGIN stat_list END
