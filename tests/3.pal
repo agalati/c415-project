@@ -1,52 +1,126 @@
-// errors on lines 4, 10, and 46
+{====================================================
+Test Program 3.pal 
+Tests: Semantic Errors
+Written by: Group 4
+-----------------------------------
 
-program main(input, output);
-    |465E?¨                                   // nonsense line with unrecognized character
-    var n, oddcount, evencount : integer;
-    procedure ODD ( x : integer );
-        procedure EVEN();
+Location and Description of Errors
+-----------------------------------
+On line 103 the logic is nonsense, trying to not a string.
+On line 110, trying to use a variable which has not been initialized.
+Finally, on line 123 there is an attempt to reassign the value of a const.
+
+=====================================================}
+
+program Semantic1 (input, output);
+
+
+{ Constant Declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        astring = 'halloween';
+        bstring = 'christmas';
+        abool = true;
+        bbool = false;
+        areal = 5.0E1234;
+        breal = 0.9E+5;
+        alogic = not abool;
+        blogic = abool or bbool;
+        remainder = c mod b;
+        clogic = remainder < 0;  
+        neg = -10;
+        negreal = -2.33E10;
+        weird = '\n\n\n\t \t there is \n so \t me good \' stuff';
+        multiPL = areal * breal;    
+
+
+{ Type Declarations }
+type
+        string = array[1..20] of char;
+        int = integer;
+        info = record
+                        name : string;
+                        age : int;
+                        gender : char
+                   end;
+
+        infoarray = array[1..10] of info;  
         
-        begin
-            if x <> 0 then begin
-                  evencount := evencount + 3.@1 ;   // unrecognized symbol in a real number
-                  x := x div 2;
-                  if odd(x) then ODD ( x )
-                  else EVEN()
-            end;
-        end;
+        detailedinfo = record
+                        favfood : string;
+                        myinfo : infoarray
+                   end;
+                  
+        ultimatepower = record                        
+                        radical : detailedinfo;
+                        awesome : real
+                   end;
+
+        hood = array[1..10] of int;
+        hood1 = array[1..10] of hood;
+        hood2 = array[1..10] of hood1;
+        hood3 = array[1..10] of hood2;
         
-    begin
-          oddcount := oddcount + 1;
-          x := x div 2;
-          if odd(x) then ODD ( x )
-          else EVEN()
-    end;
-    
-    procedure EVEN ( x : integer );
-          procedure ODD ( var x : integer );
-          
-          begin
-                oddcount := oddcount + 1;
-                x := x div 2;
-                if odd(x) then ODD ( x )
-                else EVEN ( x )
-          end;
-          
-    begin
-          if x <> 0 then begin
-                evencount := evencount + 1;
-                x := x div 2;
-                if odd(x) then ODD ( x )
-                else EVEN ( x )
-          end;
-    end;
-    
-    begin
-    if n >=< 0 then begin                         // unrecognized operator token
-          oddcount := 0;
-          evencount := 0;
-          if odd(n) then ODD ( n )
-          else EVEN ( n );
-          writeln ('n = ', n, ' o = ', oddcount, ' e = ', evencount );
+        counting = ultimatepower;
+
+       
+{ Variable Declarations }
+var
+        hoops : counting;
+        loops : ultimatepower;
+        stars : detailedinfo;
+        strang : detailedinfo;
+        quality : real;
+        pro : string;
+        tell : string;
+        apples : real;
+        bananas : hood3;
+        peaches : info;
+        heading : int;
+
+{ Tests scope checking of variables }
+procedure LittleProc ( var gimme : int; please : ultimatepower );
+var
+        shirts : int;
+        shoes : integer;
+        none : ultimatepower;
+        service : real;
+        apples : int;
+        bananas : ultimatepower;
+
+begin
+
+        shirts := gimme;
+        bananas := please;
+        
+        if shirts < 0 then
+           begin
+                apples := a + neg;
+                if apples < 0 then
+                   begin
+                        apples := not ( apples - 1 ); { error - nonsense logic }
+                        apples := apples + 1;
+                   end;
+           end
+        else
+                apples := 99;
+
+        service := service - apples;        { error - service has not been initialized }
+                  
+        
 end;
-end.
+       
+
+{ Begin Main }
+begin
+        quality := areal + breal;
+        pro := 'yup';
+        
+        quality := quality + a - b - c;
+        
+        abool := bbool;         { error - trying to reassign a constant }
+
+       
+end. 
