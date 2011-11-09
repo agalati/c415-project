@@ -388,7 +388,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
                             struct sym_rec* ret = globallookup($5);
-                            addfunc($2, parm_list, 
+                            //addfunc($2, parm_list, 
                           }
                         ;
 
