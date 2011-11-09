@@ -15,5 +15,7 @@ type
         f : boolean
       end;
   b = array [1..30] of a;
+var
+  ten, eleven : a;
 begin
 end.

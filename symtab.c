@@ -75,6 +75,9 @@ struct sym_rec init_items[] = {
  */
 
 void printtype(struct sym_rec* s) {
+
+  struct sym_rec* t;
+  
   if (s == NULL) {
     printf("| Type is NULL ");
     return;
@@ -102,11 +105,20 @@ void printtype(struct sym_rec* s) {
     printf("| Scalar at type %p ", s->desc.type_attr.type_description.scalar);
     printf(" Featuring: \n");
     
-    struct sym_rec* t = s->desc.type_attr.type_description.scalar->const_list;
+    t = s->desc.type_attr.type_description.scalar->const_list;
     
-    for (; t != NULL; t->next) {
-      printf("Name: %-17s | Level: %d | Class: %d ", s->name, s->level, s->class);
+    for (; t != NULL; t = t->next) {
+      printf("\tName: %-17s | Level: %d | Class: %d \n", t->name, t->level, t->class);
     }
+    break;
+  case TC_RECORD :
+    printf("| Record at type %p ", s->desc.type_attr.type_description.record);
+    printf("\n\t Record List:\n");
+
+    t = s->desc.type_attr.type_description.record->field_list;
+    
+    for (; t != NULL; t = t->next)
+      printf("\t  \n");
     break;
   case TC_ARRAY :
     printf("| Array at type %p ", s->desc.type_attr.type_description.array);
