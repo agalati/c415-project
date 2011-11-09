@@ -70,6 +70,7 @@ struct sym_rec* parm_list = NULL;
 %type   <symrec>  field_list
 %type   <symrec>  field
 %type   <symrec>  var_decl
+%type   <symrec>  f_parm
 
 %% /* Start of grammer */
 
@@ -131,7 +132,7 @@ simple_type             : scalar_type
                                   if ($$->class != OC_TYPE)
                                   {
                                     char error[1024];
-                                    sprintf(error, "'%s' is not a type.");
+                                    sprintf(error, "'%s' is not a type.", $1);
                                     semantic_error(error);
                                   }
                               }
@@ -166,7 +167,7 @@ scalar_list             : ID
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = $1;
-                              $$->level = get_current_level()-1;
+                              $$->level = get_current_level();
                               $$->class = OC_CONST;
                               $$->desc.const_attr.type = builtinlookup("integer");
                             }
@@ -185,7 +186,7 @@ scalar_list             : ID
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = $1;
                               $$->name = $3;
-                              $$->level = get_current_level()-1;
+                              $$->level = get_current_level();
                               $$->class = OC_CONST;
                               $$->desc.const_attr.type = builtinlookup("integer");
                             }
@@ -333,7 +334,7 @@ field                   : ID COLON type
                             {
                               struct sym_rec* prev = prev_fields;
                               for (; prev != NULL; prev = prev->next) {
-                                if (strcmp($1, prev->name) == 0)
+                                if ($1 && prev->name && strcmp($1, prev->name) == 0)
                                   found = 1;
                               }
                             }
@@ -342,6 +343,7 @@ field                   : ID COLON type
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
                               $$->name = $1;
+                              $$->level = get_current_level();
                               $$->class = OC_VAR;
                               $$->desc.var_attr.type = $3;
                             }
@@ -381,7 +383,29 @@ proc_decl               : proc_heading decls compound_stat S_COLON
                         ;
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
+                          {
+                            addproc($2, parm_list);
+                          }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
+                          {
+                            struct sym_rec* ret = globallookup($5);
+                            if(ret == NULL)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' is not a declared type.", $5);
+                              semantic_error(error);
+                            }
+                            else if(ret->class != OC_TYPE)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' does not name a type.", $5);
+                              semantic_error(error);
+                            }
+                            else
+                            {
+                              addfunc($2, parm_list, ret);
+                            }
+                          }
                         ;
 
 f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
@@ -419,32 +443,30 @@ f_parm                  : ID COLON ID
                             {
                               addparm($1, s, parm_list);
                             }
-                            //$$ = parm_list;
+                            $$ = s;
                           }
                         | VAR ID COLON ID
-                          /*
                           {
                             struct sym_rec* parm_list = NULL;
-                            struct sym_rec* s = globallookup($3);
+                            struct sym_rec* s = globallookup($4);
                             if(s == NULL)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' is not a declared type.", $3);
+                              sprintf(error, "'%s' is not a declared type.", $4);
                               semantic_error(error);
                             }
                             else if(s->class != OC_TYPE)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' does not name a type.", $3);
+                              sprintf(error, "'%s' does not name a type.", $4);
                               semantic_error(error);
                             }
                             else
                             {
-                              addparm($1, s, parm_list);
+                              addparm($2, s, parm_list);
                             }
-                            $$ = parm_list;
+                            $$ = s;
                           }
-                          */
                         ;
 
 compound_stat           : P_BEGIN stat_list END
