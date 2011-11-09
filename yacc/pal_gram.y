@@ -41,6 +41,7 @@ struct sym_rec* parm_list = NULL;
   struct sym_rec*     symrec;
   struct type_desc*   desc; 
   struct tc_subrange* range;
+  struct plist_t*     plist;
   }
 
 /* New tokens */
@@ -62,7 +63,6 @@ struct sym_rec* parm_list = NULL;
 %token  <integer> INT_CONST
 %token  <real_t>  REAL_CONST
 
-%type   <symrec>  expr 
 %type   <symrec>  type 
 %type   <symrec>  simple_type
 %type   <symrec>  scalar_list
@@ -80,6 +80,10 @@ struct sym_rec* parm_list = NULL;
 %type   <symrec>  factor
 %type   <symrec>  term
 %type   <symrec>  func_invok
+%type   <symrec>  simple_expr
+%type   <symrec>  expr
+%type   <symrec>  parm
+%type   <plist>   plist_finvok
 
 %% /* Start of grammer */
 
@@ -590,8 +594,87 @@ subscripted_var         : var O_SBRACKET expr
                         | subscripted_var COMMA expr
                         ;
 
-expr                    : simple_expr
+expr                    : simple_expr { $$ = $1; }
                         | simple_expr operator expr
+                          {
+                            struct sym_rec* ret_type = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                            ret_type->name = NULL;
+                            ret_type->level = get_current_level();
+                            ret_type->class = OC_TYPE;
+                            ret_type->desc.type_attr.type_class = TC_BOOLEAN;
+                            ret_type->desc.type_attr.type_description.boolean = builtinlookup("boolean")->desc.type_attr.type_description.boolean;
+                            $$ = ret_type;
+
+                            char error[1024];
+                            if ($1 && $3)
+                            {
+                              if  (   ($1->desc.type_attr.type_class != TC_SCALAR && $3->desc.type_attr.type_class == TC_SCALAR)
+                                  ||  ($1->desc.type_attr.type_class == TC_SCALAR && $3->desc.type_attr.type_class != TC_SCALAR))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix scalar and non-scalar types to comparison operators.");
+                                semantic_error(error);
+                              }
+
+                              else if (   ($1->desc.type_attr.type_class != TC_STRING && $3->desc.type_attr.type_class == TC_STRING)
+                                      ||  ($1->desc.type_attr.type_class == TC_STRING && $3->desc.type_attr.type_class != TC_STRING))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix string and non-string types to comparison operators.");
+                                semantic_error(error);
+                              }
+
+                              else if ($1->desc.type_attr.type_class == TC_SCALAR && $3->desc.type_attr.type_class == TC_SCALAR)
+                                if ($1->desc.type_attr.type_description.scalar != $3->desc.type_attr.type_description.scalar)
+                                {
+                                  $$ = NULL;
+                                  sprintf(error, "Incompatible scalar types given to comparison operator.");
+                                  semantic_error(error);
+                                }
+
+                              else if ($1->desc.type_attr.type_class == TC_STRING && $3->desc.type_attr.type_class == TC_STRING)
+                                if ($1->desc.type_attr.type_description.string->high != $3->desc.type_attr.type_description.string->high)
+                                {
+                                  $$ = NULL;
+                                  sprintf(error, "Incompatible string types given to comparison operator.");
+                                  semantic_error(error);
+                                }
+
+                              else if (   ($1->desc.type_attr.type_class != TC_BOOLEAN && $3->desc.type_attr.type_class == TC_BOOLEAN)
+                                      ||  ($1->desc.type_attr.type_class == TC_BOOLEAN && $3->desc.type_attr.type_class != TC_BOOLEAN))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix boolean and non-boolean types to comparison operators.");
+                                semantic_error(error);
+                              }
+
+                              else if (   ($1->desc.type_attr.type_class != TC_CHAR && $3->desc.type_attr.type_class == TC_CHAR)
+                                      ||  ($1->desc.type_attr.type_class == TC_CHAR && $3->desc.type_attr.type_class != TC_CHAR))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix char and non-char types to comparison operators.");
+                                semantic_error(error);
+                              }
+
+                              else if (   ($1->desc.type_attr.type_class == TC_INTEGER || $1->desc.type_attr.type_class == TC_REAL)
+                                        &&($3->desc.type_attr.type_class != TC_INTEGER && $3->desc.type_attr.type_class != TC_REAL))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix real/integer and non-real/integer types to comparison operators.");
+                                semantic_error(error);
+                              }
+
+                              else if (   ($3->desc.type_attr.type_class == TC_INTEGER || $3->desc.type_attr.type_class == TC_REAL)
+                                        &&($1->desc.type_attr.type_class != TC_INTEGER && $1->desc.type_attr.type_class != TC_REAL))
+                              {
+                                $$ = NULL;
+                                sprintf(error, "Cannot mix real/integer and non-real/integer types to comparison operators.");
+                                semantic_error(error);
+                              }
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         ;
             
 operator                : EQUALS
@@ -603,20 +686,208 @@ operator                : EQUALS
                         | error
                         ;
 
-simple_expr             : term
+simple_expr             : term { $$ = $1; }
                         | PLUS term
+                        {
+                          if($2)
+                          {
+                            if ($2->desc.type_attr.type_class == TC_REAL || $2->desc.type_attr.type_class == TC_INTEGER)
+                              $$ = $2;
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Unary '+' can only act on integers or reals.");
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
+                          else
+                            $$ = NULL;
+                        }
                         | MINUS term
+                        {
+                          if($2)
+                          {
+                            if ($2->desc.type_attr.type_class == TC_REAL || $2->desc.type_attr.type_class == TC_INTEGER)
+                              $$ = $2;
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Unary '-' can only act on integers or reals.");
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
+                          else
+                            $$ = NULL;
+                        }
                         | simple_expr PLUS term
+                          {
+                            if ($1 && $3)
+                            {
+                              if (    ($1->desc.type_attr.type_class != TC_REAL && $1->desc.type_attr.type_class != TC_INTEGER)
+                                  ||  ($3->desc.type_attr.type_class != TC_REAL && $3->desc.type_attr.type_class != TC_INTEGER)
+                                  )
+                              {
+                                char error[1024];
+                                sprintf(error, "operands of 'plus' must be either integers or reals.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                              else if ($1->desc.type_attr.type_class == TC_REAL)
+                                $$ = $1;
+                              else if ($3->desc.type_attr.type_class == TC_REAL)
+                                $$ = $3;
+                              // both integers
+                              else
+                                $$ = $1;
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | simple_expr MINUS term
+                          {
+                            if ($1 && $3)
+                            {
+                              if (    ($1->desc.type_attr.type_class != TC_REAL && $1->desc.type_attr.type_class != TC_INTEGER)
+                                  ||  ($3->desc.type_attr.type_class != TC_REAL && $3->desc.type_attr.type_class != TC_INTEGER)
+                                  )
+                              {
+                                char error[1024];
+                                sprintf(error, "operands of 'minus' must be either integers or reals.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                              else if ($1->desc.type_attr.type_class == TC_REAL)
+                                $$ = $1;
+                              else if ($3->desc.type_attr.type_class == TC_REAL)
+                                $$ = $3;
+                              // both integers
+                              else
+                                $$ = $1;
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | simple_expr OR  term
+                          { 
+                            if ($1 && $3)
+                            {
+                              if ($1->desc.type_attr.type_class == TC_BOOLEAN && $3->desc.type_attr.type_class == TC_BOOLEAN)
+                                  $$ = $1;
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'or' operands must be of type boolean.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         ;
 
 term                    : factor { $$ = $1; }
                         | term MULTIPLY factor
+                          {
+                            if ($1 && $3)
+                            {
+                              if (    ($1->desc.type_attr.type_class != TC_REAL && $1->desc.type_attr.type_class != TC_INTEGER)
+                                  ||  ($3->desc.type_attr.type_class != TC_REAL && $3->desc.type_attr.type_class != TC_INTEGER)
+                                  )
+                              {
+                                char error[1024];
+                                sprintf(error, "operands of 'multiply' must be either integers or reals.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                              else if ($1->desc.type_attr.type_class == TC_REAL)
+                                $$ = $1;
+                              else if ($3->desc.type_attr.type_class == TC_REAL)
+                                $$ = $3;
+                              // both integers
+                              else
+                                $$ = $1;
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | term DIVIDE factor
+                          {
+                            if ($1 && $3)
+                            {
+                              if (    ($1->desc.type_attr.type_class != TC_REAL && $1->desc.type_attr.type_class != TC_INTEGER)
+                                  ||  ($3->desc.type_attr.type_class != TC_REAL && $3->desc.type_attr.type_class != TC_INTEGER)
+                                  )
+                              {
+                                char error[1024];
+                                sprintf(error, "operands of 'divide' must be either integers or reals.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                              else if ($1->desc.type_attr.type_class == TC_REAL)
+                                $$ = $1;
+                              else if ($3->desc.type_attr.type_class == TC_REAL)
+                                $$ = $3;
+                              // both integers
+                              else
+                                $$ = $1;
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | term DIV factor
+                          {
+                            if($1 && $3)
+                            {
+                              if ($1->desc.type_attr.type_class == TC_INTEGER && $3->desc.type_attr.type_class == TC_INTEGER)
+                                  $$ = $1;
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'div' operands must be of type integer.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | term MOD factor
+                          {
+                            if($1 && $3)
+                            {
+                              if ($1->desc.type_attr.type_class == TC_INTEGER && $3->desc.type_attr.type_class == TC_INTEGER)
+                                  $$ = $1;
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'mod' operands must be of type integer.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         | term AND factor
+                          { 
+                            if ($1 && $3)
+                            {
+                              if ($1->desc.type_attr.type_class == TC_BOOLEAN && $3->desc.type_attr.type_class == TC_BOOLEAN)
+                                  $$ = $1;
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'and' operands must be of type boolean.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                              $$ = NULL;
+                          }
                         ;
 
 factor                  : var
@@ -681,6 +952,9 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$ = builtinlookup("char");
                           }
                           | NSTRING   			/* Non-terminated string warning here */                                        
+                          {
+                            $$ = NULL;
+                          }
                         ;                                
 
 unsigned_num            : INT_CONST
@@ -694,24 +968,68 @@ unsigned_num            : INT_CONST
 						            ;                                
 
 func_invok              : plist_finvok C_BRACKET
-                        | ID O_BRACKET C_BRACKET { $$ = NULL; }
+                        | ID O_BRACKET C_BRACKET
+                          {
+                            char error[1024];
+                            struct sym_rec* func = globallookup($1);
+                            if (func)
+                              if (func->class == OC_FUNC)
+                              {
+                                if (func->desc.func_attr.parms == NULL)
+                                  $$ = func->desc.func_attr.return_type;
+                                else
+                                {
+                                  sprintf(error, "Missing arguments for function '%s'.", $1);
+                                  semantic_error(error);
+                                }
+                              }
+                              else
+                              {
+                                sprintf(error, "Attempting to call '%s' which is not a function.", $1);
+                                semantic_error(error);
+                              }
+                          }
                         ;
 
 plist_finvok            : ID O_BRACKET parm
                         | plist_finvok COMMA parm
                         ;
 
-parm                    : expr 
+parm                    : expr { $$ = $1; }
                         ;
 
 struct_stat             : IF expr THEN stat
+                          {
+                            if ($2 && $2->desc.type_attr.type_class != TC_BOOLEAN)
+                            {
+                              char error[1024];
+                              sprintf(error, "If statement conditionals must be of type boolean.");
+                              semantic_error(error);
+                            }
+                          }
                         | IF error THEN stat { yyerrok; yyclearin; }
                         | IF expr THEN matched_stat ELSE stat
+                          {
+                            if ($2 && $2->desc.type_attr.type_class != TC_BOOLEAN)
+                            {
+                              char error[1024];
+                              sprintf(error, "If statement conditionals must be of type boolean.");
+                              semantic_error(error);
+                            }
+                          }
                         | IF error THEN matched_stat ELSE stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE stat
                         | THEN stat { yyerror("Missing 'if' required to match 'then' statement"); }
                         | THEN matched_stat ELSE stat { yyerror("Missing 'if' required to match 'then' statement"); }
                         | WHILE expr DO stat
+                          {
+                            if ($2 && $2->desc.type_attr.type_class != TC_BOOLEAN)
+                            {
+                              char error[1024];
+                              sprintf(error, "while statement conditionals must be of type boolean.");
+                              semantic_error(error);
+                            }
+                          }
                         | WHILE error DO { yyerrok; yyclearin; }
                         | DO stat { yyerror("Missing 'while' required to match 'do' statement"); }
                         | CONTINUE
@@ -720,6 +1038,14 @@ struct_stat             : IF expr THEN stat
 
 matched_stat            : simple_stat
                         | IF expr THEN matched_stat ELSE matched_stat
+                          {
+                            if ($2 && $2->desc.type_attr.type_class != TC_BOOLEAN)
+                            {
+                              char error[1024];
+                              sprintf(error, "If statement conditionals must be of type boolean.");
+                              semantic_error(error);
+                            }
+                          }
                         | IF error THEN matched_stat ELSE matched_stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE matched_stat { yyerrok; yyclearin; }
                         | WHILE expr DO matched_stat
