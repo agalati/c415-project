@@ -13,6 +13,7 @@
 #define YYDEBUG 1
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "semantics.h"
 #include "symtab.h"
@@ -56,7 +57,8 @@ struct sym_rec* parm_list = NULL;
 %token  <name>    ID FUNCTION PROCEDURE 
 %token            IF MOD
 %token            NOT OF OR PROGRAM REAL RECORD
-%token            STRING THEN TYPE VAR WHILE 
+%token            THEN TYPE VAR WHILE 
+%token  <name>    STRING 
 %token  <integer> INT_CONST
 %token  <real_t>  REAL_CONST
 
@@ -71,6 +73,13 @@ struct sym_rec* parm_list = NULL;
 %type   <symrec>  field
 %type   <symrec>  var_decl
 %type   <symrec>  f_parm
+%type   <symrec>  f_parm_list
+%type   <symrec>  var
+%type   <symrec>  unsigned_num
+%type   <symrec>  unsigned_const
+%type   <symrec>  factor
+%type   <symrec>  term
+%type   <symrec>  func_invok
 
 %% /* Start of grammer */
 
@@ -204,15 +213,32 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                           {
                             if ($3 != NULL && $6 != NULL)
                             {
-                              $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                              $$->next = NULL;
-                              $$->name = NULL;
-                              $$->level = get_current_level();
-                              $$->class = OC_TYPE;
-                              $$->desc.type_attr.type_class = TC_ARRAY;
-                              $$->desc.type_attr.type_description.array = (struct tc_array*)malloc(sizeof(struct tc_array));
-                              $$->desc.type_attr.type_description.array->subrange = $3;
-                              $$->desc.type_attr.type_description.array->object_type = $6;
+                              if ( $6->desc.type_attr.type_class == TC_CHAR
+                                && (builtinlookup("char")->desc.type_attr.type_description.character == $6->desc.type_attr.type_description.character)
+                                && $3->low == 1
+                                )
+                              {
+                                $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                $$->next = NULL;
+                                $$->name = NULL;
+                                $$->level = get_current_level();
+                                $$->class = OC_TYPE;
+                                $$->desc.type_attr.type_class = TC_STRING;
+                                $$->desc.type_attr.type_description.string = (struct tc_string*)malloc(sizeof(struct tc_string));
+                                $$->desc.type_attr.type_description.string->high = $3->high;
+                              }
+                              else
+                              {
+                                $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                $$->next = NULL;
+                                $$->name = NULL;
+                                $$->level = get_current_level();
+                                $$->class = OC_TYPE;
+                                $$->desc.type_attr.type_class = TC_ARRAY;
+                                $$->desc.type_attr.type_description.array = (struct tc_array*)malloc(sizeof(struct tc_array));
+                                $$->desc.type_attr.type_description.array->subrange = $3;
+                                $$->desc.type_attr.type_description.array->object_type = $6;
+                              }
                             }
                             else
                               $$ = NULL;
@@ -382,12 +408,23 @@ proc_decl_list          : proc_decl
                         ;
 
 proc_decl               : proc_heading decls compound_stat S_COLON
+                          {
+                            poplevel();
+                          }
                         //| error S_COLON { yyerrok; yyclearin; }
                         ;
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                           {
-                            addproc($2, parm_list);
+                            if(globallookup($2) == NULL)
+                              addproc($2, parm_list);
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Procedure name '%s' has already been declared.", $2);
+                              semantic_error(error);
+                            }
+                            pushlevel();
                           }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
@@ -395,18 +432,26 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             if(ret == NULL)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' is not a declared type.", $5);
+                              sprintf(error, "Return value '%s' of function '%s' is not a declared type.", $5, $2);
                               semantic_error(error);
                             }
                             else if(ret->class != OC_TYPE)
                             {
                               char error[1024];
-                              sprintf(error, "'%s' does not name a type.", $5);
+                              sprintf(error, "Return value '%s' of function '%s' does not name a type.", $5, $2);
                               semantic_error(error);
                             }
                             else
                             {
-                              addfunc($2, parm_list, ret);
+                              if(globallookup($2) == NULL)
+                                addfunc($2, parm_list, ret);
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "Function name '%s' has already been declared.", $2);
+                                semantic_error(error);
+                              }
+                              pushlevel();
                             }
                           }
                         ;
@@ -421,54 +466,87 @@ f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
 f_parm_list             : f_parm
                           {
                             clear_parm_list = 0;
+                            $$ = parm_list;
                           }
                         | f_parm_list S_COLON f_parm
+                          {
+                            $$ = parm_list;
+                          }
                         | error S_COLON f_parm { yyerrok; yyclearin; }
                         ;
 
 f_parm                  : ID COLON ID
                           {
                             if (clear_parm_list) parm_list = NULL;
+                            int parm_error = 0;
+                            if (parm_list != NULL)
+                            {
+                              struct sym_rec* prev_parms = parm_list;
+                              for(; prev_parms != NULL; prev_parms = prev_parms->next)
+                                if(strcmp(prev_parms->name, $1) == 0)
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "'%s' has already been declared as a parameter.", $1);
+                                    semantic_error(error);
+                                    parm_error = 1;
+                                  }
+                            }
                             struct sym_rec* s = globallookup($3);
                             if(s == NULL)
                             {
                               char error[1024];
                               sprintf(error, "'%s' is not a declared type.", $3);
                               semantic_error(error);
+                              parm_error = 1;
                             }
                             else if(s->class != OC_TYPE)
                             {
                               char error[1024];
                               sprintf(error, "'%s' does not name a type.", $3);
                               semantic_error(error);
+                              parm_error = 1;
                             }
-                            else
-                            {
-                              addparm($1, s, parm_list);
-                            }
-                            $$ = s;
+
+                            if (parm_error) s = NULL;
+                            parm_list = addparm($1, s, parm_list);
+                            $$ = parm_list;
                           }
+                        // TODO: fix later
                         | VAR ID COLON ID
-                          {
-                            struct sym_rec* parm_list = NULL;
+                        {
+                            if (clear_parm_list) parm_list = NULL;
+                            int parm_error = 0;
+                            if (parm_list != NULL)
+                            {
+                              struct sym_rec* prev_parms = parm_list;
+                              for(; prev_parms != NULL; prev_parms = prev_parms->next)
+                                if(strcmp(prev_parms->name, $2) == 0)
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "'%s' has already been declared as a parameter.", $2);
+                                    semantic_error(error);
+                                    parm_error = 1;
+                                  }
+                            }
                             struct sym_rec* s = globallookup($4);
                             if(s == NULL)
                             {
                               char error[1024];
                               sprintf(error, "'%s' is not a declared type.", $4);
                               semantic_error(error);
+                              parm_error = 1;
                             }
                             else if(s->class != OC_TYPE)
                             {
                               char error[1024];
                               sprintf(error, "'%s' does not name a type.", $4);
                               semantic_error(error);
+                              parm_error = 1;
                             }
-                            else
-                            {
-                              addparm($2, s, parm_list);
-                            }
-                            $$ = s;
+
+                            if (parm_error) s = NULL;
+                            parm_list = addparm($2, s, parm_list);
+                            $$ = parm_list;
                           }
                         ;
 
@@ -495,6 +573,15 @@ proc_invok              : plist_finvok C_BRACKET
                         ;
 
 var                     : ID
+                          {
+                            $$ = globallookup($1);
+                            if (!$$)
+                            {
+                              char error[1024];
+                              sprintf(error, "variable '%s' undeclared at this level", $1);
+                              semantic_error(error);
+                            }
+                          }
                         | var PERIOD ID
                         | subscripted_var C_SBRACKET
                         ;
@@ -524,7 +611,7 @@ simple_expr             : term
                         | simple_expr OR  term
                         ;
 
-term                    : factor
+term                    : factor { $$ = $1; }
                         | term MULTIPLY factor
                         | term DIVIDE factor
                         | term DIV factor
@@ -532,25 +619,82 @@ term                    : factor
                         | term AND factor
                         ;
 
-factor                  : var                       /* removed simple_type and added it's applicable atoms */
-						            | unsigned_const
-                        | BOOL
-                        | O_BRACKET expr C_BRACKET
-                        | func_invok
+factor                  : var
+                          {
+                            if($1)
+                            {
+                              switch($1->class)
+                              {
+                                case OC_TYPE:
+                                  $$ = $1;
+                                  break;
+                                case OC_VAR:
+                                  $$ = $1->desc.var_attr.type;
+                                  break;
+                                case OC_CONST:
+                                  $$ = $1->desc.const_attr.type;
+                                  break;
+                                default:
+                                  semantic_error("could not find type of expression");
+                              }
+                            }
+                            else
+                              $$ = $1;
+                          }
+						            | unsigned_const { $$ = $1; }
+                        | O_BRACKET expr C_BRACKET { $$ = $2; }
+                        | func_invok { $$ = $1; }
                         | NOT factor
+                          {
+                            if ($2)
+                            {
+                              if ($2->class == OC_TYPE && $2->desc.type_attr.type_class == TC_BOOLEAN)
+                                $$ = $2;
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "Invalid operand for unary operator 'not' - expected type boolean");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                              $$ = $2;
+                          }
                         ;
 
-unsigned_const          : unsigned_num                    
-						            | STRING                         
-						            | NSTRING   			/* Non-terminated string warning here */                                        
+unsigned_const          : unsigned_num { $$ = $1; }
+						            | STRING
+                          {
+                            if (strlen($1) != 1)
+                            {
+                              $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                              $$->next = NULL;
+                              $$->name = NULL;
+                              $$->level = get_current_level();
+                              $$->class = OC_TYPE;
+                              $$->desc.type_attr.type_class = TC_STRING;
+                              $$->desc.type_attr.type_description.string = (struct tc_string*)malloc(sizeof(struct tc_string));
+                              $$->desc.type_attr.type_description.string->high = strlen($1);
+                            }
+                            else
+                              $$ = builtinlookup("char");
+                          }
+                          | NSTRING   			/* Non-terminated string warning here */                                        
                         ;                                
 
-unsigned_num            : INT_CONST            
-						            | REAL_CONST                           
+unsigned_num            : INT_CONST
+                          {
+                            $$ = builtinlookup("integer");
+                          }
+						            | REAL_CONST
+                          {
+                            $$ = builtinlookup("real");
+                          }
 						            ;                                
 
 func_invok              : plist_finvok C_BRACKET
-                        | ID O_BRACKET C_BRACKET
+                        | ID O_BRACKET C_BRACKET { $$ = NULL; }
                         ;
 
 plist_finvok            : ID O_BRACKET parm

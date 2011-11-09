@@ -26,7 +26,7 @@ main (  int     argc,
   parse_args(argc, argv);
   sym_tab_init();
   int ret =  yyparse ();
-  printsym();
+  //printsym();
   new_position_line();
   fclose(stdin);
   fclose(prog_file);
@@ -62,6 +62,22 @@ lexerror(char const* invalid)
   {
     char* err = (char*)malloc(1024*sizeof(char));
     sprintf(err, "##lexer:%d: Invalid token.\n", yylloc.first_line);
+    add_err_to_buf(err);
+  }
+}
+
+void
+unterminated_string(void)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s", linebuf);
+  free(linebuf);
+
+  fprintf(stderr, "Unterminated string on line %d\n\n", yylloc.first_line);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d: Unterminated string.\n", yylloc.first_line);
     add_err_to_buf(err);
   }
 }

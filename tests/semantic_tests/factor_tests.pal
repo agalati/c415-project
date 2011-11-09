@@ -1,0 +1,16 @@
+program test(in, out);
+const 
+  a = 1;
+  b = 1;
+  b = 2;
+  integer = 3;
+  hello = -1;
+var
+  c : boolean;
+  d : boolean;
+begin
+  c := not hello;
+  c := not c;
+  d := not not hello;
+  d := not e;
+end.

@@ -37,6 +37,7 @@ struct error_msgs* err_buf;
 int yylex (void);
 void semantic_error(char const*);
 void lexerror(char const*);
+void unterminated_string(void);
 void yyerror (char const *);
 
 int ID_or_reserved(char const*);

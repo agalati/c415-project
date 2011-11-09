@@ -251,10 +251,10 @@ void pushlevel()
  */
 void poplevel()
 {
-  current_level--;
-
   /* Free linked list and it's components */
-  
+  sym_tab[current_level] = NULL;
+
+  current_level--;
 }
 
 /*****************************************
@@ -479,20 +479,23 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
   struct sym_rec *s;
   struct sym_rec *t;
 
-  s = malloc(sizeof(struct sym_rec));
-  if (s == NULL) {
-    fprintf(stderr, "Error: malloc failed in addparm()\n");
-    exit(EXIT_FAILURE);
+  if (type)
+  {
+    s = malloc(sizeof(struct sym_rec));
+    if (s == NULL) {
+      fprintf(stderr, "Error: malloc failed in addparm()\n");
+      exit(EXIT_FAILURE);
+    }
+
+    s->name = strdup(name);
+    s->level = current_level;
+    s->class = OC_VAR;
+    s->desc.var_attr.type = type;
+
+    /* Add to next level of symbol table */
+    s->next = sym_tab[current_level + 1];
+    sym_tab[current_level + 1] = s;
   }
-
-  s->name = strdup(name);
-  s->level = current_level - 1;
-  s->class = OC_VAR;
-  s->desc.var_attr.type = type;
-
-  /* Add to next level of symbol table */
-  s->next = sym_tab[current_level + 1];
-  sym_tab[current_level + 1] = s;
 
   /* Adds a copy to the current parameter list (var_attr.location should be the same) */
   t = malloc(sizeof(struct sym_rec));
@@ -503,7 +506,10 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
 
   t->name = strdup(name);
   t->level = current_level - 1;
-  t->class = OC_VAR;
+  if(type)
+    t->class = OC_VAR;
+  else
+    t->class = OC_ERROR;
   t->desc.var_attr.type = type;
 
   t->next = parm_list;

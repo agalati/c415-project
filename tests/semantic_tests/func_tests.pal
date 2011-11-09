@@ -1,0 +1,25 @@
+program test(in, out);
+var
+  c : char;
+
+  procedure p1(a : real; b : integer);
+  var
+    c : integer;
+  begin
+  end;
+
+  function f1(a : integer; b : real) : char;
+  var
+    c : boolean;
+
+    procedure fp1(c : boolean);
+    var
+      c : real;
+    begin
+    end;
+
+  begin
+  end;
+
+begin
+end.
