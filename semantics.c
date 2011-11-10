@@ -8,14 +8,13 @@
 int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
 {
   if (!left || !right)
-  {
-    printf("failed due to null pointers\n");
     return 0;
-  }
-/*
-  printf("LHS = %d", left->desc.type_attr.type_class);
-  printf("RHS = %d", left->desc.type_attr.type_class );
-*/
+
+  printf("LHS name: %s\n", left->name);
+  printf("RHS name: %s\n", right->name);
+  printf("LHS = %d\n", left->desc.type_attr.type_class);
+  printf("RHS = %d\n", right->desc.type_attr.type_class );
+
   /* real := int || real */
   if ( left->desc.type_attr.type_class == TC_REAL &&
        (right->desc.type_attr.type_class == TC_INTEGER || right->desc.type_attr.type_class == TC_REAL) )
@@ -65,18 +64,10 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
 int compare_types(struct sym_rec* s, struct sym_rec* t)
 {
   if (!s || !t)
-  {
-    printf("failed due to null pointers\n");
     return 0;
-  }
-
-  printf("names: %s, %s\n", s->name, t->name);
 
   if (s->desc.type_attr.type_class != t->desc.type_attr.type_class)
-  {
-    printf("failed due to different type classes - %d %d\n", s->desc.type_attr.type_class, t->desc.type_attr.type_class);
     return 0;
-  }
 
   switch(s->desc.type_attr.type_class)
   {
