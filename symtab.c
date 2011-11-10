@@ -251,6 +251,11 @@ void pushlevel()
 {
 //  printsym();
   current_level++;
+  if (current_level >= MAX_LEVEL)
+  {
+    fprintf(stderr, "Maximum nesting depth for procedures and functions exceeded (current level is %d, max is %d). Stopping parse.", current_level, MAX_LEVEL);
+    exit(1);
+  }
 }
 
 /*****************************************
@@ -419,6 +424,15 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->desc.func_attr.parms = parm_list;
   s->desc.func_attr.return_type = return_type;
 
+  s->next = sym_tab[current_level];
+  sym_tab[current_level] = s;
+
+  s = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+  s->name = strdup(name);
+  s->level = current_level;
+  s->class = OC_VAR;
+  s->desc.var_attr.type = return_type;
+  
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
 
