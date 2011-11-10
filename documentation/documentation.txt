@@ -40,9 +40,9 @@ Another issue with the grammar was the possibility of declaring an array with ty
 
 The symbol table entries follow the course notes in their design. The symbol table itself is an array of linked lists of symbol table entries. The array is size 17 to correspond to the display register values in ASC and allows for a base level of predefined values which we have hardcoded into the compiler.
 
-The symbol table includes a few basic functions as an interface to it. PushLevel and PopLevel are included to change the scope of the program - these are called in Bison when we begin to parse inside a new procedure or function. Various functions have been created to add items to the symbol table - one for each of the main types (var, const, type, func, proc). We have included a symbol table printing function that is current a work in progress.
+The symbol table includes a few basic functions as an interface to it. PushLevel and PopLevel are included to change the scope of the program - these are called in Bison when we begin to parse inside a new procedure or function. Various functions have been created to add items to the symbol table - one for each of the main types (var, const, type, func, proc). We have included a symbol table printing function that is currently a work in progress.
 
-The symbol table consists of sym\_rec structures, which are at the main level of the symbol table. These structures have a class number (eg. OC\_TYPE) which defines a field in a union containing more class specific information. The most interesting of these is the struct type\_desc including the types of allowed types. This field is important to comparision later on, as we are able to pull out of it the address of a pointer that was created when a type as declared to compare it with other types. Every variable and constant is linked to a type, so through many levels of redirection we are able to get all of the information we require about an items in the symbol table.
+The symbol table consists of sym\_rec structures, which are at the main level of the symbol table. These structures have a class number (eg. OC\_TYPE) which defines a field in a union containing more class specific information. The most interesting of these is the struct type\_desc including the types of allowed types. This field is important to comparision later on, as we are able to pull out of it the address of a pointer that was created when a type as declared to compare it with other types. Every variable and constant is linked to a type, so through many levels of redirection we are able to get all of the information we require about an item in the symbol table.
 
 \section{Semantic Error Checking and Symbol Table Usage}
 
@@ -52,7 +52,7 @@ Populating the symbol table is straight forward for most classes. During functio
 
 Type checking is currently done for expressions by simply grabbing the type of whatever constant or variable we have seen and passing it through \$\$ variable. If an error is seen at any point in the expression evaluation, an error is reported and \$\$ is set to NULL. We decided to do this because sending an arbitrary type through an expression would cause more errors than it would detect.
 
-For checking functions, since Bison sees the name before the parameter list, we save the 
+To check functions and procedures, since Bison sees the name before the parameter list, we save the important parts about the function in the struct plist_t and pass it through \$\$ as we parse the parameters. This way we can know about missing parameters and incorrect ones, and give functions a proper return type.
 
 
 \section{References Cited}

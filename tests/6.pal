@@ -8,7 +8,7 @@ Location and Description of Errors
 -----------------------------------
 Error on line 65, trying to assign an unknown type.
 Error on line 130,trying to assign a real to an int variable.
-Error on line 132,attempting to assign outside legal index for an array. 
+Error on line 13,attempting to use an array name as an index value. 
 
 =====================================================}
 
@@ -129,7 +129,8 @@ begin
 
       heading := apples + 1;    { error - trying to assign a real to an int }
       
-      myarray[99] := 20;        { error - attemping to assign outside legal index for array }
+      myarray[1] := 20;     
+      myarray[myarray] := myarray[1];   { error - using an array name as an index }
           
        
 end.
