@@ -8,10 +8,13 @@
 struct plist_t
 {
   struct sym_rec* parmlist;
+  struct sym_rec* return_type;
+  char* name;
   int counter;
   int max;
 };
 
+int assignment_compatible(struct sym_rec* left, struct sym_rec* right);
 int compare_types(struct sym_rec* s, struct sym_rec* t);
 
 void declare_const(char* name, struct sym_rec*);

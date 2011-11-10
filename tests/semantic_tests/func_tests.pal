@@ -1,6 +1,7 @@
 program test(in, out);
 var
   c : char;
+  list : array[10..90] of integer;
 
   procedure p1(a : real; b : integer);
   var
@@ -22,4 +23,6 @@ var
   end;
 
 begin
+        c := f1(1, 2);
+        p1(1E4, 2);
 end.

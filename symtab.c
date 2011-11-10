@@ -243,7 +243,7 @@ void sym_tab_init()
  */
 void pushlevel()
 {
-  printsym();
+//  printsym();
   current_level++;
 }
 

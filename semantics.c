@@ -5,6 +5,56 @@
 #include "semantics.h"
 #include "symtab.h"
 
+int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
+{
+  if (!left || !right)
+  {
+    printf("failed due to null pointers\n");
+    return 0;
+  }
+
+  /* real := int || real */
+  if ( left->desc.type_attr.type_class == TC_REAL &&
+       (right->desc.type_attr.type_class == TC_INTEGER || right->desc.type_attr.type_class == TC_REAL) )
+  {
+    return 1;
+  } 
+
+  if (right->desc.type_attr.type_class != left->desc.type_attr.type_class)
+    return 0;
+
+  switch(left->desc.type_attr.type_class)
+  {
+  case TC_CHAR:
+    if (left->desc.type_attr.type_class == right->desc.type_attr.type_class)
+      return 1;
+    return 0;
+  case TC_BOOLEAN:
+    if (left->desc.type_attr.type_class == right->desc.type_attr.type_class)
+      return 1;
+    return 0;
+  case TC_STRING:
+    if (left->desc.type_attr.type_description.string->high == right->desc.type_attr.type_description.string->high)
+      return 1;
+    return 0;
+  case TC_ARRAY:
+    if (left->desc.type_attr.type_description.array == right->desc.type_attr.type_description.array)
+      return 1;
+    return 0;
+  case TC_SCALAR:
+    if (left->desc.type_attr.type_description.scalar == right->desc.type_attr.type_description.scalar)
+      return 1;
+    return 0;
+  case TC_RECORD:
+    if (left->desc.type_attr.type_description.record == right->desc.type_attr.type_description.record)
+      return 1;
+    return 0;
+  default: return 0;
+  }    
+
+  return 0;
+}
+
 int compare_types(struct sym_rec* s, struct sym_rec* t)
 {
   if (!s || !t)

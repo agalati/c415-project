@@ -573,12 +573,68 @@ stat                    : simple_stat
                         ;
 
 simple_stat             : var ASSIGNMENT expr
+                        {
+                           /* Check for nulls */
+                           if ($1 && $3)
+                           {  
+                              if ($1->class == OC_CONST) {
+                                 char error[1024];
+                                 if ($1->name) {
+                                   sprintf(error, "cannot reassign constant '%s'", $1->name);
+                                 } else {
+                                   sprintf(error, "cannot reassign constant");
+                                 }
+                                 semantic_error(error);
+                              }
+
+                              if ($1->class == OC_VAR) {
+
+                              if (assignment_compatible($1->desc.var_attr.type, $3) == 0) {
+                                 char error[1024];
+                                 sprintf(error, "assignment type is incompatible", $1);
+                                 semantic_error(error);
+                                 }
+                              } else {
+                                 char error[1024];
+                                 if ($1->name) {
+                                    sprintf(error, "Illegal assignment operation: %s is not a variable.", $1->name);
+                                    semantic_error(error);
+                                 }
+                                 else {
+                                    sprintf(error, "Illegal assignment operation: LHS not a variable.");
+                                    semantic_error(error);
+                                 }
+                              }
+                           }
+                        }
                         | proc_invok
                         | compound_stat
                         ;
 
 proc_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
+                        {
+                            char error[1024];
+                            struct sym_rec* proc = globallookup($1);
+                            if (proc) {
+                              if (proc->class == OC_PROC)
+                              {
+                                if (proc->desc.proc_attr.parms != NULL)
+                                {
+                                  sprintf(error, "Missing arguments for procedure '%s'.", $1);
+                                  semantic_error(error);
+                                }
+                              }
+                              else
+                              {
+                                sprintf(error, "Attempting to call '%s' which is not a procedure.", $1);
+                                semantic_error(error);
+                              }
+                            } else {
+                              sprintf(error, "Attempting to call procedure '%s' which is has not been declared.", $1);
+                              semantic_error(error);
+                            }
+                        }
                         ;
 
 var                     : ID
@@ -629,20 +685,22 @@ expr                    : simple_expr { $$ = $1; }
                                 semantic_error(error);
                               }
 
-                              else if ($1->desc.type_attr.type_class == TC_SCALAR && $3->desc.type_attr.type_class == TC_SCALAR)
-                                if ($1->desc.type_attr.type_description.scalar != $3->desc.type_attr.type_description.scalar)
-                                {
-                                  $$ = NULL;
-                                  sprintf(error, "Incompatible scalar types given to comparison operator.");
-                                  semantic_error(error);
+                              else if ($1->desc.type_attr.type_class == TC_SCALAR && $3->desc.type_attr.type_class == TC_SCALAR) {
+                                   if ($1->desc.type_attr.type_description.scalar != $3->desc.type_attr.type_description.scalar)
+                                   {
+                                        $$ = NULL;
+                                        sprintf(error, "Incompatible scalar types given to comparison operator.");
+                                        semantic_error(error);
+                                   }
                                 }
 
-                              else if ($1->desc.type_attr.type_class == TC_STRING && $3->desc.type_attr.type_class == TC_STRING)
+                              else if ($1->desc.type_attr.type_class == TC_STRING && $3->desc.type_attr.type_class == TC_STRING) {
                                 if ($1->desc.type_attr.type_description.string->high != $3->desc.type_attr.type_description.string->high)
                                 {
                                   $$ = NULL;
                                   sprintf(error, "Incompatible string types given to comparison operator.");
                                   semantic_error(error);
+                                  }
                                 }
 
                               else if (   ($1->desc.type_attr.type_class != TC_BOOLEAN && $3->desc.type_attr.type_class == TC_BOOLEAN)
@@ -662,7 +720,7 @@ expr                    : simple_expr { $$ = $1; }
                               }
 
                               else if (   ($1->desc.type_attr.type_class == TC_INTEGER || $1->desc.type_attr.type_class == TC_REAL)
-                                        &&($3->desc.type_attr.type_class != TC_INTEGER && $3->desc.type_attr.type_class != TC_REAL))
+                                       && ($3->desc.type_attr.type_class != TC_INTEGER && $3->desc.type_attr.type_class != TC_REAL))
                               {
                                 $$ = NULL;
                                 sprintf(error, "Cannot mix real/integer and non-real/integer types to comparison operators.");
@@ -670,7 +728,7 @@ expr                    : simple_expr { $$ = $1; }
                               }
 
                               else if (   ($3->desc.type_attr.type_class == TC_INTEGER || $3->desc.type_attr.type_class == TC_REAL)
-                                        &&($1->desc.type_attr.type_class != TC_INTEGER && $1->desc.type_attr.type_class != TC_REAL))
+                                       && ($1->desc.type_attr.type_class != TC_INTEGER && $1->desc.type_attr.type_class != TC_REAL))
                               {
                                 $$ = NULL;
                                 sprintf(error, "Cannot mix real/integer and non-real/integer types to comparison operators.");
@@ -951,7 +1009,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->class = OC_TYPE;
                               $$->desc.type_attr.type_class = TC_STRING;
                               $$->desc.type_attr.type_description.string = (struct tc_string*)malloc(sizeof(struct tc_string));
-                              $$->desc.type_attr.type_description.string->high = strlen($1);
+                              $$->desc.type_attr.type_description.string->high = strlen($1) - 2; /* Because of single quotes */
                             }
                             else
                               $$ = builtinlookup("char");
@@ -972,12 +1030,19 @@ unsigned_num            : INT_CONST
                           }
 						            ;                                
 
-func_invok              : plist_finvok C_BRACKET
+func_invok              : plist_finvok C_BRACKET 
+                        { /* Need return value */
+                          if ($1) {
+                             $$ = $1->return_type; 
+                          } else {
+                             $$ = NULL;
+                          }
+                        }
                         | ID O_BRACKET C_BRACKET
                           {
                             char error[1024];
                             struct sym_rec* func = globallookup($1);
-                            if (func)
+                            if (func) {
                               if (func->class == OC_FUNC)
                               {
                                 if (func->desc.func_attr.parms == NULL)
@@ -993,6 +1058,11 @@ func_invok              : plist_finvok C_BRACKET
                                 sprintf(error, "Attempting to call '%s' which is not a function.", $1);
                                 semantic_error(error);
                               }
+                            } else {
+                              sprintf(error, "Attempting to call '%s' which is has not been declared.", $1);
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
                           }
                         ;
 
@@ -1006,21 +1076,61 @@ plist_finvok            : ID O_BRACKET parm
                                 $$ = (struct plist_t*)malloc(sizeof(struct plist_t));
                                 $$->parmlist = func->desc.func_attr.parms;
                                 $$->counter = 0;
+                                $$->return_type = func->desc.func_attr.return_type;
+                                $$->name = func->name;
+
                                 struct sym_rec* last_parm = NULL;
                                 for(func = $$->parmlist; func != NULL; func = func->next)
                                 {
+                                  printf("Parameter %s found\n", func->name);
                                   $$->counter = $$->counter + 1; 
                                   last_parm = func;
                                 }
                                 $$->max = $$->counter;
 
-                                if ($3)
-                                  if (!compare_types($3, last_parm))
-                                  {
-                                    char error[1024];
-                                    sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
-                                    semantic_error(error);
+                                if ($3) {
+                                
+                                /* This should be an OC_VAR always */
+                                  if (last_parm->class == OC_VAR) {
+                                     if (!compare_types($3, last_parm->desc.var_attr.type))
+                                     {
+                                        char error[1024];
+                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                     }
                                   }
+                                }
+
+                                $$->counter = $$->counter - 1;
+                              }
+                              else if (func->class == OC_PROC)
+                              {
+                                $$ = (struct plist_t*)malloc(sizeof(struct plist_t));
+                                $$->parmlist = func->desc.proc_attr.parms;
+                                $$->counter = 0;
+                                $$->return_type = NULL;
+                                $$->name = func->name;
+
+                                struct sym_rec* last_parm = NULL;
+                                for(func = $$->parmlist; func != NULL; func = func->next)
+                                {
+                                  $$->counter = $$->counter + 1;
+                                  last_parm = func;
+                                }
+                                $$->max = $$->counter;
+
+                                if ($3) {
+                                
+                                /* This should be an OC_VAR */
+                                   if (last_parm->class == OC_VAR) {
+                                      if (!compare_types($3, last_parm->desc.var_attr.type))
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
+                                   }
+                                }
 
                                 $$->counter = $$->counter - 1;
                               }
@@ -1034,6 +1144,37 @@ plist_finvok            : ID O_BRACKET parm
                             }
                           }
                         | plist_finvok COMMA parm
+                        {
+                           if ($1) {
+                                int i;
+                                struct sym_rec* last_parm = NULL;
+                                
+                                for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
+                                                                
+                                if ($3) {
+
+                                /* This should be an OC_VAR */
+                                   if (last_parm->class == OC_VAR) {
+                                      if (!compare_types($3, last_parm->desc.var_attr.type))
+                                      {
+                                        char error[1024];
+                                        if ($1->name) {
+                                           sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1->name, $1->max - $1->counter + 1);
+                                           semantic_error(error);
+                                        } else {
+                                           sprintf(error, "Incompatible parameter passed in position %d", $1->max - $1->counter + 1);
+                                           semantic_error(error);
+                                        }
+                                        }
+                                      }
+                                   }
+                                
+                                $1->counter = $1->counter - 1;
+                                $$ = $1;
+                            } else {
+                                 $$ = $1;
+                            }
+                        }
                         ;
 
 parm                    : expr { $$ = $1; }
