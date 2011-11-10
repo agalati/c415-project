@@ -1,0 +1,19 @@
+program TinyTest03 (input, output);
+
+{A bit more string stuff}
+
+const 
+      stringy = 'hello, world';
+      ignorance = 'knowledge';
+      war = 'peace';
+      slavery = 'freedom';
+
+var
+	a,b,c,d : string;
+
+begin {main function}
+
+	writeln('freedom is ', slavery, ', peace is ', war, ', knowledge is ', ignorance);
+	writeln( );
+ 
+end.

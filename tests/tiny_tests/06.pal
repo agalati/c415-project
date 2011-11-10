@@ -1,0 +1,12 @@
+program TinyTest06 (input, output);
+
+{Constants with numbered variable names}
+
+const
+        somenum1 = 3;
+        somenum2 = 7;
+        somenum3 = 13;
+
+begin {main function}
+
+end.
