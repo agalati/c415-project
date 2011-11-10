@@ -1,0 +1,7 @@
+program TinyTest (input, output);
+
+{Empty}
+
+begin {main function}
+
+end.

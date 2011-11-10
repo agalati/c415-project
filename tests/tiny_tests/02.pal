@@ -1,0 +1,13 @@
+program TinyTest (input, output);
+
+{Some constant strings}
+
+const 
+      stringy = 'hello, world';
+      ignorance = 'knowledge';
+      war = 'peace';
+      slavery = 'freedom';
+
+begin {main function}
+
+end.

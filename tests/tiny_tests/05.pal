@@ -1,0 +1,16 @@
+program TinyTest05 (input, output);
+
+{Real number constants tests}
+
+
+const
+        realnum1 = 11.2E35813;
+        realnum2 = 314E159265;
+        realnum3 = 102.9E+12;
+
+
+
+begin {main function}
+
+
+end.
