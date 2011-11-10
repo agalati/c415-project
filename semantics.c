@@ -10,10 +10,12 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
   if (!left || !right)
     return 0;
 
+  /*
   printf("LHS name: %s\n", left->name);
   printf("RHS name: %s\n", right->name);
   printf("LHS = %d\n", left->desc.type_attr.type_class);
   printf("RHS = %d\n", right->desc.type_attr.type_class );
+  */
 
   /* real := int || real */
   if ( left->desc.type_attr.type_class == TC_REAL &&
