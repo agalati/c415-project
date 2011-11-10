@@ -1,7 +1,11 @@
-CMPUT 415 Project Checkpoint 1
+CMPUT 415 Project Checkpoint 2
 
 Group 4 - Matthew Low, Anthony Galati, Mike Bujold, and Stevan Clement
 
+PAL Compiler
+      Compiles programs in the PAL language - a subset of Pascal.
+
 Reuse Statement
-      Only the class notes, class discussions, and Bison/Flex manuals
-      were used in completing this checkpoint.
+      Only the class notes, class discussions, Bison/Flex manuals,
+      and a few helpful O'Reilly guides were used in completing this
+      checkpoint.

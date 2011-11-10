@@ -24,6 +24,8 @@ struct sym_rec* prev_fields;
 int clear_parm_list = 1;
 struct sym_rec* parm_list = NULL;
 
+struct temp_array_var* temp_array_vars = NULL;
+
 %}
 
  //%expect 1     /* bison knows to expect 1 s/r conflict */
@@ -84,10 +86,12 @@ struct sym_rec* parm_list = NULL;
 %type   <symrec>  expr
 %type   <symrec>  parm
 %type   <plist>   plist_finvok
+%type   <symrec>  subscripted_var
 
 %% /* Start of grammer */
 
 program                 : program_head decls compound_stat PERIOD
+                        | error
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
@@ -620,6 +624,13 @@ simple_stat             : var ASSIGNMENT expr
                                  
                               }
                            }
+                          // free all the temporary variables that we've kept around to access array subscripting
+                          while(temp_array_vars != NULL)
+                          {
+                            struct temp_array_var* tmp = temp_array_vars;
+                            temp_array_vars = temp_array_vars->next;
+                            free(tmp);
+                          }
                         }
                         | proc_invok
                         | compound_stat
@@ -662,25 +673,93 @@ var                     : ID
                             }
                           }
                         | var PERIOD ID
+                        {
+                          if ($1)
+                          {
+                            if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_RECORD)
+                            {
+                              struct sym_rec* field = $1->desc.var_attr.type->desc.type_attr.type_description.record->field_list;
+                              for(; field != NULL; field = field->next)
+                                if (strcmp(field->name,$3)==0)
+                                  break;
+                              // field is either the variable ID or null, we pass back both
+                              $$ = field;
+                              if (!$$)
+                              {
+                                char error[1024];
+                                sprintf(error, "'%s' is not a member of '%s'.", $3, $1->name);
+                                semantic_error(error);
+                              }
+                            }
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Invalid use of . operator, '%s' is not a record.", $1->name);
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
+                          else
+                            $$ = NULL;
+                        }
                         | subscripted_var C_SBRACKET
                         ;
 
 subscripted_var         : var O_SBRACKET expr
                         {
-                          if ($1) {
-                             if ($1->class == OC_VAR) {
-                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY) {
-                                   
+                          if ($1)
+                          {
+                             if ($1->class == OC_VAR) 
+                             {
+                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
+                                {
+                                  if ($3)
+                                    if ($3->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Invalid index into array");
+                                      semantic_error(error);
+                                    }
+                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->next = NULL;
+                                  $$->name = NULL;
+                                  $$->level = get_current_level();
+                                  $$->class = OC_VAR;
+                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;;
+
+                                  struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
+                                  new_temp_var->var = $$;
+                                  new_temp_var->next = temp_array_vars;
+                                  temp_array_vars = new_temp_var;
                                 }
-                                else {
+                                else 
+                                {
                                    char error[1024];
                                    sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
-                                   semantic_error(error);}
+                                   semantic_error(error);
+                                   $$ = NULL;
+                                }
                              }
-                             
                           }
                         }
                         | subscripted_var COMMA expr
+                        {
+                          if ($1)
+                          {
+                            if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
+                            {
+                            }
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
+                          else
+                            $$ = NULL;
+                        }
                         ;
 
 expr                    : simple_expr { $$ = $1; }
@@ -1028,7 +1107,8 @@ factor                  : var
 unsigned_const          : unsigned_num { $$ = $1; }
 						            | STRING
                           {
-                            if (strlen($1) != 1)
+                            // strip off quotes from char size, won't work for escaped chars
+                            if (strlen($1)-2 != 1)
                             {
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;

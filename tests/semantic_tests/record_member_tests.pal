@@ -1,0 +1,37 @@
+program main(in, out);
+type
+  rec = record
+          a : integer;
+          b : real
+        end;
+
+  rec2 = record
+          a : rec;
+          b : integer
+        end;
+
+  rec3 = record
+          a : rec;
+          b : rec2;
+          c : array [1..100] of rec2
+        end;
+var
+  a : rec;
+  b : rec2;
+  c : rec3;
+  d : integer;
+begin
+  a.a := 1;
+  a.b := 'you can assign ints to reals';
+  a.c := 'there is no c';
+
+  b.a.a := 1;
+  b.a.b := 'this is not a real';
+  b.b := 2.0;
+
+  c.b.a.a := 'nope';
+  c.b.a.b := 0.5;
+  c.b.d := 'there is no d';
+
+  d.a := 'unpossible!';
+end.

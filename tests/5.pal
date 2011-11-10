@@ -6,8 +6,8 @@ Written by: Group 4
 
 Location and Description of Errors
 -----------------------------------
-Error on line 125, attempting to evaluate a string as a boolean.
-Error on line 128, attempting to reassign a const to a new type.
+Error on line 130, attempting to evaluate a string as a boolean.
+Error on line 131, attempting to reassign a const to a new type.
 Error on line 134, attempting to assign a string to a int field of a record.
 
 =====================================================}
@@ -126,14 +126,13 @@ begin
 
         while astring do            { error - attempting to evaluate a string as a boolean }
 	  begin
-		writeln('problem');
+		
                 astring := 1;           { error - attemping to reassign const to different type }
 		  end;
 	    continue;
-          
-          peaches.name := 'todd';
+         
           peaches.age := 'todd';        { error - attempting to assign a string to an int in a record } 
-          peaches.gender := 'm';
+
           
        
 end.

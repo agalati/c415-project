@@ -9,7 +9,7 @@ Location and Description of Errors
 -----------------------------------
 Error on line 34, nonsense logical statement.
 Error on line 71, procedure declaration uses an undeclared type.  
-Error on line 92, trying to add a string and two reals.
+Error on line 91, trying to add a string and two reals.
 
 =====================================================}
 
@@ -36,7 +36,7 @@ const
 
 { Type Declarations }
 type
-        string = array[1..210] of char;
+        string = array[1..3] of char;
         int = integer;
         info = record
                         name : string;
@@ -79,7 +79,6 @@ var
 begin
 
         shirts := gimme;
-        writeln('shirts is = ', shirts);
         
 end;
        

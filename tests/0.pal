@@ -7,18 +7,18 @@ Written by: Group 4
 
 Location and Description of Errors
 -----------------------------------
-There are three syntax errors in this program.  They 
-are all found in the type declaration field on lines 32, 33, and 35.  
-The first error is the improper declaration of type "int" to "intger".
-This error is propagated forward into the types "int1"
-and "index", who are declared as the incorrect type "int".
+There are three syntax errors in this program.  The first
+error is found on line 33, use of incorrect assignment
+operator. On line 41, finds a '/' when there should be
+a ':' assignment operator. Line 43, incorrect type of
+brackets used for array declaration. 
 
 =====================================================}
 
 program Syntax0 (input, output);
 
 
-{ Some properly declared constants }
+{ Constant declarations }
 const
         a = 1;
         b = 2;
@@ -27,26 +27,27 @@ const
         string = 'that\'s one nice looking string';
         string1 = a + b + c + d;
 
-{ Multiple syntax error in type declaration }
+{ Type declaration }
 type
-        int = intger;    { should be integer }
-        int1 = int;      { Is duplicating an incorrect type assignment }
-        fixed = real;    {should be fine}
-        index = array[1..100] of int1;   { the array type is being declared an incorrect type }
-        holder = array[-5..-1] of char;  {should be fine}
+        int = integer;    
+        int1 : int;     { error - incorrect assignment operator } 
+        fixed = real;    
+        index = array[1..100] of int;   
+        holder = array[-5..-1] of char;  
        
-{ Correct variable declarations }
+{ Variable declarations }
 var
         plane, trains, automobiles : integer;
-        horse, cart, buggy : char;
+        horse, cart, buggy / char;	{ error - '/' when should be ':' }
         wackywavinginflatiblearmsman : array[1..10] of real;
+	problems : array<1..10> of integer; { error - incorrect brackets }
 
 { Begin program }
 begin
         plane := a + b + c + d;
         trains := a - b - c - d;
-        wackywavinginflatiblearmsman[0] := 3.22;
-        buggy := 'c';
+        wackywavinginflatiblearmsman[0] := 33;
+        buggy := 'taxi';
         cart := 'b';
         horse := buggy;
 end. 
