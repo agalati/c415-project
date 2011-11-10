@@ -166,8 +166,10 @@ scalar_type             : O_BRACKET scalar_list C_BRACKET
 
                               // THIS MAY NOT BE LEGIT
                               struct sym_rec* members = $2;
-                              for (; members != NULL; members = members->next)
-                                members->desc.const_attr.type = $$;
+                              for (; members != NULL; members = members->next) {
+                                  members->desc.const_attr.type = $$;
+                                  addconst(members->name, $$);
+                                }
                             }
                             else
                               $$ = NULL;
@@ -202,17 +204,29 @@ scalar_list             : ID
                           {
                             if (locallookup($3) == NULL)
                             {
-                              $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                              $$->next = $1;
-                              $$->name = $3;
-                              $$->level = get_current_level();
-                              $$->class = OC_CONST;
-                              $$->desc.const_attr.type = builtinlookup("integer");
+                              struct sym_rec* member = $1;
+
+                              for (; member != NULL && strcmp(member->name, $3); member = member->next);                              
+
+                              if (member == NULL) {
+                                 $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                 $$->next = $1;
+                                 $$->name = $3;
+                                 $$->level = get_current_level();
+                                 $$->class = OC_CONST;
+                                 $$->desc.const_attr.type = builtinlookup("integer");
+                              } else {
+                                $$ = $1;
+                                char error[1024];
+                                sprintf(error, "'%s' has already been declared in this scalar list.", $3);
+                                semantic_error(error);
+                              }
                             }
                             else
                             {
+                              $$ = $1;
                               char error[1024];
-                              sprintf(error, "'%s' has already been declared in this scope.", $1);
+                              sprintf(error, "'%s' has already been declared in this scope.", $3);
                               semantic_error(error);
                             }
                           }
@@ -652,6 +666,20 @@ var                     : ID
                         ;
 
 subscripted_var         : var O_SBRACKET expr
+                        {
+                          if ($1) {
+                             if ($1->class == OC_VAR) {
+                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY) {
+                                   
+                                }
+                                else {
+                                   char error[1024];
+                                   sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
+                                   semantic_error(error);}
+                             }
+                             
+                          }
+                        }
                         | subscripted_var COMMA expr
                         ;
 

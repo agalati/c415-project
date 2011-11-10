@@ -12,13 +12,21 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
     printf("failed due to null pointers\n");
     return 0;
   }
-
+/*
+  printf("LHS = %d", left->desc.type_attr.type_class);
+  printf("RHS = %d", left->desc.type_attr.type_class );
+*/
   /* real := int || real */
   if ( left->desc.type_attr.type_class == TC_REAL &&
        (right->desc.type_attr.type_class == TC_INTEGER || right->desc.type_attr.type_class == TC_REAL) )
   {
     return 1;
-  } 
+  }
+
+  if ( left->desc.type_attr.type_class == TC_INTEGER && right->desc.type_attr.type_class == TC_INTEGER) 
+  {
+    return 1;
+  }
 
   if (right->desc.type_attr.type_class != left->desc.type_attr.type_class)
     return 0;

@@ -3,7 +3,11 @@ type
   a = (this, was, A, huge, pain);
   b = (single);
   c = (b);
+  enum = (e,e);
 var
+{
+{}
+}
   list : (one,two,three,four,six);
   single : integer;
 begin
