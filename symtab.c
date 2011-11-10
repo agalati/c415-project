@@ -251,6 +251,11 @@ void pushlevel()
 {
 //  printsym();
   current_level++;
+  if (current_level >= MAX_LEVEL)
+  {
+    fprintf(stderr, "Maximum nesting depth for procedures and functions exceeded (current level is %d, max is %d). Stopping parse.", current_level, MAX_LEVEL);
+    exit(1);
+  }
 }
 
 /*****************************************
