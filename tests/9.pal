@@ -9,11 +9,9 @@ Location and Description of Errors
 On line 32 there is an error in a real number with a floating period.
 On line 34 there is a const declaration which does not logically compute.
 An error on line 42, attempting to use strings in a 
-logical evaluation.  An error on line 69, missing a semicolon.
-Error on line 104, extra semicolon.  On line 106, extra semicolon.
-Line 118, in function declaration, function keyword misspelt.
-Lines 131, 132 incorrectly assigning to arrays.
-Lines 134 to 137, using undeclared variables.
+logical evaluation.  Line 55, misspelt type.  An error on line 69, missing a semicolon.
+On line 72, missing semicolon.
+Lines 136 to 138, using undeclared variables.
 
 =====================================================}
 
@@ -51,6 +49,10 @@ type
                         age : int;
                         gender : char
                    end;
+
+        int = intger;    { should be integer }
+        int1 = int;      { Is duplicating an incorrect type assignment }
+        fixed = real;    {should be fine}
 
         infoarray = array[1..10] of info;  
         

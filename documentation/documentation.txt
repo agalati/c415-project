@@ -34,16 +34,20 @@ Another issue with the grammar was the possibility of declaring an array with ty
 
 \section{Symbol Table}
 
-The symbol table entries follow the course notes in their design. The symbol table itself is an array of linked lists of symbol table entries with size 17 - this size was choosen to correspond to the display register values in ASC and allows for a base level of predefined values which we have hardcoded into the compiler.
+The symbol table entries follow the course notes in their design. The symbol table itself is an array of linked lists of symbol table entries. The array is size 17 to correspond to the display register values in ASC and allows for a base level of predefined values which we have hardcoded into the compiler.
 
-The symbol table includes a few basic functions as an interface to it. PushLevel and PopLevel are included to change the scope of the program - these are called in Bison when we begin to parse inside a new procedure or function. Various functions have been created to add items to the symbol table - one for each of the main types (var, const, type, func, proc). Most of these are added normally, but during function or procedure parsing the expected parameters are added to the next level of the symbol table as well as copied over to a linked list of expected parameters attached to the entry for the function or procedure at the current level. 
+The symbol table includes a few basic functions as an interface to it. PushLevel and PopLevel are included to change the scope of the program - these are called in Bison when we begin to parse inside a new procedure or function. Various functions have been created to add items to the symbol table - one for each of the main types (var, const, type, func, proc). We have included a symbol table printing function that is current a work in progress.
 
-structures
+The symbol table consists of sym\_rec structures, which are at the main level of the symbol table. These structures have a class number (eg. OC_TYPE) which defines a field in a union containing more class specific information. The most interesting of these is the struct type\_desc including the types of allowed types. This field is important to comparision later on, as we are able to pull out of it the address of a pointer that was created when a type as declared to compare it with other types. Every variable and constant is linked to a type, so through many levels of redirection we are able to get all of the information we require about an items in the symbol table.
 
-\section{Semantic Error Checking}
+\section{Semantic Error Checking and Symbol Table Usage}
+
 All semantic error checking is handled inside of the Bison grammar - it has helper functions, but the Flex code simply returns tokens. Because of this, we were able to remove INT, REAL, BOOL, and CHAR from the grammar file, allowing Flex to pass Bison just the ID token with the identifier name that it parsed. All integer constants are handled with INT_CONST and real constants with REAL. In the grammar rules for declaration, most variables are handled by recieving an ID token and doing a local lookup with the string that was passed with it.
 
-\section{References Cited}
+Populating the symbol table is straight forward for most classes. During function or procedure parsing the expected parameters are added to the next level of the symbol table as well as copied over to a linked list of expected parameters attached to the entry for the function or procedure at the current level. Enumerated types also have a different handling
 
+
+\section{References Cited}
+Only the class notes, class discussions, Bison/Flex manuals, and a few helpful O'Reilly guides were used in completing this checkpoint.
 
 \end{document}

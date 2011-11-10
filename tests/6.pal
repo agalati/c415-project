@@ -7,8 +7,8 @@ Written by: Group 4
 Location and Description of Errors
 -----------------------------------
 Error on line 65, trying to assign an unknown type.
-Error on line 128,trying to use an uninitialize var on right hand side of expr.
-Error on line 130,attempting to assign outside legal index for an array. 
+Error on line 130,trying to assign a real to an int variable.
+Error on line 132,attempting to assign outside legal index for an array. 
 
 =====================================================}
 
@@ -127,7 +127,7 @@ end;
 { Begin Main }
 begin
 
-      heading := apples + 1;    { error - variable on right hand-side of expression not initialized }
+      heading := apples + 1;    { error - trying to assign a real to an int }
       
       myarray[99] := 20;        { error - attemping to assign outside legal index for array }
           

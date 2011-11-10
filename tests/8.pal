@@ -7,10 +7,10 @@ Written by: Group 4
 Location and Description of Errors
 -----------------------------------
  An error on line 39, attempting to use strings in a 
-logical evaluation.  An error on line 66, missing a semicolon.
-Error on line 101, extra semicolon.  On line 103, extra semicolon.
-Lines 128, 129 incorrectly assigning to arrays.
-Lines 131 to 133, using undeclared variables.
+logical evaluation.  On line 63, use of an undeclared type
+On line 107, attempting to use an int as a boolean in a conditional.
+On line 111, some nonsense ifs.
+Lines 131, unterminated string.
 
 =====================================================}
 
@@ -60,11 +60,10 @@ type
                         radical : detailedinfo;
                         awesome : real
                    end;
-        hood = array[1..10] of int;
-        hood1 = array[1..10] of hood;
+        hood = array[1..10] of intunreal;	{ error - undeclared type }
+        hood1 = array[1..10] of integer;
         hood2 = array[1..10] of hood1;
-        hood3 = array[1..10] of hood2           { error - missing semicolon }
-        
+        hood3 = array[1..10] of hood2;           { error - missing semicolon }
         counting = ultimatepower;
 
        
@@ -95,20 +94,21 @@ var
 
 begin
 
-        shirts ::= gimme;        
+        shirts := gimme; 
         bananas := please;
        
-        if shirts < 0 then;                { error - extra semicolon }
+        if shirts < 0 then
            begin
-                apples := a + neg       { error - missing semicolon }
-                if apples < 0 then
+                apples := a + neg;
+                if apples then		{ error - evaluating a int as a boolean } 
                    begin
-                        apples := not ( apples - 1 );
+                        apples := apples - 1;
                         apples := apples + 1;
                    end;
            end
         else
                 apples := 99;
+	if if if if if;		{ error - random if statements }
    
 end;
 
@@ -119,18 +119,16 @@ end;
 
 function negate ( x : integer ) : integer;
 begin
-    negated := not  x;
+    negated := - x;
 end;
        
 
 { Begin Main }
 begin
-        myarray[0.5] := 1;             { error - attempting to assign to an illegal index }
-        myarray['a'] := 1;              { error - attempting to assign to an illegal index }
+	heading := addtwo(negate(1), 2);	{ testing nested function calls }
 
-        bigreal = 12.4E12345;          { error - undeclared var }
-	bigreal2 = 345E678;					{ error - undeclared var }
-	bigreal3 = 100.3E+12;				{ error - undeclared var }
+
+	'string' := 'string ;		{ error - unterminated string }
              
           
        
