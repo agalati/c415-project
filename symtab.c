@@ -36,7 +36,7 @@ struct tc_boolean   base_boolean;
 //  struct tc_record    record;
 //  struct tc_subrange  subrange;
 
-#define INIT_ITEMS 24
+#define INIT_ITEMS 25
 
 struct sym_rec init_items[] = {
   /* Predefined Types */
@@ -49,25 +49,26 @@ struct sym_rec init_items[] = {
   [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
   [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
   [6] = { .name = "maxint", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
+  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
   
   /* Predefined Procedures */
-  [7] = { .name = "writeln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [8] = { .name = "write", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [9] = { .name = "readln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [10] = { .name = "read", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [11] = { .name = "ord", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [12] = { .name = "chr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [13] = { .name = "trunc", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [14] = { .name = "round", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [15] = { .name = "succ", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [16] = { .name = "pred", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [17] = { .name = "odd", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [18] = { .name = "abs", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [19] = { .name = "sqr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [20] = { .name = "sqrt", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [21] = { .name = "sin", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [22] = { .name = "exp", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [23] = { .name = "ln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [8] = { .name = "writeln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [9] = { .name = "write", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [10] = { .name = "readln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [11] = { .name = "read", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [12] = { .name = "ord", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [13] = { .name = "chr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [14] = { .name = "trunc", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [15] = { .name = "round", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [16] = { .name = "succ", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [17] = { .name = "pred", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [18] = { .name = "odd", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [19] = { .name = "abs", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [20] = { .name = "sqr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [21] = { .name = "sqrt", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [22] = { .name = "sin", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [23] = { .name = "exp", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [24] = { .name = "ln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
 };
 
 /*****************************************
@@ -227,12 +228,17 @@ void sym_tab_init()
     sym_tab[i] = NULL;
   }
 
+  init_items[4].desc.const_attr.type = &init_items[2];
+  init_items[5].desc.const_attr.type = &init_items[2];
+  init_items[6].desc.const_attr.type = &init_items[0];
+  init_items[7].desc.const_attr.type = &init_items[3];
+  
   /* Fill table with initial items */
   for (sym_tab[0] = &init_items[0], i = 1; i < INIT_ITEMS; i++) {
     init_items[i].next = sym_tab[0];
     sym_tab[0] = &init_items[i];
   }
-
+  
   #ifdef DEBUG_SYM
   printsym();
   #endif

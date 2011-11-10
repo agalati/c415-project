@@ -599,9 +599,7 @@ simple_stat             : var ASSIGNMENT expr
                                    sprintf(error, "cannot reassign constant");
                                  }
                                  semantic_error(error);
-                              }
-
-                              if ($1->class == OC_VAR) {
+                              } else if ($1->class == OC_VAR) {
 
                               if (assignment_compatible($1->desc.var_attr.type, $3) == 0) {
                                  char error[1024];
@@ -617,7 +615,9 @@ simple_stat             : var ASSIGNMENT expr
                                  else {
                                     sprintf(error, "Illegal assignment operation: LHS not a variable.");
                                     semantic_error(error);
+                                 
                                  }
+                                 
                               }
                            }
                         }
@@ -1116,7 +1116,7 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 $$->max = $$->counter;
 
-                                if ($3) {
+                                if ($3 && last_parm) {
                                 
                                 /* This should be an OC_VAR always */
                                   if (last_parm->class == OC_VAR) {
@@ -1147,7 +1147,7 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 $$->max = $$->counter;
 
-                                if ($3) {
+                                if ($3 && last_parm) {
                                 
                                 /* This should be an OC_VAR */
                                    if (last_parm->class == OC_VAR) {
@@ -1179,7 +1179,7 @@ plist_finvok            : ID O_BRACKET parm
                                 
                                 for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
                                                                 
-                                if ($3) {
+                                if ($3 && last_parm) {
 
                                 /* This should be an OC_VAR */
                                    if (last_parm->class == OC_VAR) {

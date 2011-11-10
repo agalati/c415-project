@@ -23,16 +23,15 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
     return 1;
   }
 
-  if ( left->desc.type_attr.type_class == TC_INTEGER && right->desc.type_attr.type_class == TC_INTEGER) 
-  {
-    return 1;
-  }
-
   if (right->desc.type_attr.type_class != left->desc.type_attr.type_class)
     return 0;
 
   switch(left->desc.type_attr.type_class)
   {
+  case TC_INTEGER:
+    if (left->desc.type_attr.type_class == right->desc.type_attr.type_class)
+      return 1;
+    return 0;
   case TC_CHAR:
     if (left->desc.type_attr.type_class == right->desc.type_attr.type_class)
       return 1;
