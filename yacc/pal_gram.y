@@ -1190,7 +1190,6 @@ plist_finvok            : ID O_BRACKET parm
                                 struct sym_rec* last_parm = NULL;
                                 for(func = $$->parmlist; func != NULL; func = func->next)
                                 {
-                                  printf("Parameter %s found\n", func->name);
                                   $$->counter = $$->counter + 1; 
                                   last_parm = func;
                                 }
