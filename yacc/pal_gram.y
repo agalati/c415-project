@@ -732,10 +732,31 @@ subscripted_var         : var O_SBRACKET expr
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
+                                else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+                                {
+                                  if ($3)
+                                    if ($3->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Invalid index into string");
+                                      semantic_error(error);
+                                    }
+                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->next = NULL;
+                                  $$->name = NULL;
+                                  $$->level = get_current_level();
+                                  $$->class = OC_VAR;
+                                  $$->desc.var_attr.type = builtinlookup("char");
+
+                                  struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
+                                  new_temp_var->var = $$;
+                                  new_temp_var->next = temp_array_vars;
+                                  temp_array_vars = new_temp_var;
+                                }
                                 else 
                                 {
                                    char error[1024];
-                                   sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
+                                   sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
                                    semantic_error(error);
                                    $$ = NULL;
                                 }
