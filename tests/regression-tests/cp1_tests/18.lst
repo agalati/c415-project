@@ -1,0 +1,80 @@
+//handles error within the while condition or statement
+//8 errors on lines 13, 18, 23, 24, 28, 29, ..,..
+
+program err(input, output);
+var x : integer;
+begin
+
+	while x > 0 do
+		x := x-1;
+
+	while(false) do begin end;
+
+	while 1 = do 				//ERROR: invalid expression
+##parser:13: syntax error, unexpected DO
+		begin end;
+
+	while(true) do
+##semantic:16: Cannot mix boolean and non-boolean types to comparison operators.
+	begin
+		x := ; 				//ERROR: invalid expression
+##parser:18: syntax error, unexpected ;
+	end
+
+	x := 0;
+##parser:21: syntax error, unexpected ID, expecting ;
+
+	while 1 = do  				// ERROR: invalid expression
+##parser:23: syntax error, unexpected DO
+		x := ;  			  // ERROR: Missing expr
+
+	x := 0;
+##semantic:26: Cannot mix boolean and non-boolean types to comparison operators.
+
+	while 1 = do 				 // ERROR: invalid expression
+	begin
+##parser:29: syntax error, unexpected P_BEGIN, expecting ;
+		x := ; 				   // ERROR: Missing expr
+	end
+
+	{nested while loops}
+	while(false) do begin 
+##parser:34: syntax error, unexpected WHILE, expecting ;
+	while(false) do begin 
+	while(false) do begin 
+	end;
+	end;
+	end;
+
+
+	while(false) do begin 
+		if (true) then 
+			while(false) do begin end;
+		else
+##parser:45: syntax error, unexpected ELSE, expecting ;
+			exit;
+	end;
+
+
+	while(false) do begin 
+	exit;					//Error: exit comes just as a matches stat
+	end;
+
+	while(false) do begin 
+	if(true) then 
+	exit; 
+	else ;		
+##parser:57: syntax error, unexpected ELSE, expecting ;
+	end;
+
+	while(false) do begin 
+	continue;				//Error: continue comes just as a matches stat
+	end;
+
+	while(false) do begin 
+	if(true) then 
+	exit; 
+	continue ;		
+	end;
+end.
+##parser:69: syntax error, unexpected .

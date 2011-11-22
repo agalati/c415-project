@@ -1,0 +1,52 @@
+//2 errors
+program HelloCMPUT415 (input, output);
+    {need to make this an awesome test
+	So far: missing final '.', one of the end's is missing the semicolon between it and the next statement}
+    const
+	course = '\\CMPUT 415\\';
+    type
+	fun = real;
+    var
+	greeting : string;
+##semantic:10: Type 'string' has not been declared.
+	number   : fun;
+	favourite : fun;
+    
+    { this function says asks for a number }
+    function getNumber () : fun;
+	var
+	    fullMessage : string;
+##semantic:17: Type 'string' has not been declared.
+	begin
+	    getNumber := 1.0E19;
+	    write('please tell me a number: ');
+	    read(number);
+	    getNumber := number;
+	end;
+    // this procedure says hi
+    procedure sayGreeting (myMessage : string);
+##semantic:25: 'string' is not a declared type.
+	begin
+	    writeln(myMessage, ' ', course);
+##semantic:27: variable 'myMessage' undeclared at this level
+	end;
+    begin
+	greeting := 'Hello there';
+##semantic:30: assignment type is incompatible
+	sayGreeting(greeting);
+	favourite := getNumber();
+	while favourite <= 12
+	    do begin
+		if favourite > 12
+		    then writeln('I like that number! It is my favourite!')
+		    else begin
+			writeln('that isn\'t my favourite number but i like it too!');
+			writeln('pick another number please!');
+		    end				// ERROR missing semicolon
+		    favourite := getNumber();
+##parser:41: syntax error, unexpected ID, expecting ;
+	    end;
+	writeln('I like that number! It is my favourite!');
+    end						//ERROR: missing .
+    
+##parser:46: syntax error, unexpected $end, expecting ;

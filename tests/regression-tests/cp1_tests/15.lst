@@ -1,0 +1,102 @@
+//tests deep nested functions and function paramaters
+//2 errors on lines 71, 73
+
+program p(intput, output);
+
+type scalar = (big, small);
+
+var a,b,c,d : scalar;
+	e : integer;
+	f : real;
+	g : boolean;
+
+procedure q1(var b: integer);
+		procedure q2(var b: integer);
+				procedure q3(var b: integer);
+						procedure q4(var b: integer);
+								procedure q5(var b: integer);
+										procedure q6(var b: integer);
+												procedure q7(var b: integer);
+														procedure q8(var b: integer);
+														begin
+																b := b + 1;
+														end;
+												begin
+														q8(b);
+												end;
+										begin
+												q7(b);
+										end;
+								begin
+										q6(b);
+								end;
+						begin
+								q5(b);
+						end;
+				begin
+						q4(b);
+				end;
+		begin
+				q3(b);
+		end;
+begin
+		q2(b);
+end;
+
+
+begin
+
+	q1(1);
+	q2(1);
+##semantic:50: Function or procedure 'q2' not declared here.
+	q3(1);
+##semantic:51: Function or procedure 'q3' not declared here.
+	q4(1);
+##semantic:52: Function or procedure 'q4' not declared here.
+	q5(1);
+##semantic:53: Function or procedure 'q5' not declared here.
+	q6(1);
+##semantic:54: Function or procedure 'q6' not declared here.
+	q7(1);
+##semantic:55: Function or procedure 'q7' not declared here.
+	q8(1);
+##semantic:56: Function or procedure 'q8' not declared here.
+
+	test();
+##semantic:58: Attempting to call procedure 'test' which is has not been declared.
+	test(true);
+##semantic:59: Function or procedure 'test' not declared here.
+	test(1);
+##semantic:60: Function or procedure 'test' not declared here.
+	test('a');
+##semantic:61: Function or procedure 'test' not declared here.
+	test('asdf');
+##semantic:62: Function or procedure 'test' not declared here.
+	test(1,1);
+##semantic:63: Function or procedure 'test' not declared here.
+	test(1,false);
+##semantic:64: Function or procedure 'test' not declared here.
+	test(1, 1+2);
+##semantic:65: Function or procedure 'test' not declared here.
+	test(a+b);
+##semantic:66: operands of 'plus' must be either integers or reals.
+##semantic:66: Function or procedure 'test' not declared here.
+	test(a+b, a-b);
+##semantic:67: operands of 'plus' must be either integers or reals.
+##semantic:67: Function or procedure 'test' not declared here.
+##semantic:67: operands of 'minus' must be either integers or reals.
+	test(g or g, g and g, (g or g) and (g and not g), a = b);
+##semantic:68: Function or procedure 'test' not declared here.
+	test(a,b,c,d,e,f,g);
+##semantic:69: Function or procedure 'test' not declared here.
+
+	test(a;b); //Error, invalid use of semicolon
+##semantic:71: Function or procedure 'test' not declared here.
+##parser:71: syntax error, unexpected ;
+
+	test2(a := b); //Error, invalid assignment
+##parser:73: syntax error, unexpected :=
+##semantic:73: Function or procedure 'test2' not declared here.
+end.
+
+

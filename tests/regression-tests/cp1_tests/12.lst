@@ -1,0 +1,60 @@
+//procedure declaration tests 
+//7 errors
+
+program example( input, output );
+
+//this one is correct
+procedure p0( );
+begin end; 
+
+//this one is correct
+procedure p1(a : integer);
+begin end;
+
+//this one is correct
+procedure p11(a : integer, b : integer);
+##parser:15: syntax error, unexpected ,
+begin end;
+
+//this one is correct
+procedure p111(a : b, c : d);
+begin end;
+
+//this one is correct
+procedure p1111(var a : b);
+begin end; 
+
+//this one is correct
+procedure p11111( var a : b, c : d);
+begin end;
+
+//ERROR: missing :
+procedure p2(a integer);
+begin end;
+
+//ERROR: missing type
+procedure p3(a : );
+begin end;
+
+//ERROR: missing identifier
+procedure p4( : integer);
+begin end;
+
+//ERROR: missing name
+procedure (a integer);
+begin end;
+
+//ERROR: non-function but has a return value
+procedure p6(a : integer) : integer;
+begin end;
+
+//ERROR: missing block
+procedure p7(a : integer);
+ ;
+
+//ERROR: missing semicolon
+procedure p8(a : integer)
+begin end;
+
+begin
+end.

@@ -1,0 +1,16 @@
+program Strings(input, output);
+
+var
+        s: String;
+##semantic:4: Type 'String' has not been declared.
+
+begin
+        s := 'Hello, \'world ' ;
+##semantic:7: assignment type is incompatible
+\
+##lexer:8: Invalid token.
+
+#
+##lexer:10: Invalid token.
+        
+end.

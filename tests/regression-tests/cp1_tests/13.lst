@@ -1,0 +1,79 @@
+//test type declarations
+//3-5 errors 
+
+program typetest( input, output );
+
+type
+	string	= array[1..7] of char;
+	int2	= integer;
+	bool3	= ( TRUE3, FALSE3, UNDEF3 );
+	bool2	= Boolean;
+##semantic:10: Type 'Boolean' has not been declared.
+	rec1	= record
+		name : string;
+		age  : integer
+		end;
+	rec2	= record
+		person	: rec1;
+		hobby	: string
+		end;
+
+	ar = array[1...2] of integer; 			//ERROR, É is invalid
+##parser:20: syntax error, unexpected .
+	ar = array[1.2] of integer; 
+##parser:21: syntax error, unexpected REAL_CONST, expecting -
+	ar = array[1 or 2.. not 2 = 2] of integer; 
+##parser:22: syntax error, unexpected OR, expecting ..
+	ar = array[1 or not 2.. 2 and 2] of integer; 
+##parser:23: syntax error, unexpected OR, expecting ..
+
+	str3 = array[1..3] of char;
+	ar = ARRAY[1..2] of integer; 			//ERROR, ARRAY is invalid
+##semantic:26: Type 'ARRAY' has not been declared.
+##parser:26: syntax error, unexpected [
+	chrar = array[char] of integer;
+	list = array[(red, green, blue)] of integer; 	//is this an ERROR?
+	list2 = array[bool3] of integer;
+	list3 = array['asdf'] of integer;		 //might be a syntactic ERROR?, string is not a valid indexing type?
+##parser:30: syntax error, unexpected STRING, expecting -
+	blah = array[(one)] of integer;			 //ERROR, is this a scalar list or an expression?
+
+var	x	: integer;
+	y	: ( RED, GREEN, BLUE );
+	z	: bool3;
+	xx	: array[0..15] of bool3;
+   
+function happy( alpha: bool3; beta: string; gamma: bool2 ) : string;
+##semantic:38: 'bool2' does not name a type.
+begin
+	{* happy always returns happy *}
+	return( 'happy' )
+##semantic:41: Function or procedure 'return' not declared here.
+end;
+
+function main() : string;
+var w : real;
+begin
+	if( PI < x ) then
+##semantic:47: variable 'PI' undeclared at this level
+	begin
+		w := ONE;
+##semantic:49: variable 'ONE' undeclared at this level
+		return( happy( z, 'unused', (0 <> 1) ) )
+##semantic:50: Incompatible parameter passed to 'happy' in position 2
+##semantic:50: Function or procedure 'return' not declared here.
+	end
+	else
+		return( SAD )
+##semantic:53: variable 'SAD' undeclared at this level
+##semantic:53: Function or procedure 'return' not declared here.
+end;
+
+{* program entry *}
+begin
+	read( x );	// read int
+	write( main() );
+##semantic:59: Missing arguments for function 'main'.
+	writeln('')
+end.
+
