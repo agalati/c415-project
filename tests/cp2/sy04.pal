@@ -1,0 +1,41 @@
+//test type declarations
+//4 errors on lines 20, 22, 24, 26
+
+program typetest( input, output );
+
+type
+	string	= array[1..7] of char;
+	int2	= integer;
+	bool2	= boolean;
+	bool3	= ( TRUE3, FALSE3, UNDEF3 );
+	rec1	= record
+		name : string;
+		age  : integer
+		end;
+	rec2	= record
+		person	: rec1;
+		hobby	: string
+		end;
+	chrar = array[char] of integer;
+	ls = array[5] of integer; //ERROR, array needs a range
+	str3 = array[1..3] of char;
+	blah = array[(one)] of integer; //ERROR, is this a scalar list or an expression?
+	list2 = array[bool3] of integer;
+	list = array[(red, green, blue)] of integer; //ERROR, can't create an array over an anonymous scalar list
+	ar = array[1..2] of integer;
+	list3 = array['asdf'] of integer; //ERROR, string is not a valid enumberable type, needs a range
+	ar2 = array[(3*3)..(5*5)] of ar;
+	ar3 = array[false..true] of char;
+
+var	x	: integer;
+	y	: ( RED, GREEN, BLUE );
+	z	: bool3;
+	xx	: array[0..15] of bool3;
+
+{* program entry *}
+begin
+	read( x );	// read int
+	write( x );
+	writeln('df')
+end.
+

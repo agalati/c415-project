@@ -1,0 +1,86 @@
+// Comparisons, Function parameters and return values
+// line 19, Functions must return simple types, might cascade to 25
+// line 52, Can't NOT an integer
+// line 64, Function params can't be anonymous types, might cascade to 78
+
+program Test(input, output);
+
+type
+	bool = boolean;
+	someRecord = record
+		foo : integer;
+		val : bool
+	end;
+
+	// Valid function that does nothing
+	procedure a(someVariable : char);
+	begin end;
+	
+	function copyRecord(a:someRecord) : someRecord;
+	var
+		newRecord : someRecord;
+	begin
+		newRecord.foo := a.foo;
+		newRecord.val := not a.val; //And we be reversing the boolean value
+		copyRecord := newRecord;
+	end;
+	
+	// Valid function that should really never be used... ever
+	function doingStuffWithIF(x: integer; y :integer) : bool;
+	var
+		equal : boolean;
+	begin
+		if x < y then
+			equal := false
+		else if (x > y ) then
+			equal := false
+		else if (x) >= ((y)) then
+			equal := false
+		else if (-x) < y then
+			equal := true
+		else if ( ( ( x)) = (y)) then
+			equal := true
+		else 
+			equal := true;
+			
+		if x*y < y/x then
+		begin
+			equal := false;
+			equal := true;
+			equal := false;
+		end
+		else if (not x div y + 10 mod 5 ) then
+			equal := false
+		else 
+			equal := true;
+			
+		
+			
+		// actually return something from this mess?
+		doingStuffWithIF := equal;
+	end;
+	
+	// Another valid but useless function!
+	procedure doMoreStuff( out:array[0..20] of char);
+	type
+		foo1 = integer;
+		foo2 = real;
+	var
+		index 	  :foo2;
+		max:
+			foo1;
+			
+		begin
+			index := 0.0;
+			max := 20;
+			while index < max do
+			begin
+				a(out[index]);
+				index := index + 1;
+			end;
+			
+		end;
+
+begin
+end.
+

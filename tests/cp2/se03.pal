@@ -1,0 +1,70 @@
+{ PAL test program: functions						}
+
+// l. 68 - real parameter for expected integer formal argument
+// No other errors.
+
+
+program test( input, output );
+
+const
+	MAX = 10;
+
+type
+	atype = array [1..MAX] of boolean;
+
+	function foo1(): integer;
+		procedure bar(foo1: real; foo2: real);
+		var
+			a: atype;
+			x: integer;
+		begin
+			x := 1;
+			while x <= MAX do
+				a[x] := true;
+			foo1 := 1.1;
+		end;
+	begin
+		bar(1, 3);
+		foo1 := 1;
+	end;
+
+	procedure bar(foo1: real; foo2: integer);
+	var
+		a: atype;
+		x: integer;
+	begin
+		x := 1;
+		while x <= MAX do
+			a[x] := true;
+		foo1 := 1.1;
+	end;
+
+	function foo2(): integer;	
+		function foo2inner(): integer;
+			function foo2(): integer;
+			begin
+				foo2 := 1;
+			end;
+		begin
+			foo2inner := foo2();
+		end;
+	begin
+		foo2 := foo2();
+	end;
+
+	function foo3(): integer;	
+
+	begin
+		foo3 := 1;
+	end;
+
+
+begin
+
+	writeln(foo1());
+	writeln(foo2());
+	writeln(foo3());
+
+        bar(1,2.1);
+        
+end.

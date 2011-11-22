@@ -22,16 +22,6 @@ int
 main (  int     argc,
         char**  argv)
 {
-
-  // opens/creates asc file for intermediate code
-  FILE* interCode;
-  char* np;
-  char* ascEnd = "asc";
-  np = argv[argc-1];
-  np[strlen(np) - 3] = '\0';
-  np = strcat(np, ascEnd);
-  interCode = fopen(np, "a+");
-  
   err_buf = NULL;
   parse_args(argc, argv);
   sym_tab_init();
@@ -40,7 +30,6 @@ main (  int     argc,
   new_position_line();
   fclose(stdin);
   fclose(prog_file);
-  fclose(interCode);
   if (do_listing)
     fclose(lst_file);
   return ret;

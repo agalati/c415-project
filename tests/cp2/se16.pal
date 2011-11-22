@@ -1,0 +1,22 @@
+// Once a type is in scope, it can't be redefined, even in a record
+// Error on line 11, may cascade to the rest of the program
+
+program Test(input, output);
+
+type
+	name = array[1..10] of char;
+	person = record
+			age : integer;
+			sex : (Male, Female);
+			name : array[1..2] of name
+		end;
+
+var s : person;
+
+begin
+	s.age := 21;
+	s.sex := Male;
+	s.name[1] := 'Undergrad ';
+	s.name[2] := 'Student   ';
+end.
+

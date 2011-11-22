@@ -1,0 +1,9 @@
+program varTest (input, output);
+    // cannot store arrays with different (though visually identical) anonymous arrays
+    var
+        a : array[1..5] of integer;
+        b : array[1..5] of integer;
+    begin
+        read(a[1], a[2], a[3], a[4], a[5]);
+        b := a;// cannot store arrays with different (though visually identical) anonymous arrays
+    end.

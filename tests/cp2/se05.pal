@@ -1,0 +1,37 @@
+//
+//  l. 16 invalid subrange
+//  l. 22 invalid subrange
+//  l. 32 undeclared i
+//  l. 32 undeclared j
+
+
+program main (input, output);
+
+const LIMIT1 = 10;
+   LIMIT2    = 20;
+   POUNDSIGN = '#';
+   ANDRAIA   = 'Ilana';
+
+type Hues = (Red, Blue, Green, Orange, Violet);
+   String1 = array [Violet..Orange] of char;    // invalid subrange
+   Class  = record
+	      Name  : char;
+              Units : integer;
+              Grade : char
+	    end;
+   Grades = array [LIMIT2..LIMIT1] of Class;   // invalid subrange 
+
+var High, Low, Counter : integer;
+
+
+procedure VeryBusy (Incoming : integer ; var Outgoing : integer);
+
+var Local : integer;
+
+begin
+  Local := i + j;          // undeclared integers 
+  Outgoing := Incoming;
+end;   {VeryBusy}
+
+begin
+end.

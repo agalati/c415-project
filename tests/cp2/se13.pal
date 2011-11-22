@@ -1,0 +1,23 @@
+//array bounds must be compile time constants
+//error on line 9, may cascade to 10,12
+
+program example( input, output );
+
+var result : integer;
+
+function foo( x : integer; y : integer) : integer;
+type mytype = array[x..y] of char; //ERROR, array bounds must be constants
+var myvar : mytype;
+begin
+	if 'kevin' = myvar then
+		foo := x
+	else
+		foo := y
+end;
+
+begin
+	result := foo( 4, 8);
+	writeln(result);
+	result := foo (4, 9);
+	writeln(result);
+end.

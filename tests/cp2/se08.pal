@@ -1,0 +1,353 @@
+program seven(input, output);
+
+//  semantic:117.7: Name `e' already defined.
+//  semantic:131.7: Name `e' already defined.
+//
+//  Also: Error too many nexted levels
+//        Note: this error can be announced at different places
+//
+//
+
+
+const
+   t = true;
+   f = false;
+   a = 10;
+   b = 2.5;
+   d = 13;
+   s = 'hi there';
+   u = 'hi';
+
+type
+   c = array [1..8] of boolean;
+   h = array [boolean] of real;
+
+procedure l1(a : real; b : real);
+
+const
+   i = 2;
+   
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+   
+procedure l2(a : real; b : real);
+
+const
+   i = 2;
+   j = 3; 
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l3(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l4(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l5(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l6(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l7(a : real; b : e);  
+
+const
+   i = 2;
+
+type
+   e = record                             // Error: 'e' already defined
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l8(a : real; b : e);
+
+const
+   i = 2;
+
+type
+   e = record                            // Error: 'e' already defined
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l9(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l10(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l11(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l12(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l13(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l14(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l15(a : real; b : real);   
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l16(a : real; b : real);  // Error: Nesting level exceeded (here or earlier)
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l17(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l18(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+procedure l19(a : real; b : real);
+
+const
+   i = 2;
+
+type
+   e = record
+	  a : boolean;
+	  b : boolean
+       end;
+
+var
+   z : h;
+
+begin
+end; { l19 }
+
+begin
+end; { l18 }
+
+begin
+end; { l17 }
+
+begin
+end; { l16 }
+
+begin
+end; { l15 }
+
+begin
+end; { l14 }
+
+begin
+end; { l13 }
+
+begin
+end; { l12 }
+
+begin
+end; { l11 }
+
+begin
+end; { l10 }
+
+begin
+end; { l9 }
+
+begin
+end; { l8 }
+
+begin
+end; { l7 }
+
+begin
+end; { l6 }
+
+begin
+end; { l5 }
+
+begin
+end; { l4 }
+
+begin
+end; { l3 }
+
+begin
+end; { l2 }
+
+begin
+end; { l1 }
+
+begin
+end.
+   
+       

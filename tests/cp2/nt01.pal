@@ -1,0 +1,406 @@
+{**********************************************************
+Test Program: demanding
+Tests: Semantic Integrity of Compiler
+Constructed by: A S, Group X
+
+Group Members           E-mail Address
+=============================================
+
+
+
+=============================================
+
+Location and Description of Errors
+----------------------------------
+There are no errors in this program.  Everything 
+should compile perfectly.  The program will exercise all
+aspects of the symbol table, making sure that there are
+no bugs present.
+
+**********************************************************}
+
+program SymbolTableStresser (input, output);
+
+{Stress testing of constant declarations and expressions}
+const
+	number = 1 + 2;
+	three1 = number;
+	remainder = three1 mod 4;
+	alwaystrue = true;
+	alwaysfalse = false;
+	nevertrue = alwaystrue and alwaysfalse;
+	maybetrue = alwaystrue or alwaysfalse;
+	bigreal = 12.4E12345;
+	bigreal2 = 345E678;
+	bigreal3 = 100.3E+12;
+	extra = three1 < bigreal * bigreal3;  {test real*real}
+	signed = +500;
+	negative = -4;
+	bad = not maybetrue;
+	redundant = not (not (not (not (not (not (not alwaysfalse))))));
+	logic = maybetrue or (nevertrue and bad);
+	greeting = 'Welcome to PAL!';
+	farewell = 'Thanks for compiling with us. Come again sometime';
+	escape = ' some \t \t escape cha\'rs inside \'\'\'\'\' a \n string \\ const';
+	
+{Stress testing of type declarations}
+type
+    rl      = real;
+    five    = array[1..5] of real;
+	int			= integer;
+	in 			= int;
+	i 			= in;
+	complexnum 	= real;
+	string 		= array[1..20] of char;
+	index 		= array[12..100] of integer;
+	segment 	= array[1..4] of in;
+	quad 		= array[4..8] of i;
+	outcome 	= boolean;
+	legal		= array[5..6] of boolean;
+	negarray	= array[-50..-1] of int;
+	
+	member		= record
+					id : int;
+					address : string;
+					married : boolean;
+					purchases : index
+				  end;
+
+	members		= array[1..10] of member;
+
+	club		= record
+					cname : string;
+					list : members; {array of records inside a record. Fun.}
+					location : i;
+					grid : segment
+				  end;
+	cart    	= record
+                	item : integer;
+                	weight : real;
+                	size : int
+              	end;
+
+	month		= (Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec);
+	day			= (Mon,Tues,Wed,Thurs,Fri,Sat,Sun);
+	single		= (Zero);
+	
+{Variable declarations}
+var
+	president,vp,chair 	: member;
+	watts				: i;
+	message				: string;
+	superstore			: club;
+	partofyear			: month;
+	weekday,holiday		: day;
+	nothing				: single;
+	infinity			: complexnum;
+	portion				: segment;
+	fate				: outcome;	
+	a,b,int1,int2,huge 	: integer;
+    c,d,r1,r2          	: real;
+    e,f             	: char;
+    g,h,result        	: boolean;
+    j,k             	: record
+                      		sum : integer; sum2 : real;
+                      		indexed : boolean
+                    	  end;
+    long            	: array[1..25] of real;
+    short,small     	: array[1..5] of real;
+    itemlist        	: (fork, knife, spoon, cup, glass, plate);
+	list                : (one,two,three,four,six);
+	num             	: int;
+    num2            	: rl;
+    str,name           	: string;
+    grocery         	: cart;
+    short2          	: five;
+	first,middle,last	: char;
+	
+
+{ procedure which has some local variables names the same as global ones }
+procedure TrickyLocal ( var this : i; that : single; those : segment; goodword : outcome );
+var
+	watts 		: integer;
+	message 	: string;
+	portion		: segment;
+	final		: month;
+
+begin
+	watts := this;
+	writeln('Local watts is : ', watts);
+	this := ord(that);
+	those[1] := watts;
+	if goodword then
+		those[2] := 5
+	else
+		those[2] := 0;
+	infinity := 50000.42;
+end;
+
+{ Totally usless function to test nested control structures, continue and exit statements }
+function ControlFlow() : boolean;
+begin
+	if watts >= 10 then
+	  begin
+		weekday := Mon;
+		partofyear := Jul;
+		while watts < 1000 do
+		  begin
+			watts := watts + 50;
+			infinity := infinity - watts;
+			if infinity < 1000.0 then
+				continue
+			else
+				while infinity < 500.0 do
+				  begin
+					infinity := infinity + (infinity / 3.0);
+					if infinity >= 500.0 then
+						exit
+					else
+						continue;
+				  end;
+			writeln('save more power');
+			ControlFlow := true;
+		  end;
+	  end
+	else
+		portion[1] := 3;
+		ControlFlow := false;
+end;
+
+procedure strict ( x : integer; y : integer; z : real; t : cart );
+var  a : integer; b : real; c : cart;
+begin
+    x := y;
+    y := y;
+    z := x;
+    t.item := x;
+    t.weight := z;
+    t.weight := y;
+    short2[1] := z;
+    c := t;
+    c.item := t.item;
+    t.item := a;
+    b := x;
+    b := x*1.5;
+    a := 10+5*41;
+end;
+
+procedure mellow ( l : five; m : string; n : string );
+begin
+    l := short2;
+    m := n;
+    short2[2] := l[3];
+end;
+
+procedure ton ( e : integer; f : int; g : five; h : cart; i : rl; j : boolean; k : string);
+begin
+    str := k;
+    h.item := e;
+    h.size := f;
+    g[2] := e;
+    g[3] := i;
+    j := true;
+    j := false;
+    j := not j;
+    k := str;
+end;
+
+function double( x : integer ) : integer;
+begin
+    double := x*2;
+end;
+
+function triple (x : integer; y: integer; z : integer) : integer;
+begin
+    x := y*3;
+    y := x*3;
+    z := y*3;
+    triple := x + y + z;
+end;
+
+function toReal ( x : integer ) : real;
+begin
+    toReal := x;
+end;
+
+begin	{main program}
+	int1 := 10;
+    int2 := 6;
+    r1 := 14.8;
+    r2 := 1.3E+5;	
+	writeln(greeting);
+	president.id := 123456;
+	president.married := true;
+	president.purchases[13] := 15;
+	president.purchases[14] := 9;
+	
+	TrickyLocal(watts, nothing, portion, fate);
+
+	middle := chr(int1);
+    first := chr(87);
+    last := chr(int1+12);
+    first := chr(23);
+
+    list := succ(three);
+    list := pred(four);
+
+    int1 := abs(int2);
+    int2 := abs(4213);
+    int2 := abs(-100);
+    int1 := abs(int1*int2);
+    int2 := abs(100+int1);
+    r1 := abs(int1);
+    r1 := abs(r2);
+    r1 := abs(-132.4E-31);
+    r1 := abs(r1+(-103.4));
+
+    int1 := sqr(2);
+    int1 := sqr(int2);
+    int1 := sqr(-5);
+    r1 := sqr(4);
+    r1 := sqr(-23E7);
+    r1 := sqr(r2);
+    r1 := sqr(-23.4 - 45.3 + 10.0);
+
+    result := odd(13);
+    result := odd(int2);
+    result := odd(21) and odd(15);
+    result := odd(9) or odd(10);
+    result := odd(int2 + 15);
+
+    int1 := round(45.7);
+    int1 := round(-13.7E-1);
+	r2 := round(500);
+    r2 := round(11.1*15.4);
+    int1 := round(14.2)+round(55E-3);
+
+    int2 := trunc(500.9);
+    int2 := trunc(300.3E2);
+    int2 := trunc(-1.1);
+    int2 := trunc(r1);
+    int2 := trunc(r1/r2);
+    r1 := trunc(r2);
+    r1 := trunc(r2 + (-4.5E3 * 12.3E+8));
+
+	holiday := Sat;
+	weekday := Fri;
+	vp.id := 987654;
+	vp.married := false;
+	vp.purchases[12] := 100;
+	president.purchases[13] := vp.purchases[12];
+	superstore.list[1] := president; {assigning a record to record array inside a record}
+	superstore.list[2] := chair;
+	superstore.list[1].married := false;
+	writeln(superstore.list[2].address);
+	chair.address := superstore.cname;
+	nothing := Zero;
+	writeln(ord(nothing));
+	while not fate do
+	  begin
+		read ( message );
+		if fate then
+		  begin
+			partofyear := Mar;
+			weekday := Tues;
+			write(escape);
+		  end
+		else
+		  begin
+			weekday := succ(Mon);
+			portion[4] := 100;
+		  end;
+	    continue;
+	  end;
+	writeln('please enter a message');
+	readln ( message );
+	writeln('You typed ', message);
+	writeln(farewell);
+
+	c := toReal(a);
+    a := triple(a,b,a);
+    b := double(b);
+    d := triple(b,b,b);
+
+    strict(a,b,c,grocery);
+    mellow(short2,str,str);
+    ton(b,num,short2,grocery,num2,true,str);
+    ton(12521,num,short2,grocery,num2,false,str);
+
+    a := b;
+    c := b;
+    small := short;
+    k.sum := a + b;
+    k.sum2 := toReal(k.sum);
+    k.indexed := false;
+	itemlist := fork;
+    long[25] := 43353;
+    long[12] := 0;
+    short[3] := -200;
+    short[4] := 10232.432;
+    short[5] := 231E6;
+    short[2] := 20E-4;
+    short[1] := 0.07;
+    itemlist := spoon;
+    j.sum2 := double(k.sum);
+	itemlist := cup;
+    grocery.weight := short[3];
+    grocery.size := num;
+    e := str[3];
+    small[1] := long[2];
+    ton(grocery.item,grocery.size,short2,grocery,num2,not g,str);
+
+	read( int1 );
+    read( r2 );
+    read( first );
+    read( name );
+
+    read( int1, r1 );
+    read( int2, first );
+    read( int2, name );
+    read( int1, r2, middle, name );
+
+    readln( int1, r2 );
+    readln( r2);
+    readln( int2 );
+    readln( first, middle, last );
+    readln();
+
+    write( int1 );
+    write( r1 );
+    write( last );
+    write( name );
+    write('something');
+    write( 500 );
+    write( 800.34 );
+	write( 99E-4 );
+    write('int: ', int1, 'real: ', r2, 'char: ', middle, 'string: ', name);
+    write('int: ', 18, 'real: ', 15.6, 'char: ', first, 'string: ', name);
+
+    writeln( int1 );
+    writeln( r2 );
+    writeln( 45 );
+    writeln( 234.2E2 );
+    writeln();
+    writeln('int: ', int1, 'real: ', r2, 'char: ', middle, 'string: ', name);
+    writeln('just a bunch of characters');
+
+	result := true;
+    result := false;
+    result := true and false;
+    result := true or true;
+    result := result and true;
+    result := odd(5) and true;
+
+    int1 := maxint;
+    int2 := maxint - 16000;
+    r1 := maxint - (100*18);
+
+    small[3] := double(400);
+    small[2] := double(grocery.item);
+    strict(14,151,123E-132,grocery);
+    strict(100,100,100,grocery);
+    k.sum := triple(-4,200,0);
+    c := toReal(grocery.size);
+    d := toReal(10);
+    num := grocery.size;
+end.

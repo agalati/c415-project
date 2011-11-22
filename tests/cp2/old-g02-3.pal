@@ -1,0 +1,94 @@
+{QFAC Pascal Compiler    Kaylee Bohaychuk   Kevin Greidanus
+CMPUT 415 -- Fall 2010   Kevin Milne        Adam Preuss      }
+{ filename - short description }
+{ ERRORS:
+ 1) Bad type assigned to return type -- line 28
+ 2) No returned type assigned to function -- line 31
+ 3)
+}
+
+program example( input, output );
+const
+    one = 1;
+    two = one + 1;
+
+var   
+    i : integer;
+    r : real;
+ 
+    {These should never ever be evaluated in the program}
+    a : boolean;
+    b : real;
+    c : real;
+    d : real;
+    e : real;
+
+function bad1(a : integer ; b : real) : integer;
+begin
+  bad1 := 4.0;  { ### ERROR ### }
+end;
+
+function bad2(a : integer ; b : real); { ### ERROR ### }
+begin
+  bad2 := b;
+end;
+
+{obligatory I N C E P T I O N}
+
+{a,b,c,d,e all start as real.
+  Each level down they turn into integers except the rest get declared as boolean.
+  example: in fun3 a,b,c are integers but d,e are boolean.
+
+  This tests scoping. There should be no errors past this point.}
+
+function fun1( a : integer ) : integer;
+var
+  b : boolean;
+  c : boolean;
+  d : boolean;
+  e : boolean;
+
+  function fun2( b : integer ) : integer;
+  var
+    c : boolean;
+    d : boolean;
+    e : boolean;
+
+    function fun3( c : integer ) : integer;
+    var
+      d : boolean;
+      e : boolean;
+
+      function fun4( d : integer ) : integer;
+      var 
+        e : boolean;
+        
+        function fun5( e : integer ) : integer;
+
+          function fun6() : integer;
+          begin {fun6}
+             fun6 := a + b + c + d + e + 1;
+           end;
+        begin {fun5}
+          fun5 := a + b + c + d + e + fun6();
+        end;
+      begin {fun4}
+        e := 1 < 2;
+        fun4 := a + b + c + d + fun5(d);
+      end;
+    begin {fun3}
+      d := e;
+      fun3 := a + b + c + fun4(c);
+    end;
+  begin {fun2}
+    c := e or d;
+    fun2 := a + b + fun3(b); 
+  end;
+begin {fun1}
+  b := e or d or c;
+  fun1 := a + fun2(a);
+end;
+
+begin {main program}
+   i := fun1(1);
+end.

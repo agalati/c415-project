@@ -1,0 +1,33 @@
+{ PAL test program: procedures						}
+{ Non-errors:								}
+{	- embeds a procedure within a procedure of the same name (a)	}
+{	- passes a procedure a formal parameter of the same name (b)	}
+
+program test( input, output );
+
+var	x : integer;
+        square :integer;
+
+
+	procedure foo();				{ (a) }
+		procedure foo( foo: integer );		{ (b) }
+		begin
+			writeln( 'foo = ', foo );       { (c) }
+		end;
+	begin
+	    foo(x);
+	end;
+
+	
+	procedure bar(x:real; y:integer; z:boolean);
+	begin
+		writeln(x,y,y);
+	end;
+
+begin
+
+  foo();
+  bar(1,1,true);
+
+end.
+
