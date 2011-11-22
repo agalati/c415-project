@@ -1,0 +1,6 @@
+program test(a, b);
+var a : integer;
+a : real;
+##semantic:3: Variable 'a' already declared.
+begin
+end.

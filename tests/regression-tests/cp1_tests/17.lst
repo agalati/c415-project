@@ -1,0 +1,91 @@
+//handles error within the if condition or statement
+//6 errors
+
+program err(input, output);
+var x : integer;
+begin
+
+	if x > 0 then
+		x := x-1;
+
+	if(false) then begin end;
+
+	if x = 1 then					
+		begin end;
+
+	if(true) then
+	begin
+		x := ;					 //ERROR: invalid expression
+##parser:18: syntax error, unexpected ;
+	end
+
+	x := 0;
+##parser:21: syntax error, unexpected ID, expecting ;
+
+	if 1 = then  					// ERROR: invalid expression
+##parser:23: syntax error, unexpected THEN
+		x := 1;  				 
+##semantic:24: Cannot mix boolean and non-boolean types to comparison operators.
+
+	x := 0;
+
+	if x = 0 then  					
+	begin
+		x := 1;   				
+	end;
+
+	x := 0;
+##parser:33: syntax error, unexpected ID, expecting ;
+
+	if x > 0 then
+		x := x-1
+	else
+		x := x+1;
+
+	if(false) then begin end
+##parser:40: syntax error, unexpected IF, expecting ;
+	else begin end;
+
+	if = 1 then 				//ERROR: invalid expression
+		begin end
+	else
+		begin end;
+
+	if(true) then begin
+		x := ; 				//ERROR: invalid expression
+##parser:49: syntax error, unexpected ;
+	end else begin
+##parser:50: syntax error, unexpected ELSE, expecting ;
+		x := ;				 //ERROR: invalid expression
+	end;
+
+	x := 0;
+
+
+	if(true) then begin
+		if(false) then
+			x := 1
+		else
+			x := 2;
+	end;
+
+	if(true) then
+		if(false) then begin
+			x := 1
+		end else
+			x := 2;
+
+	if(true) then
+		if(false) then begin
+			x := 1
+		end else begin
+			x := 2;
+		end 				//ERROR, missing semicolon
+
+
+	if(true) then x := 1
+##parser:78: syntax error, unexpected IF, expecting ;
+	else if(1 = 2) then x := 2
+	else x := 3
+
+end.

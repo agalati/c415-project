@@ -1,0 +1,138 @@
+// 3 errors : syntax errors in lines 374, 387, 400
+{
+// by ...
+
+this is the general error file.  It is designed to test almost all of the 
+grammer. first, without errors and then a few select cases with errors.
+all of the errors in this file, are at the bottom.  there are no errors 
+with any of the type definitions or const's or vars.
+
+
+
+error 1 - line 
+// This error is designed to test the simple expression and 
+// term rules to make certain that something isn't funny.
+//
+// the expected behavior is for the compiler to error on or
+// and quickly catch it.
+
+error 2 - line
+// This error is designed to test the and in term in combination
+// with other stuff
+//
+// the expected behavior is for the compiler to error on the 
+// and because at the point it should be expecting a factor 
+// and 'and' is not a factor.
+
+error 3 - line
+// this error is designed to cause and error in the factor statment, 
+// because as soon as it sees not, it looks for an unsigend const  
+// doesn't find it.
+//
+// the error should be on the - from the 47, and it should recover 
+// after this line is done.
+
+
+}
+
+
+
+program testProj (input, output);
+
+
+const
+  testConst = 1234;
+  nottrue  = FALSE;
+##semantic:45: variable 'FALSE' undeclared at this level
+  bigint   = 3276 * 10 + 7; 
+  smallint = -bigint;  
+  pi       = 3.14167;
+  arraySize = 20;
+
+
+type
+   daysofweek = (Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday);
+   int        = integer;  // This will let us pretend we're writing C!
+   float      = real;
+   truthtable = array[smallint..bigint] of boolean;
+##semantic:56: Identifiers cannot be used as subrange in arrays.
+   month      = array[1..5] of daysofweek;
+//   year       = array[(January, Febuary, March, April, May, June, July, August, September, October, November, December)] of month;
+      // Some seminormal types:
+      inttype = integer;     // INT TYPE
+      realtype = real;   // REAL TYPE
+      booltype = boolean;   // BOOL TYPE
+      chartype = char;   // CHAR TYPE
+      newIntType = inttype;  // ID TYPE
+      singleEnum = ( fortytwo ); // Single-member enum.
+      // May trigger warning.  ENCAPSULATED_ID TYPE
+
+      // We now test some mangled names:
+      in2tty2SASDpe = integer;     // INT TYPE
+      re3alFA3SAtype = real;   // REAL TYPE
+      boo8ASASDASlD7t6ype = boolean;   // BOOL TYPE
+      cASDh4a5rtyFSpe2234 = char;   // CHAR TYPE
+      ne2w2ASDI34Ant556Typ23e4 = inttype;  // ID TYPE
+      siasdnADFf3325465gleEnum234 = ( forty242two ); // Single-member enum.
+      // May trigger warning.  ENCAPSULATED_ID TYPE
+
+      // Now, we define a real enumerated type:
+      terribleSecretOfSpaceType = (PAK, CHOOIE, UNF);
+
+      // We will also try a more aggressive enumerated type:
+
+      // Array type:
+      simpleArray  = array[char] of inttype;
+      simpleArray2   = array[0..1] of realtype;
+      simpleArray5   = array[terribleSecretOfSpaceType] of boolean;
+      simpleArra42y = array[boolean] of terribleSecretOfSpaceType;
+
+      complexArray = array[0..5] of newIntType;
+      complexArray2 = array[-5..100] of boolean;
+        complexArray3 = array[0..(5*arraySize)] of terribleSecretOfSpaceType;
+##parser:90: syntax error, unexpected (
+
+      StringType = array[0..1024] of char;
+
+
+      // Records
+      stupidRec = record
+        meh: boolean
+      end;
+
+
+      ipRec = record
+          A : integer;
+          B : integer;
+          C : integer;
+          D : integer
+      end;
+
+      IpTable = record
+      school : ipRec;
+      home   : ipRec;
+      laptop : ipRec
+      end;
+
+      phoneArray = array[1..7] of integer;
+        phoneBook = array[1..3] of phoneArray;
+
+      ipArray = array[0..10] of ipRec;
+
+      phoneList = record
+                home : phoneArray;
+                cell : phoneArray;
+                work : phoneArray
+              end;
+
+
+      shredderRec = record
+       weight : real;
+        temp : integer;
+       working : boolean;
+       name : StringType;  // Use an array in a Record!  w00t!
+       history : array[0..100] of record
+         date  : record
+      day : integer;
+      month : integer;
+      

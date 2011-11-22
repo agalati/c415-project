@@ -1,0 +1,93 @@
+//test variable declarations
+// 11 errors
+
+program vartest(in, out);
+
+	var
+		x : integer;     
+		y : integer;       
+		x, y, z : integer;
+##semantic:9: Variable 'y' already declared.
+##semantic:9: Variable 'x' already declared.
+
+		x, y;							//ERROR
+##parser:11: syntax error, unexpected ;
+		x, y, z : integer;
+##semantic:12: Variable 'z' already declared.
+##semantic:12: Variable 'y' already declared.
+##semantic:12: Variable 'x' already declared.
+		x, y, z : integer					//ERROR
+##semantic:13: Variable 'z' already declared.
+##semantic:13: Variable 'y' already declared.
+##semantic:13: Variable 'x' already declared.
+		x, y, z : integer;
+##parser:14: syntax error, unexpected ID, expecting ;
+		x, y, z, : integer;					//ERROR
+##parser:15: syntax error, unexpected :
+		x, y, z : integer;
+##semantic:16: Variable 'z' already declared.
+##semantic:16: Variable 'y' already declared.
+##semantic:16: Variable 'x' already declared.
+
+		xz : integer;			//it is OK
+		x, y, z : int;						//ERROR	
+##semantic:19: Type 'int' has not been declared.
+##semantic:19: Variable 'z' already declared.
+##semantic:19: Variable 'y' already declared.
+##semantic:19: Variable 'x' already declared.
+		x, y, z : integer;
+##semantic:20: Variable 'z' already declared.
+##semantic:20: Variable 'y' already declared.
+##semantic:20: Variable 'x' already declared.
+		x : array[char] of integer;
+##semantic:21: Variable 'x' already declared.
+
+
+		x, y z : integer; 				//ERROR: syntax, missing comma
+##parser:24: syntax error, unexpected ID, expecting :
+
+		x : integer; //valid
+##semantic:26: Variable 'x' already declared.
+
+		x integer; 					//ERROR: syntax, missing ':'
+##parser:28: syntax error, unexpected ID, expecting :
+
+		x : integer; //valid
+##semantic:30: Variable 'x' already declared.
+
+		x : : integer;					 //ERROR: syntax, two ':'s
+##parser:32: syntax error, unexpected :
+
+		x : integer; //valid
+##semantic:34: Variable 'x' already declared.
+
+		x = integer;					 //ERROR: syntax, = instead of :
+##parser:36: syntax error, unexpected =
+
+		x : integer; //valid
+##semantic:38: Variable 'x' already declared.
+
+		x := integer; 					//ERROR: syntax, := instead of :
+##parser:40: syntax error, unexpected :=
+
+		x : integer; //valid
+##semantic:42: Variable 'x' already declared.
+
+		1 integer; 					//ERROR: syntax, int instead of id
+##parser:44: syntax error, unexpected INT_CONST, expecting P_BEGIN
+##parser:44: syntax error, unexpected ID, expecting P_BEGIN
+##parser:44: syntax error, unexpected ;
+
+		x : integer; //valid
+##parser:46: syntax error, unexpected ID, expecting P_BEGIN
+##parser:46: syntax error, unexpected :
+##parser:46: syntax error, unexpected ID, expecting P_BEGIN
+##parser:46: syntax error, unexpected ;
+
+		x : function; 				//ERROR, function is a keyword, not type
+##parser:48: syntax error, unexpected ID, expecting P_BEGIN
+##parser:48: syntax error, unexpected :
+##parser:48: syntax error, unexpected ;
+
+begin
+end.
