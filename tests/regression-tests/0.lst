@@ -1,0 +1,56 @@
+{====================================================
+Test Program 0.pal 
+Tests: Syntax errors in type declarations
+Written by: Group 4
+-----------------------------------
+
+
+Location and Description of Errors
+-----------------------------------
+There are three syntax errors in this program.  The first
+error is found on line 33, use of incorrect assignment
+operator. On line 41, finds a '/' when there should be
+a ':' assignment operator. Line 43, incorrect type of
+brackets used for array declaration. 
+
+=====================================================}
+
+program Syntax0 (input, output);
+
+
+{ Constant declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        d = 4;
+        string = 'that\'s one nice looking string';
+        string1 = a + b + c + d;
+
+{ Type declaration }
+type
+        int = integer;    
+        int1 : int;     { error - incorrect assignment operator } 
+##parser:33: syntax error, unexpected :
+        fixed = real;    
+        index = array[1..100] of int;   
+        holder = array[-5..-1] of char;  
+       
+{ Variable declarations }
+var
+        plane, trains, automobiles : integer;
+        horse, cart, buggy / char;	{ error - '/' when should be ':' }
+##parser:41: syntax error, unexpected /
+        wackywavinginflatiblearmsman : array[1..10] of real;
+	problems : array<1..10> of integer; { error - incorrect brackets }
+##parser:43: syntax error, unexpected <
+
+{ Begin program }
+begin
+        plane := a + b + c + d;
+        trains := a - b - c - d;
+        wackywavinginflatiblearmsman[0] := 33;
+        buggy := 'taxi';
+        cart := 'b';
+        horse := buggy;
+end. 
