@@ -1,0 +1,78 @@
+//test constant declarations
+//5 errors 
+
+program consts(in, out);
+const
+	X = 2;
+	X = identi;
+##semantic:7: variable 'identi' undeclared at this level
+##semantic:7: Constant already declared: X
+	SAD	= 'sad';
+	PI	= 3.14159265;
+	E	= 2.718;
+	A = 1 + 2;
+	A = + 1;
+##semantic:12: Constant already declared: A
+	B = - 1;
+	B = A - 1;
+##semantic:14: Constant already declared: B
+	C = A / B;
+	D = 44 div 3;
+	E = 33 mod 2;
+##semantic:17: Constant already declared: E
+	F = 44.5 * 33;
+	J = true or false;
+	K = true and false;
+	L = K <> J;
+	M = false <= J;
+	N = true >= M;
+
+	L = K <> J;			//this should be OK?
+##semantic:25: Constant already declared: L
+	M = false <= J;		//this should be OK?
+##semantic:26: Constant already declared: M
+	N = true >= M;			//this should be OK?
+##semantic:27: Constant already declared: N
+
+	O = false < true;
+	P = true > true;
+	Q = ( A + B );
+	R = not true;
+	S = not J;
+	T = (true = N);
+	
+	//ERROR: syntax, missing '='
+	X 2;
+##parser:37: syntax error, unexpected INT_CONST, expecting =
+
+	x = 2;
+
+	//ERROR: syntax, unexpected INT_CONST
+	2 = X;
+##parser:42: syntax error, unexpected INT_CONST, expecting ;
+
+	x = 2;
+##semantic:44: Constant already declared: x
+
+	//ERROR: syntax, unexpected :
+	x := int;
+##parser:47: syntax error, unexpected ID, expecting ;
+
+	x = 2;
+##semantic:49: Constant already declared: x
+
+	//ERROR: syntax, unexpected ID
+	x x = 12;
+##parser:52: syntax error, unexpected ID, expecting ;
+
+	x = 2;
+##semantic:54: Constant already declared: x
+
+	//ERROR: missing semicolon
+	x = 12
+##parser:57: syntax error, unexpected ID, expecting ;
+
+	x = 2;
+
+begin
+end.

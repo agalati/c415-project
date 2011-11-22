@@ -1,0 +1,78 @@
+//lots of missing semicolons
+//one extra semicolon
+//a couple missing then or do keywords 
+//if it's reasonable output, give full marks, this is a hard test
+
+program state(in, out) //missing ;
+
+const 	PI = 3.14159 //missing ;
+##parser:8: syntax error, unexpected CONST, expecting ;
+##parser:8: syntax error, unexpected ID, expecting P_BEGIN
+##parser:8: syntax error, unexpected =
+##parser:8: syntax error, unexpected REAL_CONST, expecting P_BEGIN
+		e = 2.7181 //missing ;
+##parser:9: syntax error, unexpected ID, expecting P_BEGIN
+##parser:9: syntax error, unexpected =
+##parser:9: syntax error, unexpected REAL_CONST, expecting P_BEGIN
+
+type	a : integer //missing ;
+##parser:11: syntax error, unexpected :
+		b : boolean //missing ;
+
+var		x : a //missing ;
+		y : b  //missing ;
+
+procedure proc0( asf: integer);
+	begin end;
+
+procedure proc1( asf: integer) //missing ;
+	begin end;
+
+procedure proc2( asf: integer);
+	begin end //missing ;
+
+begin
+
+//valid!
+	x := 1;
+	y := true;
+
+
+
+	if true  //missing then
+		writeln('test');
+
+	if true then
+		writeln('test') //missing ;
+
+	writeln('test');
+	writeln('test') //missing ;
+	writeln('test');
+
+	if true //missing then
+		writeln('test'); //extra ;
+	else
+		writeln('test');
+
+	writeln('test');
+
+	while true //missing do
+		exit;
+
+	writeln('test');
+
+	while true do
+		exit;
+
+	if then //missing expression
+		writeln('test');
+
+	while do //missing expression
+		exit;
+
+	if true then ; //valid?
+
+	writeln('test');
+
+end //missing .
+
