@@ -23,13 +23,26 @@ main (  int     argc,
         char**  argv)
 {
   err_buf = NULL;
+  s_emit = 0;
   parse_args(argc, argv);
   sym_tab_init();
+  
+  char* namein;
+  char* nameout;
+  
+  namein = (char*) malloc( sizeof(argv[argc-1]));
+  namein = argv[argc-1];
+  namein[strlen(namein)-3] = '\0';
+  nameout = (char*) malloc( sizeof(namein) + sizeof("asc"));
+  nameout = strcat(namein, "asc");
+  out_file = fopen(nameout, "a+");
+  
   int ret =  yyparse ();
   //printsym();
   new_position_line();
   fclose(stdin);
   fclose(prog_file);
+  fclose(out_file);
   if (do_listing)
     fclose(lst_file);
   return ret;
@@ -386,4 +399,12 @@ void replace_substr(char* pretty, const char* substr, const char* replacement)
     loc = pretty + strlen(pretty);
     strcat(pretty, loc);
   }
+}
+
+void emit(char* output)
+{
+	if(!s_emit)							// check for error flag set
+	{
+		fprintf(out_file, "\t %s \n ", output);
+	}
 }
