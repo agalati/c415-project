@@ -29,14 +29,11 @@ var letter, letter2 : char;
 // trying to confuse compiler with redeclaration of built-ins
 // eg. writeln, false
 function writeln(false:mine):integer; 
-##semantic:26: Function name 'writeln' has already been declared.
 begin
     if false = D then
         writeln := 'b'
         writeln := writeln; // ERROR #2 Return on rhs
 ##parser:30: syntax error, unexpected ID
-##semantic:30: could not find type of expression
-##semantic:30: could not find type of expression
 ##semantic:30: Cannot mix boolean and non-boolean types to comparison operators.
 end;
 

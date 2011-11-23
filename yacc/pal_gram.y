@@ -443,7 +443,7 @@ proc_decl               : proc_heading decls compound_stat S_COLON
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                           {
-                            if(globallookup($2) == NULL)
+                            if(locallookup($2) == NULL)
                               addproc($2, parm_list);
                             else
                             {
@@ -471,7 +471,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             }
                             else
                             {
-                              if(globallookup($2) == NULL)
+                              if(locallookup($2) == NULL)
                                 addfunc($2, parm_list, ret);
                               else
                               {
