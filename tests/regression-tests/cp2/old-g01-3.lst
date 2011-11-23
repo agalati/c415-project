@@ -1,0 +1,85 @@
+{
+   location and description of errors
+   3.pal:35.3-12 Error: Cannot assign real to integer
+   3.pal:43.3-12 Error: Cannot assign array[1..10] of integer to array[1..10]
+   of integer
+      (arrays defined seperately and therefore have different types)
+   3.pal:75.8-24 Error: Operator is not equal could not be applied to 
+   expressions 'crazy' and 'sane' because they are not of compatible types
+      (comparing strings of different lengths)
+}
+program typeChecking (input, output);
+var
+   int1, int2 : integer;
+   str1, str2 : array[1..10] of char;
+   chr1, chr2 : char;
+   r1, r2     : real;
+   ar1, ar2   : array[1..10] of integer;
+   ar3        : array[1..10] of integer;
+   bln1, bln2 : boolean;
+
+procedure checkingTypes();
+begin
+   int1 := 5;
+   int1 := (5 * 5) + 1;
+   int2 := int1;
+
+   { real can be set to integer, no error }
+   r1 := int2;
+   r1 := 5;
+   
+   r2 := r1;
+   r2 := 12.3E+10;
+
+   { ERROR: incompatable type, real to integer }
+   int1 := r1;
+##semantic:35: assignment type is incompatible
+
+   chr1 := 'c';
+   chr1 := str2[5];
+   chr2 := chr1;
+   str1[2] := chr1;
+
+   { ERROR: incompatable type, arrays defined seperately }
+   ar3 := ar1;
+##semantic:43: assignment type is incompatible
+
+   bln1 := true;
+   bln2 := false;
+   bln2 := bln1;
+
+   chr1 := chr(int2 + 234);
+   int1 := trunc(r1 / int2);
+   int2 := round(r1 * 999E-10);
+
+   if odd(int1) then begin
+      bln2 := odd(int2);
+   end;
+
+   int1 := abs(int2);
+   r1 := abs(r2);
+   int1 := sqr(int1);
+   r1 := sqr(r2);
+
+   r1 := sqrt(int2);
+   r1 := sin(1232313.5);
+   r2 := exp(12);
+   r2 := ln(int1);
+
+   bln1 := not bln2;
+   bln1 := bln1 and true and false and false;
+   if (true or (false and true)) then begin
+      bln1 := 'here i a' > ' the flu';
+      bln1 := 777 >= ((12 * 32.2)+(87.2 - 1)/(23 div 2));
+   end;
+
+   { ERROR: different length of chars }
+   if ( 'crazy' <> 'sane' ) then begin
+##semantic:75: Incompatible string types given to comparison operator.
+      bln1 := 111 >= (78 mod 1123);
+      bln1 := 666 <= 1134;
+   end;
+end;
+
+begin
+end.

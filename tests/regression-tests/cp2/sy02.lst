@@ -1,0 +1,41 @@
+{
+   3 syntax errors.
+   l. 12.10: syntax error, unexpected ':', expecting '='
+   l. 22.10: syntax error, unexpected END, expecting ID
+   l. 24.11: syntax error, unexpected ASSIGN, expecting '='
+}
+program example( input, output );
+const
+        pi = 99.9;
+type
+{First error: ":" cannot be used to define a type,"=" expected. }
+      a : record
+##parser:12: syntax error, unexpected :
+             name : char;
+             id   : integer
+          end;
+      ipRec = record
+          A : integer;
+          B : integer;
+          C : integer;
+{Second error: the last entry in a record cannot be followed by a semicolon.}
+          D : integer;
+      end;
+##parser:22: syntax error, unexpected END, expecting ID
+{Third error: misuse of := in type declaration.}
+      b := a;
+var
+        count : integer;
+        sum   : integer;
+
+begin
+##parser:29: syntax error, unexpected P_BEGIN, expecting ID
+        while( count <= pi ) do
+        begin
+               sum := sum*2 - 3 mod 4 + count;
+               count := count + 1;
+                continue;
+                exit;
+        end;
+      
+end.

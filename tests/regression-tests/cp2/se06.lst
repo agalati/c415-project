@@ -1,0 +1,81 @@
+program five(input, output);
+
+// 
+// l. 14   Error: wrong types in division 
+// l. 33   Error: redeclaration of a.
+// l. 51   Error: + used for strings
+// l. 61   Error: incompatible types
+
+const
+   t = true;
+   f = false;
+   a = 0;
+   b = 2.5;
+   c = b / f;  // Error: wrong types in division
+##semantic:14: operands of 'divide' must be either integers or reals.
+   s = 'hi there';
+   
+type
+   arr = array [1..8] of char;
+   rec = record
+	    a : integer;
+	    b : real;
+	    c : char;
+	    d : real;
+	    e : record
+		   a : boolean;
+##semantic:25: Duplicate record member a.
+		   b : boolean
+		end; 
+	    f : array [1..25] of boolean
+	 end; 
+   gem = (ruby, sapphire, diamond, opal, jade);
+
+var
+   a : arr;	// Error: redeclaration of a.
+##semantic:33: Variable 'a' already declared.
+   d : arr;	
+   e,e1 : rec;	
+   g : gem;	
+		
+procedure l1(a : integer; b : real);
+
+ procedure l2(var a : integer; b : real);
+
+  function l3(d : char; e : arr; var f : rec) : gem;
+
+   procedure l4(a : gem; b : gem);
+
+    function l5() : char;
+
+    const
+       b = 25;
+       c = 'This is a test\n';
+       d = s + c;   // Error: + used for strings
+##semantic:51: operands of 'plus' must be either integers or reals.
+
+    begin
+      l5 := 'a';
+    end; { l5 }
+
+   begin
+   end; { l4 }
+
+  begin
+    f := e;    // Error: incompatible types
+##semantic:61: assignment type is incompatible
+    f := e1;
+    l3 := g;
+  end; { l3 }
+
+ begin
+   g := l3('a',d,e);
+ end; { l2 }
+
+begin
+end; { l1 }
+   
+begin
+end.
+   
+       

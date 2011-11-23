@@ -1,0 +1,80 @@
+{
+    - Line 22: Variable named program
+    - Line 30: Return used on right hand side 
+    - Line 45: Mismatched type, string
+    - Line 47: Mismatched type, string
+    - Line 50: Mismatched type, string
+    - Line 51: Mismatched type, string
+    - Line 53: Mismatched type, string
+}
+program RedeclareBuiltins( input, output );
+
+type integer = char;
+    mine = (A,B,C,D);
+
+var letter, letter2 : char;
+    letter3 : array[1..1] of char; // size 1 array is allowed  
+    letter4 : array[2..2] of char; // size is 1, but letter3/letter4 not compatible
+                                   // because letter3 is a string, letter4 is not
+                                   // ... strings must start index at 1 
+    letter5 : array['a'..'a'] of char;
+##parser:20: syntax error, unexpected STRING, expecting -
+    random : integer;
+    program : integer;  // ERROR #1 Variable named program
+##parser:22: syntax error, unexpected PROGRAM, expecting P_BEGIN
+##parser:22: syntax error, unexpected :
+##parser:22: syntax error, unexpected ID, expecting P_BEGIN
+##parser:22: syntax error, unexpected ;
+
+// trying to confuse compiler with redeclaration of built-ins
+// eg. writeln, false
+function writeln(false:mine):integer; 
+##semantic:26: Function name 'writeln' has already been declared.
+begin
+    if false = D then
+        writeln := 'b'
+        writeln := writeln; // ERROR #2 Return on rhs
+##parser:30: syntax error, unexpected ID
+##semantic:30: could not find type of expression
+##semantic:30: could not find type of expression
+##semantic:30: Cannot mix boolean and non-boolean types to comparison operators.
+end;
+
+procedure b();
+begin
+end;
+
+procedure c();
+procedure d();
+begin
+end;
+begin
+end;
+
+begin
+    letter := writeln( B );
+    
+    letter := letter2;
+    letter3 := letter;
+##semantic:48: assignment type is incompatible
+    letter3 := letter4; // Error #1 Mismatched Type
+##semantic:49: assignment type is incompatible
+    
+    letter5 := letter3; // Error #2 Mismatched Type
+##semantic:51: variable 'letter5' undeclared at this level
+    
+    letter3 := 'K';
+##semantic:53: assignment type is incompatible
+    letter4 := 'K'; // Error #3 Mismatched Type
+##semantic:54: assignment type is incompatible
+    letter5 := 'K'; // Error #4 Mismatched Type
+##semantic:55: variable 'letter5' undeclared at this level
+        
+    letter4 := 'no'; // Error #5 Mismatched Type
+##semantic:57: assignment type is incompatible
+    
+    letter := 'a';
+end.
+
+// Technically program has ended, so this line should not be processed
+//ggsggs = afaf;

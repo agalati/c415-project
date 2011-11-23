@@ -1,0 +1,17 @@
+program scopeTest (input, output);
+    {try to declare const with same name as enclosing function}
+    var
+	stuff : integer;
+
+    function scopeTest () : integer;
+        const scopeTest = 1; // this is redefining an identifier
+##semantic:7: Constant already declared: scopeTest
+        begin
+            scopeTest := 5; // possibly also complain here if scopetest is seen as a const (can't store into a const)
+        end;
+    {end of the funtion scopeTest}
+    begin
+        stuff := scopeTest();
+    end.
+{end of program scopeTest}
+    

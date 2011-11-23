@@ -1,0 +1,130 @@
+{====================================================
+Test Program 4.pal 
+Tests: Semantic Errors
+Written by: Group 4
+-----------------------------------
+
+Location and Description of Errors
+-----------------------------------
+Error on line 37, using integer division with real numbers.
+Error on line 91, incorrect type assignment Boolean, should be boolean.
+Error on line 120, string length out of array bounds.
+
+=====================================================}
+
+program Semantic2 (input, output);
+
+
+{ Constant Declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        astring = 'halloween';
+        bstring = 'christmas';
+        abool = true;
+        bbool = false;
+        areal = 5.1E1234;
+        breal = 0.9E+5;
+        alogic = not abool;
+        blogic = abool or bbool;
+        remainder = c mod b;
+        clogic = remainder < 0;  
+        neg = -10;
+        negreal = -2.33E10;
+        weird = ' \n \n\n\t \t there is \nso\tme good \' stuff          ';
+        multiPL = areal * breal;    
+        depends = 32.33 div 12.99;     { error - using integer division with a real number }
+##semantic:37: 'div' operands must be of type integer.
+
+
+{ Type Declarations }
+type
+        string = array[1..10] of char;
+        int = integer;
+        info = record
+                        name : string;
+                        age : int;
+                        gender : char
+                   end;
+
+        infoarray = array[1..10] of info;  
+        
+        detailedinfo = record
+                        favfood : string;
+                        myinfo : infoarray
+                   end;
+                  
+        ultimatepower = record                        
+                        radical : detailedinfo;
+                        awesome : real
+                   end;
+
+        hood = array[1..10] of int;
+        hood1 = array[1..10] of hood;
+        hood2 = array[1..10] of hood1;
+        hood3 = array[1..10] of hood2;
+        
+        counting = ultimatepower;
+
+       
+{ Variable Declarations }
+var
+        hoops : counting;
+        loops : ultimatepower;
+        stars : detailedinfo;
+        strang : detailedinfo;
+        quality : real;
+        pro : string;
+        tell : string;
+        apples : real;
+        bananas : hood3;
+        peaches : info;
+        heading : int;
+        shirts : int;
+        shoes : integer;
+
+{ Tests scope checking of variables }
+procedure LittleProc ( var gimme : int; please : ultimatepower );
+var
+        shirts : int;
+        shoes : integer;
+        none : Boolean;		{ error - incorrect type assignment Boolean, should be boolean }
+##semantic:91: Type 'Boolean' has not been declared.
+        service : real;
+        apples : int;
+        bananas : ultimatepower;
+
+begin
+
+        shirts := gimme;
+        bananas := please;
+       
+        if shirts < 0 then
+           begin
+                apples := a + neg;
+                if apples < 0 then
+                   begin
+                        apples := apples - 1;
+                        apples := apples + 1;
+                   end;
+           end
+        else
+                apples := 99;
+                  
+        
+end;
+       
+
+{ Begin Main }
+begin
+       
+       tell := ' ooooooooooooooooooooooooooooooooooooh nooooooooooooooooooooooooooooooooooooooooooooooooooooo '; 
+##semantic:120: assignment type is incompatible
+            { error - string is outside bounds of array }
+       
+       shirts := 0;    
+       shoes := 1;
+       
+       
+end. 

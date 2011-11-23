@@ -1,0 +1,34 @@
+{
+    - Line 10: duplicate fields for record
+    - Line 28: field c does not exist
+    - Line 30: record types are not compatable
+}
+program recordAssignments( input, output );
+
+type	recordType1 = record
+	a: integer;
+	b: integer;     // ERROR #1 duplicate fields for record
+	b: integer
+##semantic:11: Duplicate record member b.
+	end;
+
+	recordType2 = record
+	a: integer;
+	b: integer
+	end;
+
+var	record1 : recordType1;
+	record2	: recordType1;
+	record3 : recordType2;
+
+begin
+	record1.a := 1;
+	record1.b := 2;
+	record2 := record1;
+	
+	record1.c := 5; // ERROR #2 field c does not exist
+##semantic:28: 'c' is not a member of 'record1'.
+	
+	record3 := record1;	// ERROR #3 Record types are not compatable
+##semantic:30: assignment type is incompatible
+end.

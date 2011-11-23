@@ -1,0 +1,76 @@
+program six(input, output);
+
+// Errors
+//    semantic:21.9: `t' is not a type.
+//    semantic:25.11: Type `rec' is not declared.
+//    semantic:36.7: Name `a' already defined.
+//    semantic:62.6: Wrong number of arguments in call to `l2'.
+//    semantic:63.6: Wrong number of arguments in call to `l2'.
+//    semantic:65.6: Wrong number of arguments in call to `l2'.
+//
+
+const
+   t = true;
+   f = false;
+   a = 10;
+   b = 2.5;
+   s = 'hi there';
+   
+type
+   c = array [1..8] of boolean;
+   i = t;       // Error: type name expected (instead of a constant)
+##semantic:21: 't' is not a type.
+   h = array [boolean] of real;
+   
+var
+   e : rec;	// Error: unknown type 
+##semantic:25: Type 'rec' has not been declared.
+
+// function l1() : real;
+
+// begin
+//   l1 := 1.0;
+// end; { l1 }
+
+procedure l2(a : integer; b : real);
+
+var
+   a : char;   //  Error: redeclaration of a.
+##semantic:36: Variable 'a' already declared.
+     
+begin
+end; { l2 }
+   
+procedure l3();
+
+type
+   a = record 
+	  b : record
+		 c : record
+			d : real
+		     end; 
+		 e : real
+	      end; 
+	  f : real
+       end; 
+     
+var
+   b : a;
+
+begin
+end; { l3 }
+   
+begin
+
+  l2();           // Error: incorrect number of arguments
+##semantic:62: Missing arguments for procedure 'l2'.
+  l2(1);          // Error: incorrect number of arguments
+  l2(1,2);
+##semantic:64: Incompatible parameter passed to 'l2' in position 2
+  l2(1,2,3);      // Error: incorrect number of arguments
+##semantic:65: Incompatible parameter passed to 'l2' in position 2
+##semantic:65: Incompatible parameter passed to 'l2' in position 3
+
+end.
+   
+       
