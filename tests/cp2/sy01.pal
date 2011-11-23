@@ -1,0 +1,69 @@
+{
+This file contains 3 syntax errors:
+   l.20  upper-cased ARRAY 
+   l.38  Missing bracket in expression.
+   l.41  error in expression
+}
+
+program test1(input, output);
+const
+        m = 'a';
+        r = 2;
+{comments below}
+{{// }
+        pi  = 3.3748;
+        str = 'ab{it is allowed to have a comments inside a string} c'; 
+var 
+{First error: ARRAY should be in lower case; 
+              otherwise it won't be recognized by the grammar rule.
+}   
+    a : ARRAY[1..3] of integer;
+    b : boolean;
+    c : array[1..3] of integer;
+    result : integer;
+    d : char;    
+    e : real;
+
+    {scalar type declaration}
+    days1 : (mon, tue, wed);
+    days2 : (thr,fri, sat, sun);
+    
+    arr1, arr2:array[1..25] of char;
+    arr3: array[1..25] of char;    
+
+    epsreal, minreal, maxreal: real;
+
+begin
+{Second error: missing bracket in expression.}
+    b := (((c[2] * 9.37 / 2.73) <= pi) and (not b) ;         
+
+{Third error: (*)  cannot be recognized in expression. }
+    b := (((c[2] * 9.37 / 2.73) (*) pi) and (not b)) ;   
+
+{All the built-in functions are tested below. All of the following
+ are correct. }
+        d := 'a';
+        result := 0;
+{Test on a char}
+        result := ord(d);
+{Test on constant}
+ //       result := ord(m);
+{Test on upper cases }
+        result := ord(d);
+        result := ord(m);
+        
+        d := chr(result);
+        d := chr(r);
+        d := chr(result);
+        d := chr(r);
+        
+        result := result div trunc(minreal + maxreal / (epsreal * 2.73) );
+        result := result mod round( pi * 2 - maxint);
+        
+        
+        b := odd(trunc(minreal)) or true and (not false) and (minreal <= maxint *pi);
+        b := b and odd(round(pi)) or  (1 > - abs(-result)) or true;
+        e := sqrt(result);
+
+        
+end.

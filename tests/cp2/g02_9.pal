@@ -1,0 +1,63 @@
+{
+	line 20: Invalid range for array.  max value must be greater than min value
+	line 22: Invalid range for array.  max value must be greater than min value
+	line 24: Can't use keywords as identifiers.  Caught as both a parser error and a semantic error.
+	line 25: Can't use keywords as identifiers.  Caught as both a parser error and a semantic error.
+	line 33: 'B' is a param, not a procedure
+
+	line 44: 'D' is not a function
+}
+program main(input, output);
+type 
+	int = integer; 
+	string = array[1..9] of char; 
+	
+var 
+	x, y, z: int; 
+	a, b, c: real; 
+	ch : char; 
+	str: string;
+	arr1 : array[1..1] of int;	{ Invalid range for array.  max value must be greater than min value }
+	arr2 : array[(2*2)..(3*3)] of int;
+	arr3 : array[(2*2)..(-2*2)] of int; { Invalid range for array.  max value must be greater than min value }
+	
+procedure function(var x: int); begin end;			{ Can't use keywords as identifiers. }
+function procedure(var x: int) : int; begin end;	{ Can't use keywords as identifiers. }
+function A() : int;
+begin
+	A := A()
+end;
+
+procedure B(B : int);
+begin
+	B(B)				{ 'B' is a param, not a procedure }
+end;
+
+procedure C();
+var C:int;
+begin
+	C := 5
+end;
+
+function D(x: int) : int;
+begin
+	D := D(D) + x		{ 'D' is not a function }
+end;
+
+begin
+	a := abs(b);		{ should be an error because 'b' doesn't have a value yet }
+	b := sqr(2.0);
+	c := sqrt(-2.0);  	{ will cause a runtime error }
+	a := sin(90.0);	
+	b := exp(2.0);
+	c := ln(-2.0);		{ will cause a runtime error }
+	 
+	x := trunc(a);
+	y := round(b);
+	z := pred(x) + succ(y);
+	if odd(z) then writeln('z is odd')
+	
+	write(x); write(a); write(ch); write(str);
+	writeln(x); writeln(a); writeln(ch); writeln(str);
+	read(x); read(a); read(ch); read(str);
+end.

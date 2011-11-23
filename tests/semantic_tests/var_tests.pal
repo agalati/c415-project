@@ -1,0 +1,15 @@
+program test(in, out);
+type
+  type1 = integer;
+
+var
+  a : integer;
+  b : char;
+  c : foo;
+  c : integer;
+  d : type1;
+  e, f : boolean;
+  g, f : char;
+
+begin
+end.

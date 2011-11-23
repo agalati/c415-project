@@ -1,0 +1,136 @@
+{====================================================
+Test Program 6.pal 
+Tests: Semantic Errors
+Written by: Group 4
+-----------------------------------
+
+Location and Description of Errors
+-----------------------------------
+Error on line 65, trying to assign an unknown type.
+Error on line 130,trying to assign a real to an int variable.
+Error on line 13,attempting to use an array name as an index value. 
+
+=====================================================}
+
+program Semantic2 (input, output);
+
+
+{ Constant Declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        astring = 'halloween';
+        bstring = 'christmas';
+        abool = true;
+        bbool = false;
+        areal = 5.1E1234;
+        breal = 0.9E+5;
+        alogic = not abool;
+        blogic = abool or bbool;
+        remainder = c mod b;
+        clogic = remainder < 0;  
+        neg = -10;
+        negreal = -2.33E10;
+        weird = ' \n \n\n\t \t there is \nso\tme good \' stuff          ';
+        multiPL = areal * breal;    
+
+
+{ Type Declarations }
+type
+        string = array[1..10] of char;
+        int = integer;
+        info = record
+                        name : string;
+                        age : int;
+                        gender : char
+                   end;
+
+        infoarray = array[1..10] of info;  
+        
+        detailedinfo = record
+                        favfood : string;
+                        myinfo : infoarray
+                   end;
+                  
+        ultimatepower = record                        
+                        radical : detailedinfo;
+                        awesome : real
+                   end;
+        hood = array[1..10] of int;
+        hood1 = array[1..10] of hood;
+        hood2 = array[1..10] of hood1;
+        hood3 = array[1..10] of hood2;
+
+        popcan = leftmost;      { error - leftmost not defined }
+        
+        counting = ultimatepower;
+
+       
+{ Variable Declarations }
+var
+        hoops : counting;
+        loops : ultimatepower;
+        stars : detailedinfo;
+        strang : detailedinfo;
+        quality : real;
+        pro : string;
+        tell : string;
+        apples : real;
+        bananas : hood3;
+        peaches : info;
+        heading : int;
+        myarray : array[1..5] of int;
+        added : integer;
+        negated : integer;
+
+{ Tests scope checking of variables }
+procedure LittleProc ( var gimme : int; please : ultimatepower );
+var
+        shirts : int;
+        shoes : integer;
+        none : ultimatepower;
+        service : real;
+        apples : int;
+        bananas : ultimatepower;
+
+begin
+
+        shirts := gimme;
+        bananas := please;
+       
+        if shirts < 0 then
+           begin
+                apples := a + neg;
+                if apples < 0 then
+                   begin
+                        apples := apples - 1;
+                        apples := apples + 1;
+                   end;
+           end
+        else
+                apples := 99;
+   
+end;
+
+function addtwo (x : integer; y: integer) : integer;
+begin
+    added := x + y;
+end;
+
+function negate ( x : integer ) : integer;
+begin
+    negated := -x;
+end;
+       
+
+{ Begin Main }
+begin
+
+      heading := apples + 1;    { error - trying to assign a real to an int }
+      
+      myarray[1] := 20;     
+      myarray[myarray] := myarray[1];   { error - using an array name as an index }
+          
+       
+end.

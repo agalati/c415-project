@@ -1,0 +1,34 @@
+{
+	line 19: array is to big to store on the ASC stack 
+	line 24: indices are outside of the range... 20 > 16, 'z' > 'g', and there's an extra index
+	line 33: 'green' is not in the subrange of 'warmColours'
+}
+program main(input, output);
+type
+	string = array[1..5] of char;
+	colour = (red,orange,yellow,green,blue,violet);
+	valueKeyPair = record key:string; value:string end;
+	map = array[1..10] of valueKeyPair;
+	
+var
+	volume : array[1..16] of array['a'..'g'] of array[boolean] of colour;
+	crazy : array[boolean] of array[char] of integer;
+	map1, map2 : map;
+	rainbow : array[colour] of real;
+	warmColours : array[red..yellow] of real;
+	allTheNumbers : array[integer] of real;  	{ array is to big to store on the ASC stack }
+	
+begin
+
+	volume[10,'c',true] := orange;
+	volume[20,'z',false,5] := blue;	  { indices are outside of the range, and there's an extra index }
+	
+	map1[1].key := 'apple';
+	map1[1].value := 'wheel';
+	
+	map1[2] := map1[1];
+	map2 := map1;
+	
+	rainbow[red] := 1.23;
+	warmColours[green] := 1.23;  	{ 'green' is not in the subrange of 'warmColours' }
+end.

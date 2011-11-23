@@ -1,0 +1,19 @@
+program TinyTest04 (input, output);
+
+{Several constant values}
+
+const
+        a = 5;
+        b = 6;
+        c = 8;
+
+var
+        x : integer;
+        y : integer;
+        z : integer;
+
+begin {main function}
+      x := a;
+      y := c;
+      z := b;
+end.

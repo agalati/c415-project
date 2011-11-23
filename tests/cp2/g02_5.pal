@@ -1,0 +1,104 @@
+{
+	line 71: comparing two strings of different sizes should fail
+	line 74: assigning strings of different sizes should fail
+	line 97: comparing different types should fail
+}
+program main(input, output);
+const 
+	cstr1 = 'apple'; 
+	cstr2 = 'truck';
+	cb1 = cstr1 = cstr2;
+	cb2 = cstr1 > cstr2;
+	cb3 = cstr1 >= cstr2;
+	cb4 = cstr1 < cstr2;
+	cb5 = cstr1 <= cstr2;
+	cb6 = cstr1 <> cstr2;
+	
+type
+	string5a = array[1..5] of char;
+	string5b = array[1..5] of char;
+	
+var
+	str1a, str2a : string5a;
+	str1b, str2b : string5b;
+	str1, str2 : array[1..5] of char;
+	index : integer;
+	c : char;
+	b1,b2 : boolean;
+	
+begin
+	str1a := cstr1;
+	str1b := cstr1;
+	str1 := 'table';
+	
+	str2a := cstr2;
+	str2b := cstr2;
+	str2 := 'shirt';
+	
+	if (str1a > str2a) then begin
+		write(str1a);
+		if (str1b < str2b) then begin
+			write(str2b);
+			if (str1 <> str2) then begin
+				write(str1);
+				if (str1a >= str2a) then begin
+					write(str2a);
+					if (str1b <= str2b) then begin
+						write(str2b);
+						if (str1 = str2) then
+							write(str2)
+						else
+							write(str1)
+						end
+					else
+						write(str1b)
+					end
+				else
+					write(str1a)
+				end
+			else
+				write(str2)
+			end
+		else
+			write(str2a)
+		end
+	else
+		write(str1b);
+	
+	if (str1 <> 'phone') then 
+		writeln('not phone');
+	
+	if (str2 <> 'stereo') then	{ comparing two strings that are not the same size will fail }
+		writeln('not stereo');
+		
+	str2 := 'trains';	{ assigning a string that is not the same size will fail }
+	
+	str2[1] := 'a';
+	
+	index := 1;
+	while (index <= 5) do begin
+		str2[index] := chr(index + 48);
+		c := str2[5 - index + 1];
+		writeln(ord(c));
+		writeln(succ(c));
+		writeln(pred(c))
+	end;
+	
+	b1 := true;
+	b2 := false;
+	writeln(cb1 and cb2);
+	writeln(cb3 and not cb4);
+	writeln(not cb5 or not cb6 and cb1);
+	writeln(b1 and not false);
+	writeln(not b2 or not true);
+	
+	b1 := b1 and (str1 > str2);
+	b1 := b2 <> (str1 <> str2);
+	b1 := c <> str1;	{ comparing a char to string will fail }
+	
+	b1 := succ(b2);
+	b2 := pred(b1);
+	write(ord(b1));
+	write(ord(true));
+	write(ord(false));
+end.	

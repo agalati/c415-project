@@ -1,0 +1,12 @@
+program TinyTest (input, output);
+
+{Basic test - a constant, nothing more...or is it?}
+
+const 
+      ninetynine = 99;
+
+begin {main function}
+
+end.
+
+.

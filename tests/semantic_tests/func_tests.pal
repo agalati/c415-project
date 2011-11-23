@@ -1,0 +1,28 @@
+program test(in, out);
+var
+  c : char;
+  list : array[10..90] of integer;
+
+  procedure p1(a : integer; b : integer);
+  var
+    c : integer;
+  begin
+  end;
+
+  function f1(a : integer; b : real) : char;
+  var
+    c : boolean;
+
+    procedure fp1(c : boolean);
+    var
+      c : real;
+    begin
+    end;
+
+  begin
+  end;
+
+begin
+        c := f1(1, 2);
+        p1(f1(1, 2), 2);
+end.

@@ -1,0 +1,39 @@
+// Error(14):  Invalid subscript.
+// Error(34):  Expecting finish to the equation.  
+// Error(36):  Expecting ';'.
+program program0(input, output);
+
+var
+        a, b : integer;
+        criticalmass : array[-1..14] of integer;
+        x : integer;
+        c, d : integer;
+        y : real;
+        
+begin
+        x := criticalmass[4.0];   // ERROR
+
+        // = Addition =
+        a := b + c;
+        a := d + d + d + d + d + d + d + d + d;
+        a := a + (a + (a + d) + d);
+
+        // = Subtraction =
+        a := b - c;
+        a := d - d - d - d - d - d - d - d - d;
+        a := a - (a - (a - d) - d);
+
+        // = Multiplication =
+        a := b * c;
+        a := d * d * d * d * d * d * d * d * d;
+        a := a * (a * (a * d) * d);
+
+        // = Unary =
+        a := +4;
+        a := -4;
+        a := 4-;                // ERROR
+
+        x := 7                  // ERROR
+        x := 18;
+        x := 5;                  
+end.

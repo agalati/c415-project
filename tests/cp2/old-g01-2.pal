@@ -1,0 +1,129 @@
+// Expression symantics
+// Line 125: Using a non valid arithmetic type
+// Line 126: Using a non valid logical type
+// Line 127: Assigning an incompatible type
+
+program main(i,o);
+        var x : integer;
+            y : integer;
+            z : real;
+            a : real;
+            b : boolean;
+            c : boolean;
+            d : char;
+begin
+        {
+                Do a bunch of errors
+                for these too.
+        }
+        //Unary minus and plus (Add real to int error)
+        x := -1;
+        y := +12;
+        x := -y;
+        y := +x;
+
+        z := -1;
+        z := -1.78;
+        z := -x;
+        z := -z;
+        a := +1;
+        a := +1.78;
+        a := +x;
+        a := +a;
+        
+        //Addition (Add error with assigning real result to int)
+        x := 5 + 5;
+        y := x + 6;
+        y := x + y;
+
+        z := 5 + 5;
+        z := x + 6;
+        z := x + y;
+        z := 1.79 + 5;
+        z := 1 + 12.1235436764791283748;
+        z := a + z;
+        z := -a + z;
+        z := a + (-z);
+        z := 13.2 + 123.7;
+
+        //Subtraction
+        x := 5 - 5;
+        y := x - 5;
+        y := x - y;
+
+        z := 5 - 5;
+        z := x - 6;
+        z := x - y;
+        z := 1.79 - 5;
+        z := 1 - 12.1235436764791283748;
+        z := a - z;
+        z := -a - z;
+        z := a - (-z);
+        z := 13.2 - 123.7;
+
+        //Multiplication
+        x := 5 * 5;
+        y := x * 5;
+        y := x * y;
+
+        z := 5 * 5;
+        z := x * 6;
+        z := x * y;
+        z := 1.79 * 5;
+        z := 1 * 12.1235436764791283748;
+        z := a * z;
+        z := -a * z;
+        z := a * (-z);
+        z := 13.2 * 123.7;
+
+        //Real Division (div by 0 should give error)
+        z := 5 / 9;
+        z := 5 / 5;
+        z := x / 6;
+        z := x / y;
+        z := 10.00 / 5;
+        z := 1 / 12.1235436764791283748;
+        z := a / z;
+        z := -a / z;
+        z := a / (-z);
+        z := 13.2 / 123.7;
+
+        //Integer Division
+        x := 5 div 5;
+        y := x div 6;
+        y := x div y;
+        z := 5 div 5;
+
+        //Modulus
+        x := 5 mod 5;
+        y := x mod 6;
+        y := x mod y;
+        z := 5 mod 5;
+
+        //Boolean OR
+        b := true or true;
+        b := true or false;
+        b := false or true;
+        b := b or b;
+        b := c or b;
+        b := b or true;
+
+        //Boolean NOT
+        b := not b;
+        b := not true;
+        b := not false;
+
+        //Boolean AND
+        b := true and true;
+        b := true and false;
+        b := false and true;
+        b := b and b;
+        b := c and b;
+        b := b and true;
+
+        //ERRORS
+        a := a + d; 
+        b := c and a;
+        z := -b;
+
+end.

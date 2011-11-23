@@ -1,0 +1,18 @@
+program test(in, out);
+type
+  type1 = integer;
+
+var
+  a : integer;
+  b : char;
+  c : foo;
+##semantic:8: Type 'foo' has not been declared.
+  c : integer;
+##semantic:9: Variable 'c' already declared.
+  d : type1;
+  e, f : boolean;
+  g, f : char;
+##semantic:12: Variable 'f' already declared.
+
+begin
+end.

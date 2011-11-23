@@ -1,0 +1,12 @@
+program Strings(input, output);
+
+var
+        s: String;
+
+begin
+        s := 'Hello, \'world ' ;
+\
+
+#
+        
+end.

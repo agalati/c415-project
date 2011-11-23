@@ -1,0 +1,34 @@
+// Tests the functions and procedures for parameter lengths and returns
+// Errors on lines 18, 30, 31
+program funcsnprocs (stuff, things);
+var
+	x,y,z : integer;
+	c : char;
+	r : real;
+	
+
+function threeParams (a : integer; b : integer; c : char) : real;
+begin 
+	threeParams := 9.0;
+end;
+
+function noReturn () : integer;
+begin
+	c := 'c';
+end; //ERROR this function doesn't set the return value.
+
+procedure twoParams (a : integer; r : real);
+begin
+	a := 5;
+	r := 2.0;
+end;
+
+begin
+	x := 5;
+	y := 6;
+	r := 5.0;
+	twoParams(x,y,r); //ERROR too many parameters
+	threeParams(x,y,c); //ERROR function cannot be called without a variable being assigned to it's return.
+	
+end.
+

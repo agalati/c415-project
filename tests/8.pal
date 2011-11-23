@@ -1,0 +1,135 @@
+{====================================================
+Test Program 8.pal 
+Tests: Semantic and Syntax Errors
+Written by: Group 4
+-----------------------------------
+
+Location and Description of Errors
+-----------------------------------
+ An error on line 39, attempting to use strings in a 
+logical evaluation.  On line 63, use of an undeclared type
+On line 107, attempting to use an int as a boolean in a conditional.
+On line 111, some nonsense ifs.
+Lines 131, unterminated string.
+
+=====================================================}
+
+program Semantic2 (input, output);
+
+
+{ Constant Declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        astring = 'halloween';
+        bstring = 'christmas';
+        abool = true;
+        bbool = false;
+        areal = 5.1E1234;
+        breal = 0.9E+5;
+        alogic = not abool;
+        blogic = abool or bbool;
+        remainder = c mod b;
+        clogic = remainder < 0;  
+        neg = -10;
+        negreal = -2.33E10;
+        weird = ' \n \n\n\t \t there is \nso\tme good \' stuff          ';
+        multiPL = areal * breal;    
+        nonsense = 'yes' or 'no';     { error - attempting to use string in logical eval }
+
+
+{ Type Declarations }
+type
+        string = array[1..10] of char;
+        int = integer;
+        info = record
+                        name : string;
+                        age : int;
+                        gender : char
+                   end;
+
+        infoarray = array[1..10] of info;  
+        
+        detailedinfo = record
+                        favfood : string;
+                        myinfo : infoarray
+                   end;
+                  
+        ultimatepower = record                        
+                        radical : detailedinfo;
+                        awesome : real
+                   end;
+        hood = array[1..10] of intunreal;	{ error - undeclared type }
+        hood1 = array[1..10] of integer;
+        hood2 = array[1..10] of hood1;
+        hood3 = array[1..10] of hood2;           { error - missing semicolon }
+        counting = ultimatepower;
+
+       
+{ Variable Declarations }
+var
+        hoops : counting;
+        loops : ultimatepower;
+        stars : detailedinfo;
+        strang : detailedinfo;
+        quality : real;
+        pro : string;
+        tell : string;
+        apples : real;
+        bananas : hood3;
+        peaches : info;
+        heading : int;
+        myarray : array[1..5] of int;
+
+{ Tests scope checking of variables }
+procedure LittleProc ( var gimme : int; please : ultimatepower );
+var
+        shirts : int;
+        shoes : integer;
+        none : ultimatepower;
+        service : real;
+        apples : int;
+        bananas : ultimatepower;
+
+begin
+
+        shirts := gimme; 
+        bananas := please;
+       
+        if shirts < 0 then
+           begin
+                apples := a + neg;
+                if apples then		{ error - evaluating a int as a boolean } 
+                   begin
+                        apples := apples - 1;
+                        apples := apples + 1;
+                   end;
+           end
+        else
+                apples := 99;
+	if if if if if;		{ error - random if statements }
+   
+end;
+
+function addtwo (x : integer; y: integer) : integer;
+begin
+    added := x + y;
+end;
+
+function negate ( x : integer ) : integer;
+begin
+    negated := - x;
+end;
+       
+
+{ Begin Main }
+begin
+	heading := addtwo(negate(1), 2);	{ testing nested function calls }
+
+
+	'string' := 'string ;		{ error - unterminated string }
+             
+          
+       
+end.

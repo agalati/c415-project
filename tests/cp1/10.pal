@@ -1,0 +1,34 @@
+//tests identifier names
+// 4 errors
+
+program consts(in, out);
+begin
+
+	a := asdf;
+	a := aSdF;
+	a := AsDf;
+	a := ASDF;
+	a := while; 		//ERROR, keyword
+
+	a := 3;
+	a := 3asdf; 		//ERROR, identifier can't start with a number
+
+	a := asdf3;
+
+	a := asdf_asdf;		 //ERROR, identifier can't include underscore
+
+	a := realllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllylong;
+
+	b := b123;
+	b := b123asd;
+        b := b1dsf2fds3;
+	b := B1s23;
+	elseif := b;
+
+	program := abc;		//ERROR, keyword
+
+	c2 := c2;
+	d2 := 3;
+	 
+	
+end.

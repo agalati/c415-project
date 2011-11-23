@@ -1,0 +1,35 @@
+.TH pal 1 "Nov 7, 2011" "version 0.2" 
+.SH NAME
+pal - compiles programs for the PAL language; a subset of Pascal 				
+.SH SYNOPSIS
+pal
+.B [
+.I OPTIONS
+.B ] [
+.I FILENAME
+.B ]
+				
+.SH DESCRIPTION
+pal takes the named file and compiles it into machine code suitable for running the program. Depending on the options used it will output any warnings or errors encountered during attempted compilation of the code.  By default pal will print to stdout all program listings.
+.SH OPTIONS
+.B -S
+Leave ASC code in file.asc instead of removing it.
+.TP
+.B -n
+Do not produce a program listing.
+.TP
+.B -a
+Do not generate run-time array subscript bounds checking.
+.SH BUGS
+Currently the -S option is not enabled.  This is as yet a compiler skeleton that takes in code and puts out warnings.  No actual machine code is generated.
+.SH AUTHORS
+Matthew Low    "mlow@ualberta.ca"
+.br
+Anthony Galati	"agalati@ualberta.ca"
+.br
+Stevan Clement	"sclement@ualberta.ca"
+.br
+Mike Bujold	"mnbujold@ualberta.ca"
+.SH SEE ALSO
+gcc(1)
+cc(2)

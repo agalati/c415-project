@@ -1,0 +1,22 @@
+program Strings(input, output);
+
+var
+        s: String;
+
+begin
+{
+  testing
+  a
+  long
+  comment
+  with some \
+  invalid
+#
+  tokens
+}
+        s := 'Hello, \'world ' ;
+\
+
+#
+        
+end.

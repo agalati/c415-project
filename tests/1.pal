@@ -1,0 +1,66 @@
+{====================================================
+Test Program: 1.pal 
+Tests: Syntax errors
+Written by: Group 4
+-----------------------------------
+On line 34, there are spaces inside an integer value.
+On line 49, there is a '.' before the first index number of an array.
+On line 54, there is a missing ':' operator for variable assignment.
+
+Location and Description of Errors
+-----------------------------------
+
+
+=====================================================}
+
+program Syntax1 (input, output);
+
+
+{ Some properly declared constants }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        d = 4;
+        string = 'that\'s one nice looking string';
+        string1 = a + b + c + d;
+        thisistrue = true;
+        thisisfalse = false;
+        shouldbetrue = thisistrue;
+        shouldbefalse = thisisfalse;
+        testlogic = not thisistrue;
+        testlogic2 = not (not (not thisisfalse));
+        checkreal = 1.3E9999;
+        checkcasedistinct = 1 0;	{ error - spaces inside an integer}
+        checkCASEdistinct = 0;
+	CHECKcaseDISTINCT = 0;	
+        
+
+{ Type Declarations }
+type
+        int = integer;
+        checkingcase = integer;         { checking to make sure types are case sensitive }
+        CHECKINGCASE = checkingcase;
+        flaging = boolean;
+        flags = flaging;
+        
+        negativearray = array[-99..-98] of int;
+        small = array[1..2] of int;
+        large = array[.1..999] of boolean;	{ error - addition of '.' before first index }
+
+       
+{ Correct variable declarations }
+var
+       these, are, myvars  flaging;	{ error - missing ':' operator }
+       lock, key : int;
+       f, g, h : real;
+       r, y, p : boolean;
+       
+
+{ Begin program }
+begin
+        lock := a + b + c + d;
+        key := a - b - c - d;
+     
+
+end.
