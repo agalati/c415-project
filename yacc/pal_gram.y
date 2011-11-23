@@ -451,7 +451,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               sprintf(error, "Procedure name '%s' has already been declared.", $2);
                               semantic_error(error);
                             }
-                            pushlevel();
+                            pushlevel(NULL);
                             parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
@@ -471,15 +471,16 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             }
                             else
                             {
+                              struct sym_rec* func_rec = NULL;
                               if(locallookup($2) == NULL)
-                                addfunc($2, parm_list, ret);
+                                func_rec = addfunc($2, parm_list, ret);
                               else
                               {
                                 char error[1024];
                                 sprintf(error, "Function name '%s' has already been declared.", $2);
                                 semantic_error(error);
                               }
-                              pushlevel();
+                              pushlevel(func_rec);
                             }
                             parm_list = NULL;
                           }
@@ -489,15 +490,16 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             sprintf(error, "Function '%s' has no return type.", $2);
                             yyerror(error);
 
+                            struct sym_rec* func_rec = NULL;
                             if(globallookup($2) == NULL)
-                              addfunc($2, parm_list, NULL);
+                              func_rec = addfunc($2, parm_list, NULL);
                             else
                             {
                               char error[1024];
                               sprintf(error, "Function name '%s' has already been declared.", $2);
                               semantic_error(error);
                             }
-                            pushlevel();
+                            pushlevel(func_rec);
                             parm_list = NULL;
                           }
                         ;
@@ -656,7 +658,9 @@ proc_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
                         {
                             char error[1024];
-                            struct sym_rec* proc = globallookup($1);
+                            struct sym_rec* proc = isCurrentFunction($1);
+                            if (!proc)
+                              proc = globallookup($1);
                             if (proc) {
                               if (proc->class == OC_PROC)
                               {
@@ -666,13 +670,21 @@ proc_invok              : plist_finvok C_BRACKET
                                   semantic_error(error);
                                 }
                               }
+                              else if (proc->class == OC_FUNC)
+                              {
+                                if (proc->desc.func_attr.parms != NULL)
+                                {
+                                  sprintf(error, "Missing arguments for function '%s'.", $1);
+                                  semantic_error(error);
+                                }
+                              }
                               else
                               {
-                                sprintf(error, "Attempting to call '%s' which is not a procedure.", $1);
+                                sprintf(error, "Attempting to call '%s' which is not a procedure or a function.", $1);
                                 semantic_error(error);
                               }
                             } else {
-                              sprintf(error, "Attempting to call procedure '%s' which is has not been declared.", $1);
+                              sprintf(error, "Attempting to call procedure or function '%s' which is has not been declared.", $1);
                               semantic_error(error);
                             }
                         }

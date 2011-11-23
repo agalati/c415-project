@@ -23,6 +23,14 @@ int current_level = 1;
 /* The symbol table : levels -1 through 15 are available and map to [n+1] */
 struct sym_rec *sym_tab[MAX_LEVEL + 1];
 
+struct pf_node
+{
+  struct sym_rec* func_entry; // NULL if we are in a procedure
+  struct pf_node* next;
+};
+
+struct pf_node* pf_list = NULL;
+
 /* Yes, I am actually doing the following */
 /* Base level structures */
 
@@ -246,8 +254,10 @@ void sym_tab_init()
 
 /*****************************************
  * Push level - Go up a level
+ *
+ * If we are calling a procedure, pass NULL to func_rec, otherwise pass the sym_rec for the func.
  */
-void pushlevel()
+void pushlevel(struct sym_rec* func_rec)
 {
 //  printsym();
   current_level++;
@@ -256,6 +266,11 @@ void pushlevel()
     fprintf(stderr, "Maximum nesting depth for procedures and functions exceeded (current level is %d, max is %d). Stopping parse.\n", current_level, MAX_LEVEL);
     exit(1);
   }
+
+  struct pf_node* new_node = (struct pf_node*)malloc(sizeof(struct pf_node));
+  new_node->next = pf_list;
+  new_node->func_entry = func_rec;
+  pf_list = new_node;
 }
 
 /*****************************************
@@ -267,6 +282,13 @@ void poplevel()
   sym_tab[current_level] = NULL;
 
   current_level--;
+
+  if (pf_list)
+  {
+    struct pf_node* rmv_node = pf_list;
+    pf_list = pf_list->next;
+    free(rmv_node);
+  }
 }
 
 /*****************************************
@@ -411,6 +433,7 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
 struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* return_type)
 {
   struct sym_rec *s;
+  struct sym_rec *func_rec;
 
   s = malloc(sizeof(struct sym_rec));
   if (s == NULL) {
@@ -424,6 +447,8 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->desc.func_attr.parms = parm_list;
   s->desc.func_attr.return_type = return_type;
 
+  func_rec = s;
+
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
 
@@ -436,7 +461,7 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->next = sym_tab[current_level+1];
   sym_tab[current_level+1] = s;
 
-  return s;
+  return func_rec;
 }
 
 struct sym_rec *addproc(char* name, struct sym_rec* parm_list)
@@ -538,4 +563,24 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
 
   /* Return the parameter list */
   return t;
+}
+
+struct sym_rec* isCurrentFunction(char* name)
+{
+  if (!pf_list)
+    return NULL;
+
+  if (!pf_list->func_entry)
+    return NULL;
+
+  char* func_name = pf_list->func_entry->name;
+  if (func_name == NULL)
+  {
+    fprintf(stderr, "FATAL ERROR: function name NULL.\n");
+    exit(1);
+  }
+
+  if (strcmp(func_name, name) == 0)
+    return pf_list->func_entry;
+  return NULL;
 }

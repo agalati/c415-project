@@ -1,0 +1,48 @@
+//Tests scope of nested functions and procedures
+//Error on lin 33, bar already in scope
+
+program test( input, output );
+
+procedure asdf();
+var asdf : integer;
+begin end;
+
+procedure foo();
+	procedure foo();
+	begin 
+		write('foo!\n');
+	end;
+begin
+	foo();
+end;
+
+procedure foo2();
+	procedure foo();
+		procedure foo2();
+		begin
+			write('foo2!\n');
+		end;
+	begin
+		foo2();
+	end;
+begin
+	foo();
+end;
+
+function bar() : integer;
+	procedure bar(); //ERROR, already in scope
+##semantic:33: Procedure name 'bar' has already been declared.
+	begin
+		write('bar\n');
+	end;
+begin
+	bar();
+	bar := 1;
+end;
+
+begin
+	foo();
+	foo2();
+	bar();
+end.
+
