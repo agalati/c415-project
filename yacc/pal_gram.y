@@ -1198,7 +1198,9 @@ func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
                           {
                             char error[1024];
-                            struct sym_rec* func = globallookup($1);
+                            struct sym_rec* func = isCurrentFunction($1);
+                            if (!func)
+                              func = globallookup($1);
                             if (func) {
                               if (func->class == OC_FUNC)
                               {
@@ -1225,7 +1227,9 @@ func_invok              : plist_finvok C_BRACKET
 
 plist_finvok            : ID O_BRACKET parm
                           {
-                            struct sym_rec* func = globallookup($1);
+                            struct sym_rec* func = isCurrentFunction($1);
+                            if (!func)
+                              func = globallookup($1);
                             if (func)
                             {
                               if (func->class == OC_FUNC)
