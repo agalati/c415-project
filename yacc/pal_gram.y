@@ -17,6 +17,7 @@
 
 #include "semantics.h"
 #include "symtab.h"
+#include "pal.h"
 
 int search_fields = 0;
 struct sym_rec* prev_fields;
@@ -90,7 +91,7 @@ struct temp_array_var* temp_array_vars = NULL;
 
 %% /* Start of grammer */
 
-program                 : program_head decls compound_stat PERIOD
+program                 : program_head decls compound_stat PERIOD	
                         | error
                         ;
 
@@ -113,7 +114,7 @@ const_decl_list         : const_decl
                         | error S_COLON const_decl { yyerrok; yyclearin; }
                         ;
 
-const_decl              : ID EQUALS expr { declare_const($1, $3); }
+const_decl              : ID EQUALS expr { declare_const($1, $3);}
                         //| ID expr //{ yyerror("Missing '='"); }
                         ;
 
@@ -1305,7 +1306,7 @@ plist_finvok            : ID O_BRACKET parm
                         }
                         ;
 
-parm                    : expr { $$ = $1; }
+parm                    : expr { $$ = $1;}	
                         ;
 
 struct_stat             : IF expr THEN stat

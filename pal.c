@@ -25,11 +25,23 @@ main (  int     argc,
   err_buf = NULL;
   parse_args(argc, argv);
   sym_tab_init();
+  
+  char* namein;
+  char* nameout;
+  
+  namein = (char*) malloc( sizeof(argv[argc-1]));
+  namein = argv[argc-1];
+  namein[strlen(namein)-3] = '\0';
+  nameout = (char*) malloc( sizeof(namein) + sizeof("asc"));
+  nameout = strcat(namein, "asc");
+  out_file = fopen(nameout, "a+");
+  
   int ret =  yyparse ();
   //printsym();
   new_position_line();
   fclose(stdin);
   fclose(prog_file);
+  fclose(out_file);
   if (do_listing)
     fclose(lst_file);
   return ret;

@@ -18,6 +18,7 @@
 
 FILE* prog_file;
 FILE* lst_file;
+FILE* out_file;
 
 off_t* line_offsets;
 unsigned int num_lines;
