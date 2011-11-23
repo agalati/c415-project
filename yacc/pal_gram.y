@@ -1262,6 +1262,13 @@ plist_finvok            : ID O_BRACKET parm
 
                                 $$->counter = $$->counter - 1;
                               }
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'%s' isn't a procedure or function.", $1);
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
                             }
                             else
                             {
