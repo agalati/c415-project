@@ -20,6 +20,8 @@ FILE* prog_file;
 FILE* lst_file;
 FILE* out_file;
 
+int s_emit;
+
 off_t* line_offsets;
 unsigned int num_lines;
 
@@ -58,5 +60,7 @@ char* pop_err_from_buf(void);
 
 char* pretty_error(const char*);
 void replace_substr(char* pretty, const char* substr, const char* replacement);
+
+void emit(char* output);
 
 #endif

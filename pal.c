@@ -23,6 +23,7 @@ main (  int     argc,
         char**  argv)
 {
   err_buf = NULL;
+  s_emit = 0;
   parse_args(argc, argv);
   sym_tab_init();
   
@@ -398,4 +399,12 @@ void replace_substr(char* pretty, const char* substr, const char* replacement)
     loc = pretty + strlen(pretty);
     strcat(pretty, loc);
   }
+}
+
+void emit(char* output)
+{
+	if(!s_emit)							// check for error flag set
+	{
+		fprintf(out_file, "\t %s \n ", output);
+	}
 }
