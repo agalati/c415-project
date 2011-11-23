@@ -21,7 +21,6 @@
 int search_fields = 0;
 struct sym_rec* prev_fields;
 
-int clear_parm_list = 1;
 struct sym_rec* parm_list = NULL;
 
 struct temp_array_var* temp_array_vars = NULL;
@@ -452,6 +451,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               semantic_error(error);
                             }
                             pushlevel();
+                            parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
@@ -480,19 +480,33 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               }
                               pushlevel();
                             }
+                            parm_list = NULL;
+                          }
+                        | FUNCTION ID f_parm_decl S_COLON
+                          {
+                            char error[1024];
+                            sprintf(error, "Function '%s' has no return type.", $2);
+                            yyerror(error);
+
+                            if(globallookup($2) == NULL)
+                              addfunc($2, parm_list, NULL);
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Function name '%s' has already been declared.", $2);
+                              semantic_error(error);
+                            }
+                            pushlevel();
+                            parm_list = NULL;
                           }
                         ;
 
 f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
-                          {
-                            clear_parm_list = 1;
-                          }
                         | O_BRACKET C_BRACKET
                         ;
 
 f_parm_list             : f_parm
                           {
-                            clear_parm_list = 0;
                             $$ = parm_list;
                           }
                         | f_parm_list S_COLON f_parm
@@ -504,7 +518,6 @@ f_parm_list             : f_parm
 
 f_parm                  : ID COLON ID
                           {
-                            if (clear_parm_list) parm_list = NULL;
                             int parm_error = 0;
                             if (parm_list != NULL)
                             {
@@ -538,10 +551,9 @@ f_parm                  : ID COLON ID
                             parm_list = addparm($1, s, parm_list);
                             $$ = parm_list;
                           }
-                        // TODO: fix later
+                        // TODO: We need to have some way of telling that this parameter was passed by reference
                         | VAR ID COLON ID
                         {
-                            if (clear_parm_list) parm_list = NULL;
                             int parm_error = 0;
                             if (parm_list != NULL)
                             {
@@ -592,9 +604,11 @@ stat                    : simple_stat
 
 simple_stat             : var ASSIGNMENT expr
                         {
-                           /* Check for nulls */
-                           if ($1 && $3)
-                           {  
+                          /* Check for nulls */
+                          if ($1 && $3)
+                          {  
+                            if ($1->desc.var_attr.type != NULL)
+                            {
                               if ($1->class == OC_CONST) {
                                  char error[1024];
                                  if ($1->name) {
@@ -623,7 +637,8 @@ simple_stat             : var ASSIGNMENT expr
                                  }
                                  
                               }
-                           }
+                            }
+                          }
                           // free all the temporary variables that we've kept around to access array subscripting
                           while(temp_array_vars != NULL)
                           {
