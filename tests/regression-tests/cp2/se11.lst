@@ -1,0 +1,26 @@
+
+{
+   At least the first error must be reported
+   se11.p:19: error: result of function `five' assigned outside its block
+   se11.p:20: error: result of function `six' not assigned
+}
+
+
+
+program a(input,output);
+
+function five (i : integer) : real;
+begin
+  five := 5;
+end;
+
+function six (i : integer) : real;
+begin
+  five := 6-1;
+##semantic:19: Illegal assignment operation: five is not a variable.
+end;
+
+begin
+  writeln(five(4));
+  writeln(six(5));
+end.

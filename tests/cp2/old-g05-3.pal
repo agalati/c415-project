@@ -1,0 +1,31 @@
+{
+    3.pal: Tests assignment of nested record fields.
+    Error on line 27: trying to assign a boolean to a real.
+    Error on line 29: assignment between incompatible records.
+    Error on line 30: field not in record.
+}
+program main( input, output);
+type    int = integer;
+var	r : record 
+	  i: integer; b : boolean;
+	  c : char;   r : record
+	                i : int; b : boolean;
+	                c : char;    r : record 
+				       i : integer; b : boolean;
+	                               c : char;    r : real
+				     end
+                      
+		      end
+        end 	  		; 
+begin	{main-program}
+// These should pass. Assigning integer to real
+	r.r.r.r := r.i;
+	r.r.r.r := r.r.i;
+	r.r.r.r := r.r.r.i;
+        r.r.i := r.r.r.i;
+// This should fail. Trying to assign boolean to real
+	r.r.r.r := r.b;
+// This should fail. Trying to assign record to a record
+	r.r.r   := r;
+	r.h := 1;
+end.

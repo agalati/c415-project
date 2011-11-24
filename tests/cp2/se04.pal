@@ -1,0 +1,49 @@
+
+{ Errors:							}
+
+// l. 35 - constant array index out of range 
+// l. 37 - constant array index out of range 
+// l. 41 - constant array index out of range 
+// l. 42 - subscripted object is not an array
+//         The last error must be caught
+
+
+program test (input, output);
+
+
+type  crazyarray = array [1..2] of array [1..2] of array [1..2] of  
+      		   array [1..2] of array [1..2] of array [1..2] of 
+		   array [1..2] of array [1..2] of array [1..2] of 
+		   array [1..2] of array [1..2] of array [1..2] of 
+		   array [1..2] of array [1..2] of array [1..2] of
+		   array [1..1000] of integer;
+
+        smallarray = array [1..1000] of integer;
+
+	bigarray = array[1..10] of smallarray;
+	tinyarray = array[1..10] of array[2..10] of 
+		    array[3..10] of array[4..10] of integer;
+	
+	brokenarray = array[-100..-100] of array [100..100] of 	integer;
+
+var	x : smallarray;
+	y : bigarray;
+	z : array[-1..10] of integer;
+	foo : tinyarray;
+
+begin
+	y[11]:=x;
+	y[1]:=x;
+	z[-2]:=0; 
+
+	foo[1,2,3,4]:=1;
+	foo[1][2][3][4]:=1;
+	foo[1][2][2][4]:=2;
+	foo[1][2][3][4][5]:=3;
+
+end.
+
+
+
+
+

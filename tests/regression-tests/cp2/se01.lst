@@ -1,0 +1,62 @@
+{ PAL test program: types						}
+{ Semantic Errors:							}
+{ l.42	- assigns an integer constant to a boolean variable (a)		}
+{ l.52	- assigns a boolean constant to an integer variable (b)		}
+{ l.58	- passes a value (from a function call) by reference (c)        }
+
+program TestTypes (input, output);
+
+const
+	myconst = 1;
+	const2 = 1.0;
+	const3 = 'a string';
+
+type
+	myspecialint = integer;
+	anothertype = real;
+	yetanother = anothertype;
+	rec1 = record
+		x: integer;
+		y: real
+		end;
+
+var
+	y, y1, y2: integer;
+	x: anothertype;
+	z: yetanother;
+
+	myarray: array[boolean] of integer;
+	array2: array[1..20] of integer;
+	array3: array[1..10] of array[-2..4] of boolean;
+
+procedure proc1 (var x: integer);
+const
+	y = 13;
+var
+	i: integer;
+	array1: array [12..13] of boolean;
+
+begin
+	i := 12;
+	while i < 14 do
+		array1[i] := 1;				{ (a) }
+##semantic:42: assignment type is incompatible
+end;
+
+function identity(x: integer): integer;
+begin
+	identity := x;
+end;
+
+
+begin
+	y := true;					{ (b) }
+##semantic:52: assignment type is incompatible
+	y2 := 10;
+	y1 := identity(y2);
+	y := identity(y1);
+	y := identity(identity(y));
+	proc1 (y);
+	proc1 (identity(y));				{ (c) }
+end.
+

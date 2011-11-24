@@ -17,11 +17,11 @@
 
 #include "semantics.h"
 #include "symtab.h"
+#include "pal.h"
 
 int search_fields = 0;
 struct sym_rec* prev_fields;
 
-int clear_parm_list = 1;
 struct sym_rec* parm_list = NULL;
 
 struct temp_array_var* temp_array_vars = NULL;
@@ -90,7 +90,7 @@ struct temp_array_var* temp_array_vars = NULL;
 
 %% /* Start of grammer */
 
-program                 : program_head decls compound_stat PERIOD
+program                 : program_head decls compound_stat PERIOD	
                         | error
                         ;
 
@@ -113,7 +113,7 @@ const_decl_list         : const_decl
                         | error S_COLON const_decl { yyerrok; yyclearin; }
                         ;
 
-const_decl              : ID EQUALS expr { declare_const($1, $3); }
+const_decl              : ID EQUALS expr { declare_const($1, $3);}
                         //| ID expr //{ yyerror("Missing '='"); }
                         ;
 
@@ -443,7 +443,7 @@ proc_decl               : proc_heading decls compound_stat S_COLON
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                           {
-                            if(globallookup($2) == NULL)
+                            if(locallookup($2) == NULL)
                               addproc($2, parm_list);
                             else
                             {
@@ -451,7 +451,8 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               sprintf(error, "Procedure name '%s' has already been declared.", $2);
                               semantic_error(error);
                             }
-                            pushlevel();
+                            pushlevel(NULL);
+                            parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
@@ -470,29 +471,45 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             }
                             else
                             {
-                              if(globallookup($2) == NULL)
-                                addfunc($2, parm_list, ret);
+                              struct sym_rec* func_rec = NULL;
+                              if(locallookup($2) == NULL)
+                                func_rec = addfunc($2, parm_list, ret);
                               else
                               {
                                 char error[1024];
                                 sprintf(error, "Function name '%s' has already been declared.", $2);
                                 semantic_error(error);
                               }
-                              pushlevel();
+                              pushlevel(func_rec);
                             }
+                            parm_list = NULL;
+                          }
+                        | FUNCTION ID f_parm_decl S_COLON
+                          {
+                            char error[1024];
+                            sprintf(error, "Function '%s' has no return type.", $2);
+                            yyerror(error);
+
+                            struct sym_rec* func_rec = NULL;
+                            if(globallookup($2) == NULL)
+                              func_rec = addfunc($2, parm_list, NULL);
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Function name '%s' has already been declared.", $2);
+                              semantic_error(error);
+                            }
+                            pushlevel(func_rec);
+                            parm_list = NULL;
                           }
                         ;
 
 f_parm_decl             : O_BRACKET f_parm_list C_BRACKET
-                          {
-                            clear_parm_list = 1;
-                          }
                         | O_BRACKET C_BRACKET
                         ;
 
 f_parm_list             : f_parm
                           {
-                            clear_parm_list = 0;
                             $$ = parm_list;
                           }
                         | f_parm_list S_COLON f_parm
@@ -504,7 +521,6 @@ f_parm_list             : f_parm
 
 f_parm                  : ID COLON ID
                           {
-                            if (clear_parm_list) parm_list = NULL;
                             int parm_error = 0;
                             if (parm_list != NULL)
                             {
@@ -538,10 +554,9 @@ f_parm                  : ID COLON ID
                             parm_list = addparm($1, s, parm_list);
                             $$ = parm_list;
                           }
-                        // TODO: fix later
+                        // TODO: We need to have some way of telling that this parameter was passed by reference
                         | VAR ID COLON ID
                         {
-                            if (clear_parm_list) parm_list = NULL;
                             int parm_error = 0;
                             if (parm_list != NULL)
                             {
@@ -592,9 +607,11 @@ stat                    : simple_stat
 
 simple_stat             : var ASSIGNMENT expr
                         {
-                           /* Check for nulls */
-                           if ($1 && $3)
-                           {  
+                          /* Check for nulls */
+                          if ($1 && $3)
+                          {  
+                            if ($1->desc.var_attr.type != NULL)
+                            {
                               if ($1->class == OC_CONST) {
                                  char error[1024];
                                  if ($1->name) {
@@ -623,7 +640,8 @@ simple_stat             : var ASSIGNMENT expr
                                  }
                                  
                               }
-                           }
+                            }
+                          }
                           // free all the temporary variables that we've kept around to access array subscripting
                           while(temp_array_vars != NULL)
                           {
@@ -640,7 +658,9 @@ proc_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
                         {
                             char error[1024];
-                            struct sym_rec* proc = globallookup($1);
+                            struct sym_rec* proc = isCurrentFunction($1);
+                            if (!proc)
+                              proc = globallookup($1);
                             if (proc) {
                               if (proc->class == OC_PROC)
                               {
@@ -650,13 +670,21 @@ proc_invok              : plist_finvok C_BRACKET
                                   semantic_error(error);
                                 }
                               }
+                              else if (proc->class == OC_FUNC)
+                              {
+                                if (proc->desc.func_attr.parms != NULL)
+                                {
+                                  sprintf(error, "Missing arguments for function '%s'.", $1);
+                                  semantic_error(error);
+                                }
+                              }
                               else
                               {
-                                sprintf(error, "Attempting to call '%s' which is not a procedure.", $1);
+                                sprintf(error, "Attempting to call '%s' which is not a procedure or a function.", $1);
                                 semantic_error(error);
                               }
                             } else {
-                              sprintf(error, "Attempting to call procedure '%s' which is has not been declared.", $1);
+                              sprintf(error, "Attempting to call procedure or function '%s' which is has not been declared.", $1);
                               semantic_error(error);
                             }
                         }
@@ -732,10 +760,31 @@ subscripted_var         : var O_SBRACKET expr
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
+                                else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+                                {
+                                  if ($3)
+                                    if ($3->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Invalid index into string");
+                                      semantic_error(error);
+                                    }
+                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->next = NULL;
+                                  $$->name = NULL;
+                                  $$->level = get_current_level();
+                                  $$->class = OC_VAR;
+                                  $$->desc.var_attr.type = builtinlookup("char");
+
+                                  struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
+                                  new_temp_var->var = $$;
+                                  new_temp_var->next = temp_array_vars;
+                                  temp_array_vars = new_temp_var;
+                                }
                                 else 
                                 {
                                    char error[1024];
-                                   sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
+                                   sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
                                    semantic_error(error);
                                    $$ = NULL;
                                 }
@@ -1149,7 +1198,9 @@ func_invok              : plist_finvok C_BRACKET
                         | ID O_BRACKET C_BRACKET
                           {
                             char error[1024];
-                            struct sym_rec* func = globallookup($1);
+                            struct sym_rec* func = isCurrentFunction($1);
+                            if (!func)
+                              func = globallookup($1);
                             if (func) {
                               if (func->class == OC_FUNC)
                               {
@@ -1176,7 +1227,9 @@ func_invok              : plist_finvok C_BRACKET
 
 plist_finvok            : ID O_BRACKET parm
                           {
-                            struct sym_rec* func = globallookup($1);
+                            struct sym_rec* func = isCurrentFunction($1);
+                            if (!func)
+                              func = globallookup($1);
                             if (func)
                             {
                               if (func->class == OC_FUNC)
@@ -1241,6 +1294,13 @@ plist_finvok            : ID O_BRACKET parm
 
                                 $$->counter = $$->counter - 1;
                               }
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "'%s' isn't a procedure or function.", $1);
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
                             }
                             else
                             {
@@ -1284,7 +1344,7 @@ plist_finvok            : ID O_BRACKET parm
                         }
                         ;
 
-parm                    : expr { $$ = $1; }
+parm                    : expr { $$ = $1;}	
                         ;
 
 struct_stat             : IF expr THEN stat

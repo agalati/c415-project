@@ -1,0 +1,156 @@
+/// First: 34:34
+/// Error: 54:54
+/// Error: 67:67
+{ Testing built in functions/operators }
+{ 34: write does not work on booleans }
+{ 54: ln of int returns a real }
+{ 67: anything + real = real } 
+
+
+program p(input, output);
+const
+	r = 1 + 2;
+	b = 1 mod 2;
+	c = true and false;
+	d = true or false;
+	e = 3 < 2;
+	f = not false;
+
+var	q : integer;
+	y : real;
+	a : real;
+	n : integer;
+	k : integer;
+	o : boolean;
+	l : (big,small);
+	g : array[1..10] of char;
+	x : real;
+begin
+
+write(q);
+write(q,'d','da', x, g);
+writeln();
+
+write(o); { invalid }
+
+o := odd(n);
+n := ord(small);
+l := pred(small);
+n := round(x);
+x := round(x);
+
+n := trunc(x);
+x := trunc(x);
+
+y := exp(q);
+y := exp(y);
+y := ln(q);
+y := ln(y);
+y := sin(q);
+y := sin(y);
+y := sqrt(q);
+y := sqrt(y);
+
+q := ln(q); { invalid }
+
+y := abs(q);
+y := abs(y);
+y := sqr(q);
+y := sqr(y);
+
+q := abs(q); { valid }
+q := sqr(q);
+
+n := n mod k;
+n := n div k;
+
+n := 0 + y; { invalid }
+
+	x := 0.0 + 1.1;
+	x := 1 + 1.1;
+	x := 1.1 + 1;
+	n := 1 + 2;
+
+//	1 real var
+	x := 0.0 + y;
+	x := 1 + y;
+	x := y + 0.0;
+	x := y + 1;
+
+//	1 int var
+	x := 0.0 + n;
+	x := 1 + n;
+	x := n + 0.0;
+	x := n + 1;
+
+//	2 var
+	x := x + y;
+	x := x + n;
+	x := n + x;
+	n := n + k;
+
+	x := 0.0 / 1.1;
+	x := 1 / 1.1;
+	x := 1.1 / 1;
+	x := 1 / 2;
+
+//	1 real var
+	x := 0.0 / y;
+	x := 1 / y;
+	x := y / 1.0;
+	x := y / 1;
+
+//	1 int var
+	x := 0.0 / n;
+	x := 1 / n;
+	x := n / 1.0;
+	x := n / 1;
+
+//	2 var
+	x := x / y;
+	x := x / n;
+	x := n / x;
+	x := n / k;
+
+	x := 0.0 * 1.1;
+	x := 1 * 1.1;
+	x := 1.1 * 1;
+	n := 1 * 2;
+
+//	1 real var
+	x := 0.0 * y;
+	x := 1 * y;
+	x := y * 0.0;
+	x := y * 1;
+
+//	1 int var
+	x := 0.0 * n;
+	x := 1 * n;
+	x := n * 0.0;
+	x := n * 1;
+
+//	2 var
+	x := x * y;
+	x := x * n;
+	x := n * x;
+	n := n * k;
+
+	x := 0.0 - 1.1;
+	x := 1 - 1.1;
+	x := 1.1 - 1;
+	n := 1 - 2;
+
+//	1 real var
+	x := 0.0 - y;
+	x := 1 - y;
+	x := y - 0.0;
+	x := y - 1;
+
+//	1 int var
+	x := 0.0 - n;
+	x := 1 - n;
+	x := n - 0.0;
+	x := n - 1;
+
+
+end.

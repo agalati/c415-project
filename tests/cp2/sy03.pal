@@ -1,0 +1,94 @@
+//This tests the lexer and parsers's handling of strings
+//It tests all valid escape sequences, and an invalid one
+//It tests multiple strings per line, and unterminated strings
+// 6 errors on lines 55, 59, 63, 67, 85/86, 91
+
+
+program example( input, output );
+
+type string1 = array[1..1] of char;
+     string5 = array[1..5] of char;
+     string9 = array[1..9] of char;
+     string4102 = array[1..4102] of char;
+
+var str : string1;
+	str1a, str1b, str1c, str1d, str1e : string1;
+	str5a, str5b, str5c, str5d, str5e : string5;
+	str5f, str5g, str5h, str5i, str5j : string5;
+	str5k, str5l, str5m : string5;
+	str9a, str9b, str9c, str9d, str9e : string9;
+	thisIsAVeryVeryVeryVeryVeryVeryLongVariableNameToMatchItsMuchLongerStringValue : string4102;
+
+procedure takestrings( a : string5; b : string9 );
+begin
+	write(a, b)
+end;
+
+
+begin
+	str := 'a';
+
+	str1a := '\n';
+	str5a := 'asdf\n';
+	str5b := '\nasdf';
+	str9a := 'asdf\nasdf';
+
+	str1b := '\t';
+	str5c := 'asdf\t';
+	str5d := '\tasdf';
+	str9b := 'asdf\tasdf';
+
+	str1c := '\\';
+	str5e := 'asdf\\';
+	str5f := '\\asdf';
+	str9c := 'asdf\\asdf';
+
+	str1d := '\'';
+	str5g := 'asdf\'';
+	str5h := '\'asdf';
+	str9d := 'asdf\'asdf';
+
+	str5i := '\'\t\n\\\'';
+
+//test invalid escape sequences
+
+	str1e := '\a'; //ERROR: invalid \a
+
+	str := 'a';
+
+	str5j := 'asdf\a'; //ERROR: invalid \a
+
+	str := 'a';
+
+	str5k := '\aasdf'; //ERROR: invalid \a
+
+	str := 'a';
+
+	str9e := 'asdf\aasdf'; //ERROR: invalid \a
+
+	str := 'a';
+
+//test that these come out as two strings, not as one.	
+	takestrings('asdfg', 'qwertyuio');
+	takestrings('as\\df', 'qwertyuio');
+	takestrings('as\\\'d', 'qwertyuio');
+	takestrings('as\'df', 'qwert\'yui');
+	takestrings('a\\"\'d', 'q\n\t\\\'"uio');
+
+	str := 'a';
+
+	thisIsAVeryVeryVeryVeryVeryVeryLongVariableNameToMatchItsMuchLongerStringValue := 'that is very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long';
+
+	str := 'a';
+
+//ERROR: lex, missing string terminator
+	str5l := 'asdfg
+;
+
+	str := 'a';
+
+//ERROR: double quotes aren't valid
+	str5m := "asdfg";
+
+end.
+

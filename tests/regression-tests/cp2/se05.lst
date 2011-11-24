@@ -1,0 +1,41 @@
+//
+//  l. 16 invalid subrange
+//  l. 22 invalid subrange
+//  l. 32 undeclared i
+//  l. 32 undeclared j
+
+
+program main (input, output);
+
+const LIMIT1 = 10;
+   LIMIT2    = 20;
+   POUNDSIGN = '#';
+   ANDRAIA   = 'Ilana';
+
+type Hues = (Red, Blue, Green, Orange, Violet);
+   String1 = array [Violet..Orange] of char;    // invalid subrange
+##semantic:16: Identifiers cannot be used as subrange in arrays.
+   Class  = record
+	      Name  : char;
+              Units : integer;
+              Grade : char
+	    end;
+   Grades = array [LIMIT2..LIMIT1] of Class;   // invalid subrange 
+##semantic:22: Identifiers cannot be used as subrange in arrays.
+
+var High, Low, Counter : integer;
+
+
+procedure VeryBusy (Incoming : integer ; var Outgoing : integer);
+
+var Local : integer;
+
+begin
+  Local := i + j;          // undeclared integers 
+##semantic:32: variable 'i' undeclared at this level
+##semantic:32: variable 'j' undeclared at this level
+  Outgoing := Incoming;
+end;   {VeryBusy}
+
+begin
+end.

@@ -1,7 +1,0 @@
-program divtest(in, out);
-const
-  c = a / b;
-##semantic:3: variable 'a' undeclared at this level
-##semantic:3: variable 'b' undeclared at this level
-begin
-end.

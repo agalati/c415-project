@@ -1,0 +1,111 @@
+{Testing for nesting in records, procedures and recursion - 2010g03-6.pal
+line 92 - exit outside loop
+line 104 - assigning real to int
+}
+
+program Test(input, output);
+
+type
+	someRecord = record
+		foo : integer;
+		val : boolean;
+		nestedRecord : record
+			foo : integer;
+			val : boolean;
+			nestedNestedRecord : record
+				foo : integer;
+				val : boolean
+			end
+		end
+	end;
+	a = integer;
+	b = a;
+	c = b;
+	d = c;
+	test= d;
+	
+var
+	x : someRecord;
+	y : integer;
+	z : test;
+	r : b;
+
+{A small nested function}
+function level1(x : integer) : real;
+	function level2(x: integer) : integer;
+		procedure level3(var x: integer);
+		begin
+			
+			x := x + 1;
+		end;
+	begin
+		level3(x);
+		level2 := x;
+	end;
+begin
+	x := level2(x);
+	level1 := x;
+end;
+
+{A large, convoluted series of functions and procedures that
+increments the input by 1 on each nested procedure. }
+function add(input:test) : test;
+	var	x : test;
+	function add1(input:test) : test;
+		function add2(input:test) : test;
+			function add3(input:test) : test;
+				function add4(input:test) : test;
+					function add5(input:test) : test;
+					var	x : test;
+						procedure add6(input:test; var x:test);
+						begin
+							x := x +1;
+						end;
+					begin
+						add6(input, x);
+						add5:=x + 1;
+					end;
+				begin
+					add4:=add5(input) +(1);
+				end;
+			begin
+				add3:=(add4(input) +1);
+			end;
+		begin
+			add2:=add3(input) + (1*1*1);
+		end;
+	begin
+		x := add2(input); // using x from the parent function
+		add1:=x + (5 mod 4);
+	end;
+begin
+	x := add1(input);
+	add := x - (-1)
+end;
+
+// A small recursive function that calculates 2^x.
+function recursion(x:integer) : integer;
+begin
+	if x < 0 then
+	begin
+		recursion := 1;
+		exit;
+	end
+	else
+	begin
+		x := x-1;
+		recursion := recursion(x) * 2;
+	end;
+end;
+
+// Begin for the main program:
+begin
+	y := 10;
+	y := level1(y);
+	y := level1( y*y+(10 mod 2) );
+	
+	z := 5;
+	z:= add(z);
+	
+	r := recursion(10);
+end.

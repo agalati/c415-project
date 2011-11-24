@@ -1,0 +1,142 @@
+{====================================================
+Test Program 9.pal 
+Tests: Semantic and Syntax Errors
+Written by: Group 4
+-----------------------------------
+
+Location and Description of Errors
+-----------------------------------
+On line 32 there is an error in a real number with a floating period.
+On line 34 there is a const declaration which does not logically compute.
+An error on line 42, attempting to use strings in a 
+logical evaluation.  Line 55, misspelt type.  An error on line 69, missing a semicolon.
+On line 72, missing semicolon.
+Lines 136 to 138, using undeclared variables.
+
+=====================================================}
+
+program Semantic2 (input, output);
+
+
+{ Constant Declarations }
+const
+        a = 1;
+        b = 2;
+        c = 3;
+        astring = 'halloween';
+        bstring = 'christmas';
+        abool = true;
+        bbool = false;
+        areal = 5.E1234;        { error - floating period, missing digit }
+        breal = 0.9E+5;
+        alogic = not not abool not abool;     { error - statement does not make logical sense }
+        blogic = abool or bbool;
+        remainder = c mod b;
+        clogic = remainder < 0;  
+        neg = -10;
+        negreal = -2.33E10;
+        weird = ' \n \n\n\t \t there is \nso\tme good \' stuff          ';
+        multiPL = areal * breal;    
+        nonsense = 'yes' or 'no';     { error - attempting to use string in logical eval }
+
+
+{ Type Declarations }
+type
+        string = array[1..10] of char;
+        int = integer;
+        info = record
+                        name : string;
+                        age : int;
+                        gender : char
+                   end;
+
+        int = intger;    { should be integer }
+        int1 = int;      { Is duplicating an incorrect type assignment }
+        fixed = real;    {should be fine}
+
+        infoarray = array[1..10] of info;  
+        
+        detailedinfo = record
+                        favfood : string;
+                        myinfo : infoarray
+                   end;
+                  
+        ultimatepower = record                        
+                        radical : detailedinfo;
+                        awesome : real
+                   end;
+        hood = array[1..10] of int;
+        hood1 = array[1..10] of hood;
+        hood2 = array[1..10] of hood1;
+        hood3 = array[1..10] of hood2           { error - missing semicolon }
+        
+        counting = ultimatepower;
+
+       
+{ Variable Declarations }
+var
+        hoops : counting;
+        loops : ultimatepower;
+        stars : detailedinfo;
+        strang : detailedinfo;
+        quality : real;
+        pro : string;
+        tell : string;
+        apples : real;
+        bananas : hood3;
+        peaches : info;
+        heading : int;
+        myarray : array[1..5] of int;
+
+{ Tests scope checking of variables }
+procedure LittleProc ( var gimme : int; please : ultimatepower );
+var
+        shirts : int;
+        shoes : integer;
+        none : ultimatepower;
+        service : real;
+        apples : int;
+        bananas : ultimatepower;
+
+begin
+
+        shirts ::= gimme;        
+        bananas := please;
+       
+        if shirts < 0 then;                { error - extra semicolon }
+           begin
+                apples := a + neg       { error - missing semicolon }
+                if apples < 0 then
+                   begin
+                        apples := not ( apples - 1 );
+                        apples := apples + 1;
+                   end;
+           end
+        else
+                apples := 99;
+   
+end;
+
+funtion addtwo (x : integer; y: integer) : integer;     { error - misspelt function keyword }
+begin
+    added := x + y;
+end;
+
+function negate ( x : integer ) : integer;
+begin
+    negated := not  x;
+end;
+       
+
+{ Begin Main }
+begin
+        myarray[0.5] := 1;              { error - attempting to assign to an illegal index }
+        myarray['a'] := 1;                { error - attempting to assign to an illegal index }
+
+        bigreal = 12.4E12345;           { error - undeclared vars }
+	bigreal2 = 345E678;					 { error - undeclared vars }
+	bigreal3 = 100.3E+12;				 { error - undeclared vars }
+             
+          
+       
+end.

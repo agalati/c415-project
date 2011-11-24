@@ -1,0 +1,28 @@
+//anonymous types can't be defined in function headers
+//error on line 16, though it may be cascade to 18, 26
+
+program example( input, output );
+
+type arr = array[1..10] of integer;
+
+var a : arr;
+	i : integer;
+
+function foo(x : arr) : integer;
+begin
+	foo := x[1];
+end;
+
+function bar(x : array[1..10] of integer) : integer; //ERROR
+begin
+	bar := x[1];
+end;
+
+begin
+	a[1] := 1;
+	a[10] := 10;
+
+	i := foo(a);
+	i := bar(a); //ERROR?, types don't match
+end.
+

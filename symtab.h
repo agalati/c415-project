@@ -157,7 +157,7 @@ void printsym(void);
 
 void printlevel(void);
 
-void pushlevel(void);
+void pushlevel(struct sym_rec* func_rec);
 
 void poplevel(void);
 
@@ -181,5 +181,7 @@ struct sym_rec *addtype(char* name, struct type_desc* type);
 
 /* Not sure if we need this last one */
 struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list);
+
+struct sym_rec *isCurrentFunction(char* name);
 
 #endif

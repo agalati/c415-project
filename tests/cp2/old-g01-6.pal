@@ -1,0 +1,57 @@
+{
+   location and description of errors
+   6.pal:41.3-37.6 Error: Function return value is not a simple type
+   6.pal:53.14-34 Error: Wrong number of arguments: expected 2, given 1
+   6.pal:56.21-26 Error: Argument type is not identical to type of formal 
+   by-reference parameter blarg
+      (second argument blarg is passed an integer for a real reference)
+}
+program callingproceduresandfunctions(input, output);
+const
+   valhalla = 'valhalla';
+type
+   name       = array[1..5] of char;
+   domainname = array[1..8] of char;
+   weapontype = array[1..6] of char;
+   godInfo    = record
+                   godname : name;
+                   domain  : domainname;
+                   weapon  : weapontype
+                end;       
+var
+   thor          : godInfo;
+   baldr         : godInfo;
+   unknownDomain : domainname;
+   fenrir        : integer;
+   fenris        : real;
+   changed       : boolean;
+
+   function changeGodDomain(god : godInfo; var domain : domainname ):boolean;
+   begin
+      god.domain := domain;
+      changeGodDomain := true;
+   end;
+
+   procedure something(var blah : integer; var blarg : real; 
+             rar : integer; roar : real);
+   begin
+   end;
+
+   { ERROR: should not be able to return non simple type }
+   function badReturnType2() : godInfo;
+   var
+      freda : godInfo;
+   begin
+   end;
+
+begin
+   changed := changeGodDomain(thor, unknownDomain);
+   something(fenrir, fenris, 111, 111.1);
+   something(fenrir, fenris, fenrir, fenris);
+
+   { ERROR: wrong number of arguments }
+   changed := changeGodDomain(thor);
+
+   { ERROR: passing int for second argument real  }
+   something(fenrir, fenrir, 111, 111.1);
+end.

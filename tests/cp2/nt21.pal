@@ -1,0 +1,222 @@
+{
+	This file is intended to test semantic typechecks on expressions.
+	So it tries to test lots of valid combinations of operators acting
+	on operands on various types.
+
+	This file should contain no errors.
+}
+
+program submit7(input, output);
+
+type    string4 = array[1..4] of char;
+        string3 = array[1..3] of char;
+        array1 = array[1..5] of integer;
+        array2 = array[1..5] of integer;
+        scalar1 = (January, February, March, April, May, June);
+        scalar2 = (July, August, September, October, November, December);
+var
+        testI1 : integer;
+        testI2 : integer;
+        testR1 : real;
+        testR2 : real;
+        testB1 : boolean;
+        testB2 : boolean;
+        testS41 : string4;
+        testS42 : string4;
+        testS31 : string3;
+        testS32 : string3;
+        testA11 : array1;
+        testA12 : array1;
+        testA21 : array2;
+        testA22 : array2;
+        testScal1 : scalar1;
+        testScal2 : scalar1;
+
+        function funca() : integer;
+        begin
+                funca := 1;
+        end;
+        
+        function funcb() : real;
+        begin
+                funcb := 2.00;
+        end;
+        
+        function funcc() : boolean;
+        begin
+                funcc := true;
+        end;
+
+
+begin
+        testI1 := 1;
+        testI2 := 2;
+        testR1 := 1.00;
+        testR2 := 2.00;
+        testB1 := true;
+        testB2 := false;
+        testS31 := 'one';
+        testS32 := 'two';
+        testS41 := 'four';
+        testS42 := 'five';
+        testScal1 := January;
+        testScal2 := March;
+{-----------------------------------------------------------------------------}
+ //Begin various operation tests here.  These should all pass and there should
+ //be no errors in the file.
+        //Unary +
+        testR1 := +testR1;
+        testI1 := +testI1;
+        testR1 := +testI1;
+        //Unary -
+        testR1 := -testR1;
+        testI1 := -testI1;
+        testR1 := -testI1;
+        testI1 := -(funca());
+        testR1 := -(funca());
+        //Binary +
+        testR1 := testR1 + testR2;
+        testR1 := testI1 + testI2;
+        testR1 := testI1 + testR2;
+        testR1 := testR2 + (testI1 + testI2);
+        testI1 := testI1 + testI2;
+        testI1 := testI1 + funca();
+        testR1 := testR1 + funca();
+        testR1 := testR1 + funcb();
+        //Binary - 
+        testR1 := testR1 - testR2;
+        testR1 := testR1 - testI1;
+        testR1 := testR2 - (testI1 - testI2);
+        testR1 := testR2 - (testI1 + testI2);
+        testI1 := testI1 - testI2;
+        testI1 := testI1 - funca();
+        testR1 := testR1 - funca();
+        testR1 := testR1 - funcb();
+        //Binary *
+        testR1 := testR1 * testR2;
+        testR1 := testR1 * testI1;
+        testR1 := testR1 * (testR1 * testI2);
+        testR1 := testR1 * (testR1 - testI1); 
+        testR1 := testR1 * (testR1 + testI1);
+        testR1 := testR1 * (testI1 - testI2);
+        testR1 := testR1 * (testI1 + testI2);
+        testI1 := testI1 * funca();
+        testR1 := testR1 * funca();
+        testR1 := testR1 * funcb();
+        //Integer Division
+        testI1 := testI1 div testI1;
+        testI1 := testI1 + (testI1 div testI2);
+        testI1 := testI1 div funca();
+        //Real Division
+        testR1 := testR1 / testR2;
+        testR1 := testR1 / testI1;
+        testR1 := testR1 / (testR1 * testR2);
+        testR1 := testR1 / (testI1 div testI2);
+        testR1 := testR1 / funca();
+        testR1 := testR1 / funcb();
+        //Integer MOD
+        testI1 := testI1 mod testI2;
+        testR1 := testR1 * (testI1 mod testI2);
+        testI1 := testI1 + (testI1 mod testI2);
+        testI1 := testI1 mod funca();
+
+        //Equality
+        testB1 := testR1 = testR2;
+        testB1 := testR1 = testI1;
+        testB1 := testI1 = testI2;
+        testB2 := (testS31 = testS32);
+        testB1 := (testI1 = funca());
+        testB1 := (testR1 = funcb());
+        testB2 := testR1 = funca();
+        testB1 := testA11[1] = testA12[1];
+        testB2 := testScal1 = testScal2;
+
+        //Not Equal
+        testB1 := testR1 <> testR2;
+        testB1 := testR1 <> testI1;
+        testB1 := testI1 <> testI2;
+        testB2 := (testS31 <> testS32);
+        testB1 := (testI1 <> funca());
+        testB1 := (testR1 <> funcb());
+        testB2 := testR1 <> funca();
+        testB1 := testA11[1] <> testA12[1];
+        testB2 := testA11[1] <> testA21[1];
+        testB2 := testScal1 <> testScal2;
+
+        //Less than
+        testB1 := testR1 < testR2;
+        testB1 := testR1 < testI1;
+        testB1 := testI1 < testI2;
+        testB2 := (testS31 < testS32);
+        testB1 := (testI1 < funca());
+        testB1 := (testR1 < funcb());
+        testB2 := testR1 < funca();
+        testB1 := testA11[1] < testA12[1];
+        testB2 := testA11[1] < testA21[1];
+        testB2 := testScal1 < testScal2;
+
+        //Greater Than
+        testB1 := testR1 > testR2;
+        testB1 := testR1 > testI1;
+        testB1 := testI1 > testI2;
+        testB2 := (testS31 > testS32);
+        testB1 := (testI1 > funca());
+        testB1 := (testR1 > funcb());
+        testB2 := testR1 > funca();
+        testB1 := testA11[1] > testA12[1];
+        testB2 := testA11[1] > testA21[1];
+        testB2 := testScal1 > testScal2;
+
+        //Less than or Equal
+        testB1 := testR1 <= testR2;
+        testB1 := testR1 <= testI1;
+        testB1 := testI1 <= testI2;
+        testB2 := (testS31 <= testS32);
+        testB1 := (testI1 <= funca());
+        testB1 := (testR1 <= funcb());
+        testB2 := testR1 <= funca();
+        testB1 := testA11[1] <= testA12[1];
+        testB2 := testA11[1] <= testA21[1];
+        testB2 := testScal1 <= testScal2;
+
+        //Greater than or equal to
+        testB1 := testR1 >= testR2;
+        testB1 := testR1 >= testI1;
+        testB1 := testI1 >= testI2;
+        testB2 := (testS31 >= testS32);
+        testB1 := (testI1 >= funca());
+        testB1 := (testR1 >= funcb());
+        testB2 := testR1 >= funca();
+        testB1 := testA11[1] >= testA12[1];
+        testB2 := testA11[1] >= testA21[1];
+        testB2 := testScal1 >= testScal2;
+
+        //NOT Operator
+        testB1 := not(testB1);
+        testB1 := not(testR1 = testI1);
+        testB1 := not(testR1 <> testI1);
+        testB1 := not(testR1 > testI1);
+        testB2 := not(testR1 < testI1);
+        testB1 := not(testR1 >= testI1);
+        testB1 := not(testR1 <= testI1);
+        testB1 := not(funcc());
+        //AND Operator
+        testB1 := testB2 and not(testB1);
+        testB1 := testB2 and not(testR1 = testI1);
+        testB1 := testB2 and not(testR1 <> testI1);
+        testB1 := testB2 and not(testR1 > testI1);
+        testB2 := testB2 and not(testR1 < testI1);
+        testB1 := testB2 and not(testR1 >= testI1);
+        testB1 := testB2 and not(testR1 <= testI1);
+        testB1 := testB1 and funcc();
+        //OR Operator
+        testB1 := testB2 or not(testB1);
+        testB1 := testB2 or not(testR1 = testI1);
+        testB1 := testB2 or not(testR1 <> testI1);
+        testB1 := testB2 or not(testR1 > testI1);
+        testB2 := testB2 or not(testR1 < testI1);
+        testB1 := testB2 or not(testR1 >= testI1);
+        testB1 := testB2 or not(testR1 <= testI1);
+        testB1 := testB1 or funcc();
+        
+end.
