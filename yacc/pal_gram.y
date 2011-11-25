@@ -454,9 +454,13 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             pushlevel(NULL);
                             parm_list = NULL;
                           }
+                        | PROCEDURE error f_parm_decl S_COLON { yyerrok; yyclearin; parm_list = NULL; pushlevel(NULL);}
+                        | FUNCTION error f_parm_decl S_COLON { yyerrok; yyclearin; parm_list = NULL; pushlevel(NULL);}
+                        | FUNCTION error f_parm_decl COLON ID S_COLON { yyerrok; yyclearin; parm_list = NULL; pushlevel(NULL);}
                         | FUNCTION ID f_parm_decl COLON ID S_COLON
                           {
                             struct sym_rec* ret = globallookup($5);
+                            struct sym_rec* func_rec = NULL;
                             if(ret == NULL)
                             {
                               char error[1024];
@@ -471,7 +475,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                             }
                             else
                             {
-                              struct sym_rec* func_rec = NULL;
+                              /* Add to sym_tab no matter what */
                               if(locallookup($2) == NULL)
                                 func_rec = addfunc($2, parm_list, ret);
                               else
@@ -480,8 +484,13 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                                 sprintf(error, "Function name '%s' has already been declared.", $2);
                                 semantic_error(error);
                               }
-                              pushlevel(func_rec);
+                              if (isSimpleType(ret) == 0) {
+                                char error[1024];
+                                sprintf(error, "Functions may only return a simple type.", $2);
+                                semantic_error(error);
+                              }
                             }
+                            pushlevel(func_rec);
                             parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl S_COLON
@@ -1190,6 +1199,18 @@ unsigned_num            : INT_CONST
 func_invok              : plist_finvok C_BRACKET 
                         { /* Need return value */
                           if ($1) {
+                             if ($1->counter != 0)
+                             {
+                               char error[1024];
+                               if ($1->name)
+                               {
+                                 sprintf(error, "Wrong number of parameters for function '%s'.", $1->name);
+                                } else
+                               {
+                                 sprintf(error, "Wrong number of parameters.");
+                               }
+                               semantic_error(error);
+                             }
                              $$ = $1->return_type; 
                           } else {
                              $$ = NULL;

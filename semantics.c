@@ -5,6 +5,20 @@
 #include "semantics.h"
 #include "symtab.h"
 
+int isSimpleType(struct sym_rec* type)
+{
+  if (type) {
+    if ((type->desc.type_attr.type_class == TC_INTEGER)
+        || (type->desc.type_attr.type_class == TC_CHAR)
+        || (type->desc.type_attr.type_class == TC_REAL)
+        || (type->desc.type_attr.type_class == TC_BOOLEAN)
+        || (type->desc.type_attr.type_class == TC_SCALAR)) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
 {
   if (!left || !right)
