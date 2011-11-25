@@ -26,6 +26,7 @@ off_t* line_offsets;
 unsigned int num_lines;
 
 int do_listing;
+int leave_asc;
 
 struct error_msgs;
 struct error_msgs
@@ -61,6 +62,7 @@ char* pop_err_from_buf(void);
 char* pretty_error(const char*);
 void replace_substr(char* pretty, const char* substr, const char* replacement);
 
-void emit(char* output);
+void emit(char* output, int a, int b);
+void cleanasc( char* filename);
 
 #endif
