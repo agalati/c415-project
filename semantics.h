@@ -20,6 +20,7 @@ struct temp_array_var
   struct temp_array_var* next;
 };
 
+int isSimpleType(struct sym_rec* type);
 int assignment_compatible(struct sym_rec* left, struct sym_rec* right);
 int compare_types(struct sym_rec* s, struct sym_rec* t);
 
