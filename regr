@@ -36,13 +36,13 @@ for file in `find "tests/regression-tests/" -name "*.lst"`; do
    failed=1
    any_failed=1
  fi
- rm "${listing}"
 
  if [ $failed == 1 ]
  then
   echo "FAIL" "${file}"
  else
   echo "PASS" "${file}"
+  rm "${listing}"
   let num_passed=$num_passed+1
  fi
 done
