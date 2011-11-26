@@ -53,7 +53,6 @@ begin
     
     letter := letter2;
     letter3 := letter;
-##semantic:48: assignment type is incompatible
     letter3 := letter4; // Error #1 Mismatched Type
 ##semantic:49: assignment type is incompatible
     
@@ -61,7 +60,6 @@ begin
 ##semantic:51: variable 'letter5' undeclared at this level
     
     letter3 := 'K';
-##semantic:53: assignment type is incompatible
     letter4 := 'K'; // Error #3 Mismatched Type
 ##semantic:54: assignment type is incompatible
     letter5 := 'K'; // Error #4 Mismatched Type

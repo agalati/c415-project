@@ -176,6 +176,14 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
     return 1;
   }
 
+  // allow assignment of chars to strings of length 1
+  if (left->desc.type_attr.type_class == TC_STRING &&
+      left->desc.type_attr.type_description.string->high == 1 &&
+      right->desc.type_attr.type_class == TC_CHAR)
+  {
+    return 1;
+  }
+
   if (right->desc.type_attr.type_class != left->desc.type_attr.type_class)
     return 0;
 
@@ -215,6 +223,7 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
   return 0;
 }
 
+// s is the type being passed, t is the expected type
 int compare_types(struct sym_rec* s, struct sym_rec* t)
 {
   if (!s || !t)
@@ -223,6 +232,15 @@ int compare_types(struct sym_rec* s, struct sym_rec* t)
   // check if the first type can be coerced into the second type
   if (s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
       return 1;
+
+  // allow coercion of chars to strings of length 1
+  if (t->desc.type_attr.type_class == TC_STRING &&
+      t->desc.type_attr.type_description.string->high == 1 &&
+      s->desc.type_attr.type_class == TC_CHAR)
+  {
+    return 1;
+  }
+
 
   if (s->desc.type_attr.type_class != t->desc.type_attr.type_class)
     return 0;
