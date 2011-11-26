@@ -43,3 +43,4 @@ clean:
 	rm -f pal
 	rm -f lex.yy.c pal_gram.tab.c pal_gram.tab.h
 	rm -f *.lst
+	rm -f *.asc
