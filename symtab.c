@@ -273,11 +273,12 @@ void sym_tab_init()
 
   /* Set function return types */
   
+  init_items[12].desc.func_attr.return_type = &init_items[0];
   init_items[13].desc.func_attr.return_type = &init_items[1];
   init_items[14].desc.func_attr.return_type = &init_items[0];
   init_items[15].desc.func_attr.return_type = &init_items[0];
 
-  /* Hard code this somewhere succ(), pred(), ord() */
+  /* Hard code this somewhere succ(), pred() */
   //init_items[16].desc.func_attr.return_type = &init_items[0];
 
   init_items[18].desc.func_attr.return_type = &init_items[2];
@@ -297,7 +298,7 @@ void sym_tab_init()
   init_items[28].desc.var_attr.type = &init_items[0];
   init_items[29].desc.var_attr.type = &init_items[3];
   init_items[30].desc.var_attr.type = &init_items[3];
-  init_items[33].desc.var_attr.type = &init_items[3];
+  init_items[33].desc.var_attr.type = &init_items[0];
   init_items[36].desc.var_attr.type = &init_items[3];
   init_items[37].desc.var_attr.type = &init_items[3];
   init_items[38].desc.var_attr.type = &init_items[3];

@@ -10,6 +10,7 @@ struct plist_t
   struct sym_rec* parmlist;
   struct sym_rec* return_type;
   char* name;
+  int level;
   int counter;
   int max;
 };
@@ -19,6 +20,14 @@ struct temp_array_var
   struct sym_rec*        var;
   struct temp_array_var* next;
 };
+
+int isPREDFunc(struct plist_t* p);
+int isSUCCFunc(struct plist_t* p);
+int isORDFunc(struct plist_t* p);
+int isIOFunc(struct plist_t* p);
+
+int isORDType(struct sym_rec* parm);
+int checkIOArg(struct sym_rec* parm);
 
 int isSimpleType(struct sym_rec* type);
 int assignment_compatible(struct sym_rec* left, struct sym_rec* right);

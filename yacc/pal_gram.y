@@ -664,6 +664,20 @@ simple_stat             : var ASSIGNMENT expr
                         ;
 
 proc_invok              : plist_finvok C_BRACKET
+                        {
+                          if ($1)
+                          {
+                            if ($1->counter != 0 && !isIOFunc($1))
+                            {
+                              char error[1024];
+                              if ($1->name)
+                                sprintf(error, "Wrong number of parameters given to '%s'.", $1->name);
+                              else
+                               sprintf(error, "Wrong number of parameters.");
+                              semantic_error(error);
+                            }
+                          }
+                        }
                         | ID O_BRACKET C_BRACKET
                         {
                             char error[1024];
@@ -1199,19 +1213,19 @@ unsigned_num            : INT_CONST
 func_invok              : plist_finvok C_BRACKET 
                         { /* Need return value */
                           if ($1) {
-                             if ($1->counter != 0)
-                             {
-                               char error[1024];
-                               if ($1->name)
-                               {
-                                 sprintf(error, "Wrong number of parameters for function '%s'.", $1->name);
-                                } else
-                               {
-                                 sprintf(error, "Wrong number of parameters.");
-                               }
-                               semantic_error(error);
-                             }
-                             $$ = $1->return_type; 
+                            if ($1->counter != 0 && !isIOFunc($1))
+                            {
+                              char error[1024];
+                              if ($1->name)
+                              {
+                                sprintf(error, "Wrong number of parameters for function '%s'.", $1->name);
+                              } else
+                              {
+                                sprintf(error, "Wrong number of parameters.");
+                              }
+                              semantic_error(error);
+                            }
+                            $$ = $1->return_type; 
                           } else {
                              $$ = NULL;
                           }
@@ -1260,25 +1274,64 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->counter = 0;
                                 $$->return_type = func->desc.func_attr.return_type;
                                 $$->name = func->name;
+                                $$->level = func->level;
 
-                                struct sym_rec* last_parm = NULL;
-                                for(func = $$->parmlist; func != NULL; func = func->next)
+                                if (isIOFunc($$))
                                 {
-                                  $$->counter = $$->counter + 1; 
-                                  last_parm = func;
+                                  if(!checkIOArg($3))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument 1 of '%s' must be of type integer, real, char, or string", $$->name);
+                                    semantic_error(error);
+                                  }
                                 }
-                                $$->max = $$->counter;
+                                else if (isORDFunc($$))
+                                {
+                                  if (!isORDType($3))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument of '%s' must be an ordinal type", $$->name);
+                                    semantic_error(error);
+                                  }
+                                  // why do we need this
+                                  $$->counter = 1;
+                                }
+                                else if (isPREDFunc($$) || isSUCCFunc($$))
+                                {
+                                  if (!isORDType($3))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument of '%s' must be an ordinal type", $$->name);
+                                    semantic_error(error);
+                                  }
+                                  else
+                                  {
+                                    $$->return_type = $3;
+                                  }
+                                  // more magic code
+                                  $$->counter = 1;
+                                }
+                                else
+                                {
+                                  struct sym_rec* last_parm = NULL;
+                                  for(func = $$->parmlist; func != NULL; func = func->next)
+                                  {
+                                    $$->counter = $$->counter + 1; 
+                                    last_parm = func;
+                                  }
+                                  $$->max = $$->counter;
 
-                                if ($3 && last_parm) {
-                                
-                                /* This should be an OC_VAR always */
-                                  if (last_parm->class == OC_VAR) {
-                                     if (!compare_types($3, last_parm->desc.var_attr.type))
-                                     {
-                                        char error[1024];
-                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
-                                        semantic_error(error);
-                                     }
+                                  if ($3 && last_parm) {
+                                  
+                                  /* This should be an OC_VAR always */
+                                    if (last_parm->class == OC_VAR) {
+                                       if (!compare_types($3, last_parm->desc.var_attr.type))
+                                       {
+                                          char error[1024];
+                                          sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                          semantic_error(error);
+                                       }
+                                    }
                                   }
                                 }
 
@@ -1291,26 +1344,39 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->counter = 0;
                                 $$->return_type = NULL;
                                 $$->name = func->name;
+                                $$->level = func->level;
 
-                                struct sym_rec* last_parm = NULL;
-                                for(func = $$->parmlist; func != NULL; func = func->next)
+                                if (isIOFunc($$))
                                 {
-                                  $$->counter = $$->counter + 1;
-                                  last_parm = func;
+                                  if(!checkIOArg($3))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument 1 of '%s' must be of type integer, real, char, or string", $$->name);
+                                    semantic_error(error);
+                                  }
                                 }
-                                $$->max = $$->counter;
+                                else
+                                {
+                                  struct sym_rec* last_parm = NULL;
+                                  for(func = $$->parmlist; func != NULL; func = func->next)
+                                  {
+                                    $$->counter = $$->counter + 1;
+                                    last_parm = func;
+                                  }
+                                  $$->max = $$->counter;
 
-                                if ($3 && last_parm) {
-                                
-                                /* This should be an OC_VAR */
-                                   if (last_parm->class == OC_VAR) {
-                                      if (!compare_types($3, last_parm->desc.var_attr.type))
-                                      {
-                                        char error[1024];
-                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
-                                        semantic_error(error);
-                                      }
-                                   }
+                                  if ($3 && last_parm) {
+                                  
+                                  /* This should be an OC_VAR */
+                                     if (last_parm->class == OC_VAR) {
+                                        if (!compare_types($3, last_parm->desc.var_attr.type))
+                                        {
+                                          char error[1024];
+                                          sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                          semantic_error(error);
+                                        }
+                                     }
+                                  }
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -1333,35 +1399,49 @@ plist_finvok            : ID O_BRACKET parm
                           }
                         | plist_finvok COMMA parm
                         {
-                           if ($1) {
-                                int i;
-                                struct sym_rec* last_parm = NULL;
-                                
-                                for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
-                                                                
-                                if ($3 && last_parm) {
-
-                                /* This should be an OC_VAR */
-                                   if (last_parm->class == OC_VAR) {
-                                      if (!compare_types($3, last_parm->desc.var_attr.type))
-                                      {
-                                        char error[1024];
-                                        if ($1->name) {
-                                           sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1->name, $1->max - $1->counter + 1);
-                                           semantic_error(error);
-                                        } else {
-                                           sprintf(error, "Incompatible parameter passed in position %d", $1->max - $1->counter + 1);
-                                           semantic_error(error);
-                                        }
-                                        }
-                                      }
-                                   }
-                                
-                                $1->counter = $1->counter - 1;
-                                $$ = $1;
-                            } else {
-                                 $$ = $1;
+                          if ($1) {
+                            if (isIOFunc($1))
+                            {
+                              if(!checkIOArg($3))
+                              {
+                                char error[1024];
+                                sprintf(error, "Argmument %d of '%s' must be of type integer, real, char, or string", -($1->counter)+1, $$->name);
+                                semantic_error(error);
+                              }
                             }
+                            else
+                            {
+                              int i;
+                              struct sym_rec* last_parm = NULL;
+                              
+                              for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
+
+                              if ($1->counter <= 0)
+                                last_parm = NULL;
+                                                              
+                              if ($3 && last_parm) {
+                                /* This should be an OC_VAR */
+                                if (last_parm->class == OC_VAR) {
+                                  if (!compare_types($3, last_parm->desc.var_attr.type))
+                                  {
+                                    char error[1024];
+                                    if ($1->name) {
+                                      sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1->name, $1->max - $1->counter + 1);
+                                      semantic_error(error);
+                                    } else {
+                                      sprintf(error, "Incompatible parameter passed in position %d", $1->max - $1->counter + 1);
+                                      semantic_error(error);
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                              
+                            $1->counter = $1->counter - 1;
+                            $$ = $1;
+                          } else {
+                            $$ = $1;
+                          }
                         }
                         ;
 

@@ -1,9 +1,111 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "pal.h"
 #include "semantics.h"
 #include "symtab.h"
+
+int isPREDFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "pred") == 0))
+    return 1;
+
+  return 0;
+}
+
+int isSUCCFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "succ") == 0))
+    return 1;
+
+  return 0;
+}
+
+int isORDFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "ord") == 0))
+    return 1;
+
+  return 0;
+}
+
+int isORDType(struct sym_rec* parm)
+{
+  if (!parm)
+    return 0;
+
+  if (parm->class != OC_TYPE)
+    return 0;
+
+  if (  parm->desc.type_attr.type_class == TC_SCALAR 
+    ||  parm->desc.type_attr.type_class == TC_CHAR 
+    ||  parm->desc.type_attr.type_class == TC_BOOLEAN
+    ||  parm->desc.type_attr.type_class == TC_INTEGER)
+    return 1;
+
+  return 0;
+}
+
+int isIOFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1)
+  {
+    if (strcmp(p->name, "write") == 0)
+      return 1;
+    if (strcmp(p->name, "writeln") == 0)
+      return 1;
+    if (strcmp(p->name, "read") == 0)
+      return 1;
+    if (strcmp(p->name, "readln") == 0)
+      return 1;
+  }
+  
+  return 0;
+}
+
+int checkIOArg(struct sym_rec* parm)
+{
+  if (!parm)
+    return 0;
+
+  if (parm->class == OC_TYPE)
+  {
+    switch(parm->desc.type_attr.type_class)
+    {
+      case TC_INTEGER:
+        return 1;
+      case TC_REAL:
+        return 1;
+      case TC_CHAR:
+        return 1;
+      case TC_STRING:
+        return 1;
+      case TC_BOOLEAN:
+        return 1;
+      default:
+        return 0;
+    }
+  }
+  else
+  {
+    fprintf(stderr, "Argument is not a type in checkIOArgs... you should not be reading this.\n");
+  }
+
+  return 0;
+}
 
 int isSimpleType(struct sym_rec* type)
 {
