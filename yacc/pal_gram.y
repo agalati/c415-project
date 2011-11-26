@@ -1311,6 +1311,21 @@ plist_finvok            : ID O_BRACKET parm
                                   // more magic code
                                   $$->counter = 1;
                                 }
+                                else if (isABSFunc($$) || isSQRFunc($$))
+                                {
+                                  if (!isIntOrRealType($3))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument of '%s' must be an integer or real", $$->name);
+                                    semantic_error(error);
+                                  }
+                                  else
+                                  {
+                                    $$->return_type = $3;
+                                  }
+                                  // more magic code
+                                  $$->counter = 1;
+                                }
                                 else
                                 {
                                   struct sym_rec* last_parm = NULL;

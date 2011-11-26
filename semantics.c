@@ -6,6 +6,27 @@
 #include "semantics.h"
 #include "symtab.h"
 
+int isABSFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "abs") == 0))
+    return 1;
+
+  return 0;
+}
+int isSQRFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "sqr") == 0))
+    return 1;
+
+  return 0;
+}
+
 int isPREDFunc(struct plist_t* p)
 {
   if (!p)
@@ -34,6 +55,21 @@ int isORDFunc(struct plist_t* p)
     return 0;
 
   if (p->level == -1 && (strcmp(p->name, "ord") == 0))
+    return 1;
+
+  return 0;
+}
+
+int isIntOrRealType(struct sym_rec* parm)
+{
+  if (!parm)
+    return 0;
+
+  if (parm->class != OC_TYPE)
+    return 0;
+
+  if (  parm->desc.type_attr.type_class == TC_REAL 
+    ||  parm->desc.type_attr.type_class == TC_INTEGER)
     return 1;
 
   return 0;
@@ -183,6 +219,10 @@ int compare_types(struct sym_rec* s, struct sym_rec* t)
 {
   if (!s || !t)
     return 0;
+
+  // check if the first type can be coerced into the second type
+  if (s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
+      return 1;
 
   if (s->desc.type_attr.type_class != t->desc.type_attr.type_class)
     return 0;

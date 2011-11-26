@@ -65,11 +65,10 @@ begin
   l2();           // Error: incorrect number of arguments
 ##semantic:62: Missing arguments for procedure 'l2'.
   l2(1);          // Error: incorrect number of arguments
+##semantic:63: Wrong number of parameters given to 'l2'.
   l2(1,2);
-##semantic:64: Incompatible parameter passed to 'l2' in position 2
   l2(1,2,3);      // Error: incorrect number of arguments
-##semantic:65: Incompatible parameter passed to 'l2' in position 2
-##semantic:65: Incompatible parameter passed to 'l2' in position 3
+##semantic:65: Wrong number of parameters given to 'l2'.
 
 end.
    

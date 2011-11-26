@@ -21,11 +21,14 @@ struct temp_array_var
   struct temp_array_var* next;
 };
 
+int isABSFunc(struct plist_t* p);
+int isSQRFunc(struct plist_t* p);
 int isPREDFunc(struct plist_t* p);
 int isSUCCFunc(struct plist_t* p);
 int isORDFunc(struct plist_t* p);
 int isIOFunc(struct plist_t* p);
 
+int isIntOrRealType(struct sym_rec* parm);
 int isORDType(struct sym_rec* parm);
 int checkIOArg(struct sym_rec* parm);
 
