@@ -1,0 +1,18 @@
+program main(input, output);
+var
+  aret : integer;
+
+function A(c : char; d : boolean) : integer;
+begin
+end;
+procedure B(b : integer);
+begin
+end;
+begin
+  A('c', false, 1, 2, 3, 4, 5);
+  B(A('c', false, 1), 'b');
+  aret := A('c', 1, 3, 4, 5);
+  write();
+  write(aret);
+  write(aret, aret, aret);
+end.

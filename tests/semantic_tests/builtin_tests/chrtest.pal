@@ -1,0 +1,11 @@
+program main(input, output);
+var
+  c : char;
+  b : boolean;
+begin
+  c := chr(98);
+  c := chr(ord('c'));
+  b := chr(98) = chr(ord('c'));
+  chr('c');
+  b := chr(0);
+end.

@@ -1,0 +1,31 @@
+program main(input, output);
+var
+  a : integer;
+  b : char;
+  c : array [1..10] of char;
+  d : boolean;
+begin
+  write();
+  write(a);
+  write(a, b, c);
+  write(a, b, c, d);
+  write(d);
+
+  writeln();
+  writeln(a);
+  writeln(a, b, c);
+  writeln(a, b, c, d);
+  writeln(d);
+
+  read();
+  read(a);
+  read(a, b, c);
+  read(a, b, c, d);
+  read(d);
+
+  readln();
+  readln(a);
+  readln(a, b, c);
+  readln(a, b, c, d);
+  readln(d);
+end.
