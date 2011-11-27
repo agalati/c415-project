@@ -521,7 +521,7 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s = (struct sym_rec*)malloc(sizeof(struct sym_rec));
   s->name = strdup(name);
   s->level = current_level;
-  s->class = OC_VAR;
+  s->class = OC_RETURN;
   s->desc.var_attr.type = return_type;
 
   s->next = sym_tab[current_level+1];

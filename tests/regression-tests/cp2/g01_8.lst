@@ -18,7 +18,6 @@ var letter, letter2 : char;
                                    // because letter3 is a string, letter4 is not
                                    // ... strings must start index at 1 
     letter5 : array['a'..'a'] of char;
-##parser:20: syntax error, unexpected STRING, expecting -
     random : integer;
     program : integer;  // ERROR #1 Variable named program
 ##parser:22: syntax error, unexpected PROGRAM, expecting P_BEGIN
@@ -31,10 +30,9 @@ var letter, letter2 : char;
 function writeln(false:mine):integer; 
 begin
     if false = D then
-        writeln := 'b'
+        writeln := 'd';
         writeln := writeln; // ERROR #2 Return on rhs
-##parser:30: syntax error, unexpected ID
-##semantic:30: Cannot mix boolean and non-boolean types to comparison operators.
+##semantic:30: 'writeln' cannot appear on the RHS of a statement, it is a return type.
 end;
 
 procedure b();
@@ -57,13 +55,13 @@ begin
 ##semantic:49: assignment type is incompatible
     
     letter5 := letter3; // Error #2 Mismatched Type
-##semantic:51: variable 'letter5' undeclared at this level
+##semantic:51: assignment type is incompatible
     
     letter3 := 'K';
     letter4 := 'K'; // Error #3 Mismatched Type
 ##semantic:54: assignment type is incompatible
     letter5 := 'K'; // Error #4 Mismatched Type
-##semantic:55: variable 'letter5' undeclared at this level
+##semantic:55: assignment type is incompatible
         
     letter4 := 'no'; // Error #5 Mismatched Type
 ##semantic:57: assignment type is incompatible

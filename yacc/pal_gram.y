@@ -240,7 +240,7 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                           {
                             if ($3 != NULL && $6 != NULL)
                             {
-                              if ( $6->desc.type_attr.type_class == TC_CHAR
+                              if ( $6->class == OC_TYPE && $6->desc.type_attr.type_class == TC_CHAR
                                 && (builtinlookup("char")->desc.type_attr.type_description.character == $6->desc.type_attr.type_description.character)
                                 && $3->low == 1
                                 )
@@ -315,6 +315,35 @@ array_type              : simple_type
                               $$ = NULL;
                             }
                           }
+                        | STRING DDOT STRING
+                          {
+                            if (strlen($1) == 3 && strlen($3) == 3)
+                            {
+                              int low = (int)($1[1]);
+                              int high = (int)($3[1]);
+                              if (low <= high)
+                              {
+                                $$ = (struct tc_subrange*)malloc(sizeof(struct tc_subrange));
+                                $$->mother_type = builtinlookup("char");
+                                $$->low = low;
+                                $$->high = high;
+                              }
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                            else
+                            {
+                              char error[1024];
+                              sprintf(error, "Cannot use strings as indices of arrays.");
+                              semantic_error(error);
+                              $$ = NULL;
+                            }
+                          }
                         | INT_CONST DDOT INT_CONST
                           {
                             if ($1 <= $3)
@@ -327,7 +356,7 @@ array_type              : simple_type
                             else
                             {
                               char error[1024];
-                              sprintf(error, "Invalid indices for array type - start of subrange greater then end.");
+                              sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
                               semantic_error(error);
                               $$ = NULL;
                             }
@@ -344,7 +373,7 @@ array_type              : simple_type
                             else
                             {
                               char error[1024];
-                              sprintf(error, "Invalid indices for array type - start of subrange greater then end.");
+                              sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
                               semantic_error(error);
                               $$ = NULL;
                             }
@@ -629,13 +658,12 @@ simple_stat             : var ASSIGNMENT expr
                                    sprintf(error, "cannot reassign constant");
                                  }
                                  semantic_error(error);
-                              } else if ($1->class == OC_VAR) {
-
-                              if (assignment_compatible($1->desc.var_attr.type, $3) == 0) {
-                                 char error[1024];
-                                 sprintf(error, "assignment type is incompatible", $1);
-                                 semantic_error(error);
-                                 }
+                              } else if ($1->class == OC_VAR || $1->class == OC_RETURN) {
+                                if (assignment_compatible($1->desc.var_attr.type, $3) == 0) {
+                                   char error[1024];
+                                   sprintf(error, "assignment type is incompatible", $1);
+                                   semantic_error(error);
+                                   }
                               } else {
                                  char error[1024];
                                  if ($1->name) {
@@ -647,7 +675,6 @@ simple_stat             : var ASSIGNMENT expr
                                     semantic_error(error);
                                  
                                  }
-                                 
                               }
                             }
                           }
@@ -760,7 +787,7 @@ subscripted_var         : var O_SBRACKET expr
                         {
                           if ($1)
                           {
-                             if ($1->class == OC_VAR) 
+                             if ($1->class == OC_VAR && $1->desc.var_attr.type) 
                              {
                                 if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
                                 {
@@ -1136,6 +1163,7 @@ factor                  : var
                           {
                             if($1)
                             {
+                              char error[1024];
                               switch($1->class)
                               {
                                 case OC_TYPE:
@@ -1147,8 +1175,14 @@ factor                  : var
                                 case OC_CONST:
                                   $$ = $1->desc.const_attr.type;
                                   break;
+                                case OC_RETURN:
+                                  sprintf(error, "'%s' cannot appear on the RHS of a statement, it is a return type.", $1->name);
+                                  semantic_error(error);
+                                  $$ = NULL;
+                                  break;
                                 default:
                                   semantic_error("could not find type of expression");
+                                  $$ = NULL;
                               }
                             }
                             else
