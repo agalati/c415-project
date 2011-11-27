@@ -319,7 +319,7 @@ array_type              : simple_type
                           }
                         | STRING DDOT STRING
                           {
-                            if (strlen($1) == 3 && strlen($3) == 3)
+                            if (strlen($1) == 1 && strlen($3) == 1)
                             {
                               int low = (int)($1[1]);
                               int high = (int)($3[1]);
@@ -1276,8 +1276,7 @@ factor                  : var
 unsigned_const          : unsigned_num { $$ = $1; }
 						            | STRING
                           {
-                            // strip off quotes from char size, won't work for escaped chars
-                            if (strlen($1)-2 != 1)
+                            if (strlen($1) != 1)
                             {
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                               $$->next = NULL;
@@ -1286,7 +1285,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->class = OC_TYPE;
                               $$->desc.type_attr.type_class = TC_STRING;
                               $$->desc.type_attr.type_description.string = (struct tc_string*)malloc(sizeof(struct tc_string));
-                              $$->desc.type_attr.type_description.string->high = strlen($1) - 2; /* Because of single quotes */
+                              $$->desc.type_attr.type_description.string->high = strlen($1);
                             }
                             else
                               $$ = builtinlookup("char");
