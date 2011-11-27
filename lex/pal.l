@@ -15,6 +15,7 @@
 
 #include "pal.h"
 #include "pal_gram.tab.h"
+#include "semantics.h"
 
 #define YY_USER_ACTION update_position(strlen(yytext));
 
@@ -68,7 +69,7 @@ record                            DB_PRINTF("RECORD "); return RECORD;
 then                              DB_PRINTF("THEN "); return THEN;
 type                              DB_PRINTF("TYPE "); return TYPE;
 var                               DB_PRINTF("VAR "); return VAR;
-while                             DB_PRINTF("WHILE "); return WHILE;
+while                             DB_PRINTF("WHILE "); incrementWhileCounter(); return WHILE;
 
  /* Numbers and variables ---------- */
 (([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL_CONST;

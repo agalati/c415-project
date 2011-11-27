@@ -6,6 +6,8 @@
 #include "semantics.h"
 #include "symtab.h"
 
+int while_counter = 0;
+
 int isABSFunc(struct plist_t* p)
 {
   if (!p)
@@ -321,4 +323,24 @@ void declare_variable(char* name, struct sym_rec* s)
     sprintf(error, "Variable '%s' already declared.", name);
     semantic_error(error);
   }
+}
+
+void incrementWhileCounter()
+{
+  ++while_counter;
+}
+
+void decrementWhileCounter()
+{
+  --while_counter;
+  if (while_counter < 0)
+  {
+    while_counter = 0;
+    fprintf(stderr, "While counter decremented below 0\n");
+  }
+}
+
+int getWhileCounter()
+{
+  return while_counter;
 }

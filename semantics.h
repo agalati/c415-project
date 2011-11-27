@@ -40,4 +40,8 @@ void declare_const(char* name, struct sym_rec*);
 void declare_type(char* name, struct sym_rec*);
 void declare_variable(char* name, struct sym_rec*);
 
+void incrementWhileCounter();
+void decrementWhileCounter();
+int getWhileCounter();
+
 #endif

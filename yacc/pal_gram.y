@@ -269,7 +269,11 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                             else
                               $$ = NULL;
                           }
-                        | ARRAY O_SBRACKET error C_SBRACKET OF type { yyerrok; yyclearin; }
+                        | ARRAY O_SBRACKET error C_SBRACKET OF type
+                          {
+                            $$ = NULL;
+                            yyerrok; yyclearin; 
+                          }
                         | RECORD field_list END
                           {
                             prev_fields = NULL;
@@ -390,6 +394,7 @@ array_type              : simple_type
                             semantic_error(error);
                             $$ = NULL;
                           }
+                        //| error { $$ = NULL; yyclearin; yyerrok; }
                         ;                     
 
 field_list              : field
@@ -806,7 +811,7 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->name = NULL;
                                   $$->level = get_current_level();
                                   $$->class = OC_VAR;
-                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;;
+                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$;
@@ -837,7 +842,10 @@ subscripted_var         : var O_SBRACKET expr
                                 else 
                                 {
                                    char error[1024];
-                                   sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
+                                  if ($1->name)
+                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
+                                  else
+                                    sprintf(error, "cannot subscript variables that are not arrays or strings");
                                    semantic_error(error);
                                    $$ = NULL;
                                 }
@@ -848,16 +856,61 @@ subscripted_var         : var O_SBRACKET expr
                         {
                           if ($1)
                           {
-                            if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
-                            {
-                            }
-                            else
-                            {
-                              char error[1024];
-                              sprintf(error, "cannot subscript '%s', it is not an array", $1->name);
-                              semantic_error(error);
-                              $$ = NULL;
-                            }
+                             if ($1->class == OC_VAR && $1->desc.var_attr.type) 
+                             {
+                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
+                                {
+                                  if ($3)
+                                    if ($3->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Invalid index into array");
+                                      semantic_error(error);
+                                    }
+                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->next = NULL;
+                                  $$->name = NULL;
+                                  $$->level = get_current_level();
+                                  $$->class = OC_VAR;
+                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+
+                                  struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
+                                  new_temp_var->var = $$;
+                                  new_temp_var->next = temp_array_vars;
+                                  temp_array_vars = new_temp_var;
+                                }
+                                else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+                                {
+                                  if ($3)
+                                    if ($3->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Invalid index into string");
+                                      semantic_error(error);
+                                    }
+                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->next = NULL;
+                                  $$->name = NULL;
+                                  $$->level = get_current_level();
+                                  $$->class = OC_VAR;
+                                  $$->desc.var_attr.type = builtinlookup("char");
+
+                                  struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
+                                  new_temp_var->var = $$;
+                                  new_temp_var->next = temp_array_vars;
+                                  temp_array_vars = new_temp_var;
+                                }
+                                else 
+                                {
+                                  char error[1024];
+                                  if ($1->name)
+                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
+                                  else
+                                    sprintf(error, "cannot subscript variables that are not arrays or strings");
+                                  semantic_error(error);
+                                  $$ = NULL;
+                                }
+                             }
                           }
                           else
                             $$ = NULL;
@@ -1531,11 +1584,28 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "while statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            decrementWhileCounter();
                           }
-                        | WHILE error DO { yyerrok; yyclearin; }
+                        | WHILE error DO { decrementWhileCounter(); yyerrok; yyclearin; }
                         | DO stat { yyerror("Missing 'while' required to match 'do' statement"); }
                         | CONTINUE
+                          {
+                            if (getWhileCounter() == 0)
+                            {
+                              char error[1024];
+                              sprintf(error, "continue statement used outside of a loop");
+                              semantic_error(error);
+                            }
+                          }
                         | EXIT
+                          {
+                            if (getWhileCounter() == 0)
+                            {
+                              char error[1024];
+                              sprintf(error, "exit statement used outside of a loop");
+                              semantic_error(error);
+                            }
+                          }
                         ;
 
 matched_stat            : simple_stat
@@ -1550,9 +1620,25 @@ matched_stat            : simple_stat
                           }
                         | IF error THEN matched_stat ELSE matched_stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE matched_stat { yyerrok; yyclearin; }
-                        | WHILE expr DO matched_stat
-                        | WHILE error DO matched_stat { yyerrok; yyclearin; }
+                        | WHILE expr DO matched_stat { decrementWhileCounter(); }
+                        | WHILE error DO matched_stat { decrementWhileCounter(); yyerrok; yyclearin; }
                         | CONTINUE
+                          {
+                            if (getWhileCounter() == 0)
+                            {
+                              char error[1024];
+                              sprintf(error, "continue statement used outside of a loop");
+                              semantic_error(error);
+                            }
+                          }
                         | EXIT
+                          {
+                            if (getWhileCounter() == 0)
+                            {
+                              char error[1024];
+                              sprintf(error, "exit statement used outside of a loop");
+                              semantic_error(error);
+                            }
+                          }
                         ;
 %% /* End of grammer */
