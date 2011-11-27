@@ -1,0 +1,62 @@
+
+
+// semantic:33.6: Cannot assign between incompatible types.
+// semantic:38.7: Index type must be same as definition.
+// semantic:42.6: Cannot assign between incompatible types.
+// semantic:49.6: Index type must be same as definition.
+// semantic:51.6: Index type must be same as definition.
+
+
+
+program foo(input,output);
+type
+	str = array[1..10] of char;
+	int = array[1..2] of integer;
+var
+	a,b: str;
+	c: str;
+	i,j: int;
+	k: int;
+	l: array[1..2] of integer;
+
+	q: array['a'..'b'] of integer;
+
+	x: char;
+	y: integer;
+begin
+	x := 'a';
+	y := 1;
+
+	a := '1234567890';
+	b := a;
+	c := a;
+	a := '123456789';  // not legal
+##semantic:33: assignment type is incompatible
+	a[1] := 'a';	
+	a[1] := x;
+	a[1+2] := x;
+	a[y] := x; 
+	a[1.0] := 'a'; // Can't index w/ real
+##semantic:38: Invalid index into string
+
+	i := j;
+	j := k; 
+	k := l; // Not legal.
+##semantic:42: assignment type is incompatible
+	i[1] := 1;
+	i[1] := y;
+	i[1+1] := y;
+	i[y] := y;	
+
+	i[i[1]] := 1;
+	i[a[1]] := 1; // Can't index w/ char
+##semantic:49: Invalid index into array
+	
+	q[67] := 1; // Can't index w/ int
+##semantic:51: Invalid index into array
+	q['a'] := 1;
+	y := q['b'];
+	q[x] := 1;
+	q[a[1]] := 1; 
+
+end.

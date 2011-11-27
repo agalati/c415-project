@@ -762,26 +762,33 @@ var                     : ID
                         {
                           if ($1)
                           {
-                            if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_RECORD)
+                            if ($1->class == OC_VAR && $1->desc.var_attr.type)
                             {
-                              struct sym_rec* field = $1->desc.var_attr.type->desc.type_attr.type_description.record->field_list;
-                              for(; field != NULL; field = field->next)
-                                if (strcmp(field->name,$3)==0)
-                                  break;
-                              // field is either the variable ID or null, we pass back both
-                              $$ = field;
-                              if (!$$)
+                              if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_RECORD)
+                              {
+                                struct sym_rec* field = $1->desc.var_attr.type->desc.type_attr.type_description.record->field_list;
+                                for(; field != NULL; field = field->next)
+                                  if (strcmp(field->name,$3)==0)
+                                    break;
+                                // field is either the variable ID or null, we pass back both
+                                $$ = field;
+                                if (!$$)
+                                {
+                                  char error[1024];
+                                  sprintf(error, "'%s' is not a member of '%s'.", $3, $1->name);
+                                  semantic_error(error);
+                                }
+                              }
+                              else
                               {
                                 char error[1024];
-                                sprintf(error, "'%s' is not a member of '%s'.", $3, $1->name);
+                                sprintf(error, "Invalid use of . operator, '%s' is not a record.", $1->name);
                                 semantic_error(error);
+                                $$ = NULL;
                               }
                             }
                             else
                             {
-                              char error[1024];
-                              sprintf(error, "Invalid use of . operator, '%s' is not a record.", $1->name);
-                              semantic_error(error);
                               $$ = NULL;
                             }
                           }
