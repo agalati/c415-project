@@ -75,7 +75,16 @@ while                             DB_PRINTF("WHILE "); incrementWhileCounter(); 
 (([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL_CONST;
 
 
-\'(\\(n|t|'|\\)|[^\\'])*\'			  DB_PRINTF( "%s ", yytext); yylval.name = strdup(yytext); return STRING; /* returns properly terminate strings */
+\'(\\(n|t|'|\\)|[^\\'])*\'			  {
+                                        DB_PRINTF( "%s ", yytext);
+                                        yylval.name = strdup(yytext);
+
+                                        if (schomp(yylval.name) != 0)
+                                          illegal_string();                                          
+                                        
+                                        return STRING; /* returns properly terminate strings */
+                                      }
+
 \'(\\(n|t|'|\\)|[^\\'])*\n        {DB_PRINTF("Unterminated string "); unterminated_string(); return NSTRING; /* returns non-terminated strings */}       
                                         /* Strings may require some checking later            "'"(.*?)"'"  */
                                         /* Probably have to rip the single quotes off (yyleng) */

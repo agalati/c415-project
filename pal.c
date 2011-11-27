@@ -100,6 +100,22 @@ unterminated_string(void)
 }
 
 void
+illegal_string(void)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s", linebuf);
+  free(linebuf);
+
+  fprintf(stderr, "Illegal string on line %d\n\n", yylloc.first_line);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d: Illegal string.\n", yylloc.first_line);
+    add_err_to_buf(err);
+  }
+}
+
+void
 yyerror (char const *s)
 {
   char* linebuf = get_prog_line(yylloc.first_line);

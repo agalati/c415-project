@@ -42,6 +42,7 @@ int yylex (void);
 void semantic_error(char const*);
 void lexerror(char const*);
 void unterminated_string(void);
+void illegal_string(void);
 void yyerror (char const *);
 
 int ID_or_reserved(char const*);
@@ -64,5 +65,8 @@ void replace_substr(char* pretty, const char* substr, const char* replacement);
 
 void emit(char* output, int a, int b);
 void cleanasc( char* filename);
+
+/* String Chomp */
+int schomp(char *s);
 
 #endif
