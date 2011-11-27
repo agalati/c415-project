@@ -607,6 +607,45 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
     /* Add to next level of symbol table */
     s->next = sym_tab[current_level + 1];
     sym_tab[current_level + 1] = s;
+
+    // Add parameter types to the next level to prevent redefinition
+    s = malloc(sizeof(struct sym_rec));
+    s->name = strdup(type->name);
+    s->level = current_level;
+    s->class = OC_TYPE;
+    s->desc.type_attr.type_class = type->desc.type_attr.type_class;
+    switch(s->desc.type_attr.type_class)
+    {
+      case TC_INTEGER:
+        s->desc.type_attr.type_description.integer = type->desc.type_attr.type_description.integer;
+        break;
+      case TC_REAL:
+        s->desc.type_attr.type_description.real = type->desc.type_attr.type_description.real;
+        break;
+      case TC_CHAR:
+        s->desc.type_attr.type_description.character = type->desc.type_attr.type_description.character;
+        break;
+      case TC_BOOLEAN:
+        s->desc.type_attr.type_description.boolean = type->desc.type_attr.type_description.boolean;
+        break;
+      case TC_STRING:
+        s->desc.type_attr.type_description.string = type->desc.type_attr.type_description.string;
+        break;
+      case TC_ARRAY:
+        s->desc.type_attr.type_description.array = type->desc.type_attr.type_description.array;
+        break;
+      case TC_RECORD:
+        s->desc.type_attr.type_description.record = type->desc.type_attr.type_description.record;
+        break;
+      case TC_SUBRANGE:
+        s->desc.type_attr.type_description.subrange = type->desc.type_attr.type_description.subrange;
+        break;
+      case TC_SCALAR:
+        s->desc.type_attr.type_description.scalar = type->desc.type_attr.type_description.scalar;
+        break;
+    }
+    s->next = sym_tab[current_level + 1];
+    sym_tab[current_level + 1] = s;
   }
 
   /* Adds a copy to the current parameter list (var_attr.location should be the same) */

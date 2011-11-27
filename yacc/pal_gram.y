@@ -19,7 +19,6 @@
 #include "symtab.h"
 #include "pal.h"
 
-int search_fields = 0;
 struct sym_rec* prev_fields;
 
 struct sym_rec* parm_list = NULL;
@@ -273,7 +272,6 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
                         | ARRAY O_SBRACKET error C_SBRACKET OF type { yyerrok; yyclearin; }
                         | RECORD field_list END
                           {
-                            search_fields = 0;
                             prev_fields = NULL;
                             if ($2 != NULL)
                             {
@@ -396,7 +394,6 @@ array_type              : simple_type
 
 field_list              : field
                           {
-                            search_fields = 1;
                             $$ = $1;
                             prev_fields = $$;
                           }
@@ -415,14 +412,13 @@ field_list              : field
 field                   : ID COLON type
                           {
                             int found = 0;
-                            if (search_fields)
-                            {
-                              struct sym_rec* prev = prev_fields;
-                              for (; prev != NULL; prev = prev->next) {
-                                if ($1 && prev->name && strcmp($1, prev->name) == 0)
-                                  found = 1;
-                              }
+                            
+                            struct sym_rec* prev = prev_fields;
+                            for (; prev != NULL; prev = prev->next) {
+                              if ($1 && prev->name && strcmp($1, prev->name) == 0)
+                                found = 1;
                             }
+
                             if (!found)
                             {
                               $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
@@ -584,6 +580,13 @@ f_parm                  : ID COLON ID
                             {
                               char error[1024];
                               sprintf(error, "'%s' does not name a type.", $3);
+                              semantic_error(error);
+                              parm_error = 1;
+                            }
+                            else if(strcmp($1, s->name) == 0)
+                            {
+                              char error[1024];
+                              sprintf(error, "'%s' is already in use at this scope.", $3);
                               semantic_error(error);
                               parm_error = 1;
                             }

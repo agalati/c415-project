@@ -281,6 +281,9 @@ void declare_const(char* name, struct sym_rec* s)
 
 void declare_type(char* name, struct sym_rec* s)
 {
+  if (s && s->name)
+    addtype(s->name, &s->desc.type_attr);
+
   if(locallookup(name) == NULL)
   {
     if (s && s->class == OC_TYPE)
@@ -302,6 +305,9 @@ void declare_type(char* name, struct sym_rec* s)
 
 void declare_variable(char* name, struct sym_rec* s)
 { 
+  if (s && s->name)
+    addtype(s->name, &s->desc.type_attr);
+
   if(locallookup(name) == NULL)
   {
     if (s && s->class == OC_TYPE)

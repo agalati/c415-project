@@ -14,6 +14,10 @@ type
         e : ar;
         f : boolean
       end;
+  c = record
+        a : integer;
+        integer : char
+      end;
   b = array [1..30] of a;
 var
   ten, eleven : a;
