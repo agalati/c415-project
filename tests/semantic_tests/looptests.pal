@@ -1,0 +1,81 @@
+
+// semantic:38.23: continue statment outside of while loop.
+// semantic:39.19: exit statment outside of while loop.
+// semantic:52.17: continue statment outside of while loop.
+// semantic:53.6: exit statment outside of while loop.
+// semantic:74.10: continue statment outside of while loop.
+// semantic:75.6: exit statment outside of while loop.
+//
+
+
+program example( input, output );
+type      
+	string = array[1..7] of char;
+
+var   
+	x      : integer;
+	y      : integer;
+	answer : integer;
+	flag   : char;
+	str    : string;
+	s      : real;
+	pie    : real;
+
+procedure gcd( a : integer; b : integer );
+begin
+        str := '1234567';
+	a := 2;
+//	b := abs(a); { no error }
+//	s := abs(pie); { no error } 
+	s := 3.4E3;
+	pie := 3.14E3;
+	
+end;
+
+procedure lcm  (a : integer; b : integer );
+
+begin
+	if true then continue;
+	if true then exit;
+	while true do 
+	begin
+	  continue;
+	  exit
+	end;
+end;
+
+begin             { main-program }
+	read( flag );
+		{ loop until an 's' (stop) is seen - remember no EOF
+		  tests are possible. }
+
+        continue;
+	exit;
+	while flag <> 's' do
+		{ while stmnts are the only loop construct allowed }
+	begin
+		read( x, y );
+		readln();
+		if flag = 'g' then begin  { 'g' flag means compute gcd }
+			gcd( x, y );
+			str := 'Gcd of ';
+      continue;
+		end;
+
+
+		if flag = 'l' then begin { 'l' flag means compute lcm }
+			lcm( x, y );
+			str := 'Lcm of ';
+      exit;
+		end;
+		answer := -1;
+		write(str, x, ' and', y, ' is', answer);
+		writeln( );
+		read( flag )
+	end;
+	continue;
+	exit;
+	
+end
+.
+
