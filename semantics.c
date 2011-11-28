@@ -435,13 +435,13 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
 }
 
 // s is the type being passed, t is the expected type
-int compare_types(struct sym_rec* s, struct sym_rec* t)
+int compare_types(struct sym_rec* s, struct sym_rec* t, int check_coercion)
 {
   if (!s || !t)
     return 0;
 
   // check if the first type can be coerced into the second type
-  if (s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
+  if (check_coercion && s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
       return 1;
 
   // allow coercion of chars to strings of length 1

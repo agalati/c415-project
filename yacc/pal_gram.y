@@ -53,6 +53,7 @@ struct temp_array_var* temp_array_vars = NULL;
 %token          PERIOD COLON O_SBRACKET C_SBRACKET
 %token          COMMA START_COM END_COM NSTRING DDOT
 %token <ch>     S_COLON 
+%token          BOGUS
 
 /* Original tokens */
 %token            AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
@@ -169,11 +170,12 @@ scalar_type             : O_BRACKET scalar_list C_BRACKET
                               $$->desc.type_attr.type_description.scalar = (struct tc_scalar*)malloc(sizeof(struct tc_scalar));
                               $$->desc.type_attr.type_description.scalar->const_list = $2;
 
-                              // THIS MAY NOT BE LEGIT
                               struct sym_rec* members = $2;
                               for (; members != NULL; members = members->next) {
                                   members->desc.const_attr.type = $$;
-                                  addconst(members->name, $$);
+                                  struct sym_rec* sym_entry = addconst(members->name, $$);
+                                  sym_entry->desc.const_attr.value.integer = members->desc.const_attr.value.integer;
+                                  printf("Adding scalar '%s' with value %d\n", members->name, members->desc.const_attr.value.integer);
                                 }
                             }
                             else
@@ -206,6 +208,7 @@ scalar_list             : ID
                               semantic_error(error);
                             }
                           }
+                        | ID BOGUS { $$ = NULL; }
                         | scalar_list COMMA ID
                           {
                             if (locallookup($3) == NULL)
@@ -322,7 +325,128 @@ array_type              : simple_type
                               $$ = NULL;
                             }
                           }
-                        | STRING DDOT STRING
+                        | expr DDOT expr
+                          {
+                            if ($1 && $3 && $1->type && $3->type)
+                            {
+                              if($1->is_const && $3->is_const)
+                              {
+                                if (compare_types($1->type, $3->type, 0))
+                                {
+                                  char error[1024];
+                                  $$ = (struct tc_subrange*)malloc(sizeof(struct tc_subrange));
+                                  $$->mother_type = $1->type;
+
+                                  switch($1->type->desc.type_attr.type_class)
+                                  {
+                                    case TC_INTEGER:
+                                      if ($1->value.integer > $3->value.integer)
+                                      {
+                                        sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
+                                        semantic_error(error);
+                                        free($$);
+                                        $$ = NULL;
+                                      }
+                                      else
+                                      {
+                                        $$->low = $1->value.integer;
+                                        $$->high = $3->value.integer;
+                                      }
+                                      break;
+                                    case TC_REAL:
+                                      sprintf(error, "Invalid indices for array type - index type cannot be real.");
+                                      semantic_error(error);
+                                      free($$);
+                                      $$ = NULL;
+                                      break;
+                                    case TC_CHAR:
+                                      if ($1->value.character > $3->value.character)
+                                      {
+                                        sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
+                                        semantic_error(error);
+                                        free($$);
+                                        $$ = NULL;
+                                      }
+                                      else
+                                      {
+                                        $$->low = (int)($1->value.character);
+                                        $$->high = (int)($3->value.character);
+                                      }
+                                      break;
+                                    case TC_BOOLEAN:
+                                      if ($1->value.boolean > $3->value.boolean)
+                                      {
+                                        sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
+                                        semantic_error(error);
+                                        free($$);
+                                        $$ = NULL;
+                                      }
+                                      else
+                                      {
+                                        $$->low = $1->value.boolean;
+                                        $$->high = $3->value.boolean;
+                                      }
+                                      break;
+                                    case TC_STRING:
+                                      sprintf(error, "Invalid indices for array type - the index type cannot be string.");
+                                      semantic_error(error);
+                                      free($$);
+                                      $$ = NULL;
+                                      break;
+                                    case TC_SCALAR:
+                                      if ($1->value.integer > $3->value.integer)
+                                      {
+                                        sprintf(error, "Invalid indices for array type - start of subrange greater than end.");
+                                        semantic_error(error);
+                                        free($$);
+                                        $$ = NULL;
+                                      }
+                                      else
+                                      {
+                                        $$->low = $1->value.integer;
+                                        $$->high = $3->value.integer;
+                                      }
+                                      break;
+                                    case TC_ARRAY:
+                                      sprintf(error, "Invalid indices for array type - the index type cannot be an array.");
+                                      semantic_error(error);
+                                      free($$);
+                                      $$ = NULL;
+                                      break;
+                                    case TC_RECORD:
+                                      sprintf(error, "Invalid indices for array type - the index type cannot be a record.");
+                                      semantic_error(error);
+                                      free($$);
+                                      $$ = NULL;
+                                      break;
+                                    case TC_SUBRANGE:
+                                      sprintf(error, "Invalid indices for array type - the index type cannot be an subrange.");
+                                      semantic_error(error);
+                                      free($$);
+                                      $$ = NULL;
+                                      break;
+                                    default:
+                                      printf("This is not a TC_ enum...\n");
+                                  }
+                                }
+                                else
+                                {
+                                  char error[1024];
+                                  sprintf(error, "Array indices have different types.");
+                                  semantic_error(error);
+                                }
+                              }
+                              else
+                              {
+                                char error[1024];
+                                sprintf(error, "Array indices must be constants.");
+                                semantic_error(error);
+                                $$ = NULL;
+                              }
+                            }
+                          }
+                          /*
+                          | STRING DDOT STRING
                           {
                             if (strlen($1) == 1 && strlen($3) == 1)
                             {
@@ -400,6 +524,7 @@ array_type              : simple_type
                             $$ = NULL;
                           }
                         //| error { $$ = NULL; yyclearin; yyerrok; }
+                        */
                         ;                     
 
 field_list              : field
@@ -1447,6 +1572,10 @@ factor                  : var
                                     case TC_STRING:
                                       $$->value.string = $1->desc.const_attr.value.string;
                                       break;
+                                    case TC_SCALAR:
+                                      printf("Settings value of scalar '%s' to %d\n", $1->name, $1->desc.const_attr.value.integer);
+                                      $$->value.integer = $1->desc.const_attr.value.integer;
+                                      break;
                                     default:
                                       $$->is_const = 0;
                                       break;
@@ -1684,7 +1813,7 @@ plist_finvok            : ID O_BRACKET parm
                                   
                                   /* This should be an OC_VAR always */
                                     if (last_parm->class == OC_VAR) {
-                                       if (!compare_types($3->type, last_parm->desc.var_attr.type))
+                                       if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
                                        {
                                           char error[1024];
                                           sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
@@ -1728,7 +1857,7 @@ plist_finvok            : ID O_BRACKET parm
                                   
                                   /* This should be an OC_VAR */
                                      if (last_parm->class == OC_VAR) {
-                                        if (!compare_types($3->type, last_parm->desc.var_attr.type))
+                                        if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
                                         {
                                           char error[1024];
                                           sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
@@ -1781,7 +1910,7 @@ plist_finvok            : ID O_BRACKET parm
                               if ($3 && $3->type && last_parm) {
                                 /* This should be an OC_VAR */
                                 if (last_parm->class == OC_VAR) {
-                                  if (!compare_types($3->type, last_parm->desc.var_attr.type))
+                                  if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
                                   {
                                     char error[1024];
                                     if ($1->name) {

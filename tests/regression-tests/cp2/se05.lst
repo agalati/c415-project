@@ -14,14 +14,14 @@ const LIMIT1 = 10;
 
 type Hues = (Red, Blue, Green, Orange, Violet);
    String1 = array [Violet..Orange] of char;    // invalid subrange
-##semantic:16: Identifiers cannot be used as subrange in arrays.
+##semantic:16: Invalid indices for array type - start of subrange greater than end.
    Class  = record
 	      Name  : char;
               Units : integer;
               Grade : char
 	    end;
    Grades = array [LIMIT2..LIMIT1] of Class;   // invalid subrange 
-##semantic:22: Identifiers cannot be used as subrange in arrays.
+##semantic:22: Invalid indices for array type - start of subrange greater than end.
 
 var High, Low, Counter : integer;
 

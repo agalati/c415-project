@@ -57,7 +57,7 @@ int checkIOArg(struct sym_rec* parm);
 
 int isSimpleType(struct sym_rec* type);
 int assignment_compatible(struct sym_rec* left, struct sym_rec* right);
-int compare_types(struct sym_rec* s, struct sym_rec* t);
+int compare_types(struct sym_rec* s, struct sym_rec* t, int check_coercion);
 
 void declare_const(char* name, struct expr_t*);
 void declare_type(char* name, struct sym_rec*);
