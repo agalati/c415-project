@@ -1,0 +1,29 @@
+#
+# Runtime Library
+#
+
+Required:
+
+    String Library
+        String comparison (= <> < > <= >=)
+        String copy
+        Array copy ???
+
+    Math Library
+        cos
+        sin
+        tan
+        ...
+
+    Scalar Operations Library:
+        succ()
+        pred()
+        ord()
+        chr()
+
+    Runtime Support Library:
+        Array bound checking (optional with '-a')
+        Attempts to read after EOF
+        Bounds of a ennumerated / subrange
+
+Completed:
