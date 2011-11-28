@@ -72,7 +72,11 @@ var                               DB_PRINTF("VAR "); return VAR;
 while                             DB_PRINTF("WHILE "); incrementWhileCounter(); return WHILE;
 
  /* Numbers and variables ---------- */
-(([0-9]+"."[0-9]+(e|E("-"|"+")?[0-9]+)?)|([0-9]+(e|E("-"|"+")?[0-9]+)))  DB_PRINTF("REAL "); return REAL_CONST;
+(([0-9]+"."[0-9]+(E("-"|"+")?[0-9]+)?)|([0-9]+(E("-"|"+")?[0-9]+)))  {
+                                                                           DB_PRINTF("REAL ");
+                                                                           sscanf(yytext, "%lf", &yylval.real_t);
+                                                                           return REAL_CONST;
+                                                                         }
 
 
 \'(\\(n|t|'|\\)|[^\\'])*\'			  {
