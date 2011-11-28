@@ -84,19 +84,27 @@ struct tc_subrange {
 /*
  * desc field declarations in sym_rec structure
  */
+
+struct location_t {
+  int display;
+  int offset;
+};
+
 struct const_desc {
-  struct sym_rec* type;
-//  
-//  union {            /* Another struct, depending on which class */
-//    int integer;
-//    double real;
-//    char* string;
-//  } value;
+  struct sym_rec*     type;
+  struct location_t*  location;
+  union {            /* Another struct, depending on which class */
+    int     integer;
+    int     boolean;
+    double  real;
+    char*   string;
+    char    character;
+  } value;
 };
 
 struct var_desc {
-  struct sym_rec*   type;
-  int               location;
+  struct sym_rec*     type;
+  struct location_t*  location;
 };
 
 struct func_desc {
@@ -184,5 +192,8 @@ struct sym_rec *addtype(char* name, struct type_desc* type);
 struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list);
 
 struct sym_rec *isCurrentFunction(char* name);
+
+struct sym_rec *get_type(struct sym_rec* s);
+int get_type_class(struct sym_rec* s);
 
 #endif

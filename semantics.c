@@ -2,11 +2,220 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "pal_gram.tab.h"
+
 #include "pal.h"
 #include "semantics.h"
 #include "symtab.h"
 
 int while_counter = 0;
+
+void do_op(struct expr_t* l, struct expr_t* r, int opcode, struct expr_t* result)
+{
+  switch(opcode)
+  {
+    case EQUALS:
+      result->value.boolean = compare_equality(l, r);
+      break;
+    case NOT_EQUAL:
+      result->value.boolean = compare_inequality(l, r);
+      break;
+    case LESS_THAN:
+      result->value.boolean = compare_lt(l, r);
+      break;
+    case GREATER_THAN:
+      result->value.boolean = compare_gt(l, r);
+      break;
+    case LESS_EQUAL:
+      result->value.boolean = compare_le(l, r);
+      break;
+    case GREATER_EQUAL:
+      result->value.boolean = compare_ge(l, r);
+      break;
+    default:
+      printf("Error: unrecognized opcode in do_op()\n");
+  }
+}
+
+int compare_ge(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer >= r->value.integer;
+      else
+        return l->value.integer >= r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real >= r->value.integer;
+      else
+        return l->value.real >= r->value.real;
+    case TC_CHAR:
+        return l->value.character >= r->value.character;
+      case TC_BOOLEAN:
+      return l->value.boolean >= r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) != -1)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer >= r->value.integer;
+    default:
+      printf("Error: compare_ge(), invalid type class\n");
+  }
+}
+
+int compare_le(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer <= r->value.integer;
+      else
+        return l->value.integer <= r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real <= r->value.integer;
+      else
+        return l->value.real <= r->value.real;
+    case TC_CHAR:
+      return l->value.character <= r->value.character;
+    case TC_BOOLEAN:
+      return l->value.boolean <= r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) != 1)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer <= r->value.integer;
+    default:
+      printf("Error: compare_le(), invalid type class\n");
+  }
+}
+
+int compare_lt(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer < r->value.integer;
+      else
+        return l->value.integer < r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real < r->value.integer;
+      else
+        return l->value.real < r->value.real;
+    case TC_CHAR:
+      return l->value.character < r->value.character;
+    case TC_BOOLEAN:
+      return l->value.boolean < r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) == -1)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer < r->value.integer;
+    default:
+      printf("Error: compare_lt(), invalid type class\n");
+  }
+}
+
+int compare_inequality(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer != r->value.integer;
+      else
+        return l->value.integer != r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real != r->value.integer;
+      else
+        return l->value.real != r->value.real;
+    case TC_CHAR:
+      return l->value.character != r->value.character;
+    case TC_BOOLEAN:
+      return l->value.boolean != r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) != 0)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer != r->value.integer;
+    default:
+      printf("Error: compare_inequality(), invalid type class\n");
+  }
+}
+
+int compare_equality(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer == r->value.integer;
+      else
+        return l->value.integer == r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real == r->value.integer;
+      else
+        return l->value.real == r->value.real;
+    case TC_CHAR:
+      return l->value.character == r->value.character;
+    case TC_BOOLEAN:
+      return l->value.boolean == r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) == 0)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer == r->value.integer;
+    default:
+      printf("Error: compare_equality(), invalid type class\n");
+  }
+}
+
+int compare_gt(struct expr_t* l, struct expr_t* r)
+{
+  switch(l->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.integer > r->value.integer;
+      else
+        return l->value.integer > r->value.real;
+    case TC_REAL:
+      if (r->type->desc.type_attr.type_class == TC_INTEGER)
+        return l->value.real > r->value.integer;
+      else
+        return l->value.real > r->value.real;
+    case TC_CHAR:
+      return l->value.character > r->value.character;
+    case TC_BOOLEAN:
+      return l->value.boolean > r->value.boolean;
+    case TC_STRING:
+      if (strcmp(l->value.string, r->value.string) == 1)
+        return 1;
+      else
+        return 0;
+    case TC_SCALAR:
+      return l->value.integer > r->value.integer;
+    default:
+      printf("Error: compare_equality(), invalid type class\n");
+  }
+}
 
 int isABSFunc(struct plist_t* p)
 {
@@ -226,13 +435,13 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
 }
 
 // s is the type being passed, t is the expected type
-int compare_types(struct sym_rec* s, struct sym_rec* t)
+int compare_types(struct sym_rec* s, struct sym_rec* t, int check_coercion)
 {
   if (!s || !t)
     return 0;
 
   // check if the first type can be coerced into the second type
-  if (s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
+  if (check_coercion && s->desc.type_attr.type_class == TC_INTEGER && t->desc.type_attr.type_class == TC_REAL)
       return 1;
 
   // allow coercion of chars to strings of length 1
@@ -269,15 +478,50 @@ int compare_types(struct sym_rec* s, struct sym_rec* t)
   }  
 }
 
-void declare_const(char* name, struct sym_rec* s)
+void declare_const(char* name, struct expr_t* s)
 {
+  struct sym_rec* c = NULL;
   if(locallookup(name) == NULL)
-    addconst(name, s);
+  {
+    if (s && s->type)
+      c = addconst(name, s->type);
+    else
+      c = addconst(name, NULL);
+  }
   else
   {
     char error[1024];
     sprintf(error, "Constant already declared: %s", name);
     semantic_error(error);
+  }
+
+  if (s && s->type && c)
+  {
+    switch(s->type->desc.type_attr.type_class)
+    {
+      case TC_INTEGER:
+        c->desc.const_attr.value.integer = s->value.integer;
+        printf("Setting value of '%s' to %d\n", name, s->value.integer);
+        break;
+      case TC_REAL:
+        c->desc.const_attr.value.real = s->value.real;
+        printf("Setting value of '%s' to %lf\n", name, s->value.real);
+        break;
+      case TC_CHAR:
+        c->desc.const_attr.value.character = s->value.character;
+        printf("Setting value of '%s' to %c\n", name, s->value.character);
+        break;
+      case TC_BOOLEAN:
+        c->desc.const_attr.value.boolean = s->value.boolean;
+        printf("Setting value of '%s' to %d\n", name, s->value.boolean);
+        break;
+      case TC_STRING:
+        c->desc.const_attr.value.string = strdup(s->value.string);
+        printf("Setting value of '%s' to %s\n", name, s->value.string);
+        break;
+      default:
+        printf("Invalid type class in declare_const()\n");
+    }
   }
 }
 

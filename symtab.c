@@ -55,10 +55,10 @@ struct sym_rec init_items[] = {
   [3] = { .name = "real", .level = -1, .class = OC_TYPE, .desc.type_attr.type_class = TC_REAL, .desc.type_attr.type_description.real = &base_real },
 
   /* Predefined Constants */
-  [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
-  [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
+  [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=1 },
+  [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=0 },
   [6] = { .name = "maxint", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
-  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
+  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.real=3.1415 },
   
   /* Predefined Procedures */
   [8] = { .name = "writeln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
@@ -688,4 +688,40 @@ struct sym_rec* isCurrentFunction(char* name)
   if (strcmp(func_name, name) == 0)
     return pf_list->func_entry;
   return NULL;
+}
+
+struct sym_rec *get_type(struct sym_rec* s)
+{
+  if (!s)
+    return NULL;
+
+  switch(s->class)
+  {
+    case OC_CONST:
+      return s->desc.const_attr.type;
+    case OC_VAR:
+      return s->desc.var_attr.type;
+    case OC_FUNC:
+      return s->desc.func_attr.return_type;
+    case OC_PROC:
+      return NULL;
+    case OC_PARM:
+      return s->desc.parm_attr.type;
+    case OC_TYPE:
+      return s;
+    case OC_ERROR:
+      return NULL;
+    case OC_RETURN:
+      return s->desc.var_attr.type;
+    default:
+      return NULL;
+  }
+}
+
+int get_type_class(struct sym_rec* s)
+{
+  struct sym_rec* type = get_type(s);
+  if (type)
+    return type->desc.type_attr.type_class;
+  return -1;
 }
