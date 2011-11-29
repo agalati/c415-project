@@ -937,12 +937,60 @@ subscripted_var         : var O_SBRACKET expr
                                 if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
                                 {
                                   if ($3 && $3->type)
+                                  {
                                     if ($3->type->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into array");
                                       semantic_error(error);
                                     }
+                                    else if ($3->is_const)
+                                    {
+                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
+                                      int lower = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
+                                      char error[1024];
+                                      switch($3->type->desc.type_attr.type_class)
+                                      {
+                                        case TC_INTEGER:
+                                        case TC_SCALAR:
+                                          if ($3->value.integer > upper || $3->value.integer < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_REAL:
+                                          printf("Subscripting an array with a real, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_CHAR:
+                                          if ($3->value.character > upper || $3->value.character < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_BOOLEAN:
+                                          if ($3->value.boolean > upper || $3->value.boolean < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_STRING:
+                                          printf("Subscripting an array with a string, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_ARRAY:
+                                          printf("Subscripting an array with an array, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_RECORD:
+                                          printf("Subscripting an array with a record, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_SUBRANGE:
+                                          printf("Subscripting an array with a subrange, this should be caught be the time we get here\n");
+                                          break;
+                                      }
+                                    }
+                                  }
                                   $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                                   $$->next = NULL;
                                   $$->name = NULL;
@@ -958,12 +1006,59 @@ subscripted_var         : var O_SBRACKET expr
                                 else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
                                 {
                                   if ($3 && $3->type)
+                                  {
                                     if ($3->type->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into string");
                                       semantic_error(error);
                                     }
+                                    else if ($3->is_const)
+                                    {
+                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.string->high;
+                                      char error[1024];
+                                      switch($3->type->desc.type_attr.type_class)
+                                      {
+                                        case TC_INTEGER:
+                                        case TC_SCALAR:
+                                          if ($3->value.integer > upper)
+                                          {
+                                            sprintf(error, "String index outside of string bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_REAL:
+                                          printf("Subscripting a string with a real, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_CHAR:
+                                          if ($3->value.character > upper)
+                                          {
+                                            sprintf(error, "String index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_BOOLEAN:
+                                          if ($3->value.boolean > upper)
+                                          {
+                                            sprintf(error, "String index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_STRING:
+                                          printf("Subscripting a string with a string, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_ARRAY:
+                                          printf("Subscripting a string with an array, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_RECORD:
+                                          printf("Subscripting a string with a record, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_SUBRANGE:
+                                          printf("Subscripting a string with a subrange, this should be caught be the time we get here\n");
+                                          break;
+                                      }
+                                    }
+                                  }
                                   $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                                   $$->next = NULL;
                                   $$->name = NULL;
@@ -998,12 +1093,60 @@ subscripted_var         : var O_SBRACKET expr
                                 if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
                                 {
                                   if ($3 && $3->type)
+                                  {
                                     if ($3->type->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into array");
                                       semantic_error(error);
                                     }
+                                    else if ($3->is_const)
+                                    {
+                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
+                                      int lower = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
+                                      char error[1024];
+                                      switch($3->type->desc.type_attr.type_class)
+                                      {
+                                        case TC_INTEGER:
+                                        case TC_SCALAR:
+                                          if ($3->value.integer > upper || $3->value.integer < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_REAL:
+                                          printf("Subscripting an array with a real, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_CHAR:
+                                          if ($3->value.character > upper || $3->value.character < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_BOOLEAN:
+                                          if ($3->value.boolean > upper || $3->value.boolean < lower)
+                                          {
+                                            sprintf(error, "Array index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_STRING:
+                                          printf("Subscripting an array with a string, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_ARRAY:
+                                          printf("Subscripting an array with an array, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_RECORD:
+                                          printf("Subscripting an array with a record, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_SUBRANGE:
+                                          printf("Subscripting an array with a subrange, this should be caught be the time we get here\n");
+                                          break;
+                                      }
+                                    }
+                                  }
                                   $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                                   $$->next = NULL;
                                   $$->name = NULL;
@@ -1019,12 +1162,59 @@ subscripted_var         : var O_SBRACKET expr
                                 else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
                                 {
                                   if ($3 && $3->type)
+                                  {
                                     if ($3->type->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into string");
                                       semantic_error(error);
                                     }
+                                    else if ($3->is_const)
+                                    {
+                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.string->high;
+                                      char error[1024];
+                                      switch($3->type->desc.type_attr.type_class)
+                                      {
+                                        case TC_INTEGER:
+                                        case TC_SCALAR:
+                                          if ($3->value.integer > upper)
+                                          {
+                                            sprintf(error, "String index outside of string bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_REAL:
+                                          printf("Subscripting a string with a real, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_CHAR:
+                                          if ($3->value.character > upper)
+                                          {
+                                            sprintf(error, "String index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_BOOLEAN:
+                                          if ($3->value.boolean > upper)
+                                          {
+                                            sprintf(error, "String index outside of array bounds");
+                                            semantic_error(error);
+                                          }
+                                          break;
+                                        case TC_STRING:
+                                          printf("Subscripting a string with a string, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_ARRAY:
+                                          printf("Subscripting a string with an array, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_RECORD:
+                                          printf("Subscripting a string with a record, this should be caught be the time we get here\n");
+                                          break;
+                                        case TC_SUBRANGE:
+                                          printf("Subscripting a string with a subrange, this should be caught be the time we get here\n");
+                                          break;
+                                      }
+                                    }
+                                  }
                                   $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                                   $$->next = NULL;
                                   $$->name = NULL;

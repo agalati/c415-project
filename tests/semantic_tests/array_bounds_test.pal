@@ -1,0 +1,19 @@
+program main(input, output);
+var
+  a : array [3..7] of boolean;
+  b : array [boolean] of char;
+  c : array [char] of integer;
+begin
+  a[1] := false;
+  a[3] := true;
+  a[7] := true;
+  a[8] := false;
+
+  b[1] := 13;
+  b[true] := 'a';
+  b[false] := 'b';
+
+  c[256] := ord('c');
+  c['a'] := ord('a');
+  c['z'] := ord('M');
+end.
