@@ -26,6 +26,7 @@ off_t* line_offsets;
 unsigned int num_lines;
 
 int do_listing;
+int leave_asc;
 
 struct error_msgs;
 struct error_msgs
@@ -41,6 +42,7 @@ int yylex (void);
 void semantic_error(char const*);
 void lexerror(char const*);
 void unterminated_string(void);
+void illegal_string(void);
 void yyerror (char const *);
 
 int ID_or_reserved(char const*);
@@ -61,6 +63,10 @@ char* pop_err_from_buf(void);
 char* pretty_error(const char*);
 void replace_substr(char* pretty, const char* substr, const char* replacement);
 
-void emit(char* output);
+void emit(char* output, int a, int b);
+void cleanasc( char* filename);
+
+/* String Chomp */
+int schomp(char *s);
 
 #endif

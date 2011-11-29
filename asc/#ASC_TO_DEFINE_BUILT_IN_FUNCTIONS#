@@ -1,0 +1,34 @@
+#
+# Runtime Library
+#
+
+We'll have to give the labels wild names so they don't
+clash with user defined functions and procedures.
+
+Required:
+
+    String Library
+        String comparison (= <> < > <= >=)
+        String copy
+        Array copy ???
+
+    Math Library
+        cos
+        sin
+        tan
+        ...
+
+    Scalar Operations Library:
+        succ()
+        pred()
+        ord()
+        chr()
+
+    Runtime Support Library:
+        Array bound checking (optional with '-a')
+        Attempts to read after EOF
+        Bounds of a ennumerated / subrange
+
+Completed:
+        (Still needs testing)
+        String copy

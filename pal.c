@@ -24,6 +24,7 @@ main (  int     argc,
 {
   err_buf = NULL;
   s_emit = 0;
+  leave_asc = 1;		// for testing always leave asc file, set flag to false for release
   parse_args(argc, argv);
   sym_tab_init();
   
@@ -35,7 +36,7 @@ main (  int     argc,
   namein[strlen(namein)-3] = '\0';
   nameout = (char*) malloc( sizeof(namein) + sizeof("asc"));
   nameout = strcat(namein, "asc");
-  out_file = fopen(nameout, "a+");
+  out_file = fopen(nameout, "w");
   
   int ret =  yyparse ();
   //printsym();
@@ -45,6 +46,9 @@ main (  int     argc,
   fclose(out_file);
   if (do_listing)
     fclose(lst_file);
+				// pipe to asc interpreter before removing
+ if(!leave_asc)
+	cleanasc(nameout);
   return ret;
 }
 
@@ -96,6 +100,22 @@ unterminated_string(void)
 }
 
 void
+illegal_string(void)
+{
+  char* linebuf = get_prog_line(yylloc.first_line);
+  fprintf(stderr, "%s", linebuf);
+  free(linebuf);
+
+  fprintf(stderr, "Illegal string on line %d\n\n", yylloc.first_line);
+  if (do_listing)
+  {
+    char* err = (char*)malloc(1024*sizeof(char));
+    sprintf(err, "##lexer:%d: Illegal string.\n", yylloc.first_line);
+    add_err_to_buf(err);
+  }
+}
+
+void
 yyerror (char const *s)
 {
   char* linebuf = get_prog_line(yylloc.first_line);
@@ -135,7 +155,7 @@ void parse_args(int argc, char** argv)
   {
     arg = argv[narg];
     if (strcmp(arg, "-S") == 0)
-      printf("-S option not implemented yet, ignoring...\n");
+		leave_asc = 1;
     else if (strcmp(arg, "-a") == 0)
       printf("-a option not implemented yet, ignoring...\n");
     else if (strcmp(arg, "-n") == 0)
@@ -401,10 +421,92 @@ void replace_substr(char* pretty, const char* substr, const char* replacement)
   }
 }
 
-void emit(char* output)
+void emit(char* output, int a, int b)
 {
+	
 	if(!s_emit)							// check for error flag set
 	{
-		fprintf(out_file, "\t %s \n ", output);
+		 if (strcmp(output, "addi") == 0)
+		 {
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t ADDI \n ");
+		}
+			
+		else if(strcmp(output, "addr") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t ADDR \n ");
+		}
+		
+		else if(strcmp(output, "subi") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t SUBI \n ");
+		}
+		
+		else if(strcmp(output, "subr") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t SUBR \n ");
+		}
+		
+		else if(strcmp(output, "muli") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t MULI \n ");
+		}
+		
+		else if(strcmp(output, "mulr") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t MULR \n ");
+		}
+		
+		else if(strcmp(output, "divi") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t DIVI \n ");
+		}
+		
+		else if(strcmp(output, "divr") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t DIVR \n ");
+		}
+		
+		else if(strcmp(output, "mod") == 0)
+		{
+			fprintf(out_file, "\t CONSTI %d \n ", a);	
+			fprintf(out_file, "\t CONSTI %d \n ", b);
+			fprintf(out_file, "\t MOD \n ");
+		}
+		
+		else if(strcmp(output, "itor") == 0)
+		{
+			fprintf(out_file, "\t ITOR \n ");
+		}
+		
+		else if(strcmp(output, "rtoi") == 0)
+		{
+			fprintf(out_file, "\t RTOI \n ");
+		}
+		
+		else
+			fprintf(out_file, "\t %s \n ", output);
+		
 	}
+}
+
+void cleanasc( char* filename)
+{
+	if( remove( filename ) != 0 )
+		printf( "Error cleaning asc file %s", filename );
 }

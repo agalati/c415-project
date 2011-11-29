@@ -44,7 +44,8 @@ struct tc_boolean   base_boolean;
 //  struct tc_record    record;
 //  struct tc_subrange  subrange;
 
-#define INIT_ITEMS 25
+/* The built in params aren't included here */
+#define INIT_ITEMS 27
 
 struct sym_rec init_items[] = {
   /* Predefined Types */
@@ -54,29 +55,50 @@ struct sym_rec init_items[] = {
   [3] = { .name = "real", .level = -1, .class = OC_TYPE, .desc.type_attr.type_class = TC_REAL, .desc.type_attr.type_description.real = &base_real },
 
   /* Predefined Constants */
-  [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
-  [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
+  [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=1 },
+  [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=0 },
   [6] = { .name = "maxint", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
-  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
+  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.real=3.1415 },
   
   /* Predefined Procedures */
   [8] = { .name = "writeln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
   [9] = { .name = "write", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
   [10] = { .name = "readln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
   [11] = { .name = "read", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [12] = { .name = "ord", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [13] = { .name = "chr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [14] = { .name = "trunc", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [15] = { .name = "round", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [16] = { .name = "succ", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [17] = { .name = "pred", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [18] = { .name = "odd", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [19] = { .name = "abs", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [20] = { .name = "sqr", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [21] = { .name = "sqrt", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [22] = { .name = "sin", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [23] = { .name = "exp", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
-  [24] = { .name = "ln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
+  [12] = { .name = "ord", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [13] = { .name = "chr", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [14] = { .name = "trunc", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [15] = { .name = "round", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [16] = { .name = "succ", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [17] = { .name = "pred", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [18] = { .name = "odd", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [19] = { .name = "abs", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [20] = { .name = "sqr", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [21] = { .name = "sqrt", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [22] = { .name = "sin", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [23] = { .name = "exp", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [24] = { .name = "ln", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [25] = { .name = "cos", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [26] = { .name = "arctan", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+
+  /* Param lists for the above functions */
+  [27] = { .name = "ord_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [28] = { .name = "chr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [29] = { .name = "trunc_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [30] = { .name = "round_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [31] = { .name = "succ_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [32] = { .name = "pred_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [33] = { .name = "odd_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+
+  [34] = { .name = "abs_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [35] = { .name = "sqr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [36] = { .name = "sqrt_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [37] = { .name = "sin_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [38] = { .name = "exp_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [39] = { .name = "ln_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [40] = { .name = "cos_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [41] = { .name = "arctan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  
 };
 
 /*****************************************
@@ -236,10 +258,54 @@ void sym_tab_init()
     sym_tab[i] = NULL;
   }
 
+  /* Constant types hooked up here */
   init_items[4].desc.const_attr.type = &init_items[2];
   init_items[5].desc.const_attr.type = &init_items[2];
   init_items[6].desc.const_attr.type = &init_items[0];
   init_items[7].desc.const_attr.type = &init_items[3];
+
+  /* Built in function parameters hooked up here */
+  /* Read and write functions will stay NULL and be special cases */
+  for (i = 12; i < INIT_ITEMS; i++) {
+    init_items[INIT_ITEMS - 12 + i].next = NULL;
+    init_items[i].desc.func_attr.parms = &init_items[INIT_ITEMS - 12 + i];
+  }
+
+  /* Set function return types */
+  
+  init_items[12].desc.func_attr.return_type = &init_items[0];
+  init_items[13].desc.func_attr.return_type = &init_items[1];
+  init_items[14].desc.func_attr.return_type = &init_items[0];
+  init_items[15].desc.func_attr.return_type = &init_items[0];
+
+  /* Hard code this somewhere succ(), pred() */
+  //init_items[16].desc.func_attr.return_type = &init_items[0];
+
+  init_items[18].desc.func_attr.return_type = &init_items[2];
+
+  /* Special logic required for table at "http://pascal-central.com/iso7185.html#6.6.6.2%20Arithmetic%20functions"*/
+  //init_items[19].desc.func_attr.return_type = &init_items[0];
+
+  init_items[21].desc.func_attr.return_type = &init_items[3];
+  init_items[22].desc.func_attr.return_type = &init_items[3];
+  init_items[23].desc.func_attr.return_type = &init_items[3];
+  init_items[24].desc.func_attr.return_type = &init_items[3];
+  init_items[25].desc.func_attr.return_type = &init_items[3];
+  init_items[26].desc.func_attr.return_type = &init_items[3];
+  
+  /* Set types for params */
+  /* Hardcode succ(), pred(), ord() and the special logic at URL above */
+  init_items[28].desc.var_attr.type = &init_items[0];
+  init_items[29].desc.var_attr.type = &init_items[3];
+  init_items[30].desc.var_attr.type = &init_items[3];
+  init_items[33].desc.var_attr.type = &init_items[0];
+  init_items[36].desc.var_attr.type = &init_items[3];
+  init_items[37].desc.var_attr.type = &init_items[3];
+  init_items[38].desc.var_attr.type = &init_items[3];
+  init_items[39].desc.var_attr.type = &init_items[3];
+  init_items[40].desc.var_attr.type = &init_items[3];
+  init_items[41].desc.var_attr.type = &init_items[3];
+  
   
   /* Fill table with initial items */
   for (sym_tab[0] = &init_items[0], i = 1; i < INIT_ITEMS; i++) {
@@ -455,7 +521,7 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s = (struct sym_rec*)malloc(sizeof(struct sym_rec));
   s->name = strdup(name);
   s->level = current_level;
-  s->class = OC_VAR;
+  s->class = OC_RETURN;
   s->desc.var_attr.type = return_type;
 
   s->next = sym_tab[current_level+1];
@@ -541,6 +607,45 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
     /* Add to next level of symbol table */
     s->next = sym_tab[current_level + 1];
     sym_tab[current_level + 1] = s;
+
+    // Add parameter types to the next level to prevent redefinition
+    s = malloc(sizeof(struct sym_rec));
+    s->name = strdup(type->name);
+    s->level = current_level;
+    s->class = OC_TYPE;
+    s->desc.type_attr.type_class = type->desc.type_attr.type_class;
+    switch(s->desc.type_attr.type_class)
+    {
+      case TC_INTEGER:
+        s->desc.type_attr.type_description.integer = type->desc.type_attr.type_description.integer;
+        break;
+      case TC_REAL:
+        s->desc.type_attr.type_description.real = type->desc.type_attr.type_description.real;
+        break;
+      case TC_CHAR:
+        s->desc.type_attr.type_description.character = type->desc.type_attr.type_description.character;
+        break;
+      case TC_BOOLEAN:
+        s->desc.type_attr.type_description.boolean = type->desc.type_attr.type_description.boolean;
+        break;
+      case TC_STRING:
+        s->desc.type_attr.type_description.string = type->desc.type_attr.type_description.string;
+        break;
+      case TC_ARRAY:
+        s->desc.type_attr.type_description.array = type->desc.type_attr.type_description.array;
+        break;
+      case TC_RECORD:
+        s->desc.type_attr.type_description.record = type->desc.type_attr.type_description.record;
+        break;
+      case TC_SUBRANGE:
+        s->desc.type_attr.type_description.subrange = type->desc.type_attr.type_description.subrange;
+        break;
+      case TC_SCALAR:
+        s->desc.type_attr.type_description.scalar = type->desc.type_attr.type_description.scalar;
+        break;
+    }
+    s->next = sym_tab[current_level + 1];
+    sym_tab[current_level + 1] = s;
   }
 
   /* Adds a copy to the current parameter list (var_attr.location should be the same) */
@@ -583,4 +688,40 @@ struct sym_rec* isCurrentFunction(char* name)
   if (strcmp(func_name, name) == 0)
     return pf_list->func_entry;
   return NULL;
+}
+
+struct sym_rec *get_type(struct sym_rec* s)
+{
+  if (!s)
+    return NULL;
+
+  switch(s->class)
+  {
+    case OC_CONST:
+      return s->desc.const_attr.type;
+    case OC_VAR:
+      return s->desc.var_attr.type;
+    case OC_FUNC:
+      return s->desc.func_attr.return_type;
+    case OC_PROC:
+      return NULL;
+    case OC_PARM:
+      return s->desc.parm_attr.type;
+    case OC_TYPE:
+      return s;
+    case OC_ERROR:
+      return NULL;
+    case OC_RETURN:
+      return s->desc.var_attr.type;
+    default:
+      return NULL;
+  }
+}
+
+int get_type_class(struct sym_rec* s)
+{
+  struct sym_rec* type = get_type(s);
+  if (type)
+    return type->desc.type_attr.type_class;
+  return -1;
 }

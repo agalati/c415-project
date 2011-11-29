@@ -1,0 +1,16 @@
+program main(input, output);
+type
+  colours = (blue, green, yellow);
+
+var
+  colour : colours;
+  days : (mon, tue, wed);
+  fail : (blue, green, purple);
+##semantic:8: 'blue' has already been declared in this scope.
+##semantic:8: 'green' has already been declared in this scope.
+
+begin
+  colour := pred(yellow);
+  colour := pred(wed);
+##semantic:12: assignment type is incompatible
+end.

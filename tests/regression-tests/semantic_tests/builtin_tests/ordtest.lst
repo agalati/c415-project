@@ -1,0 +1,13 @@
+program main(input, output);
+type
+  colours = (blue, green, yellow);
+var
+  colour : colours;
+begin
+  ord('c');
+  ord(blue);
+  ord(1);
+  ord(blue, false);
+##semantic:10: Wrong number of parameters given to 'ord'.
+  ord(true);
+end.

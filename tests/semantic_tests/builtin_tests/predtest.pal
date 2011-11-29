@@ -1,0 +1,13 @@
+program main(input, output);
+type
+  colours = (blue, green, yellow);
+
+var
+  colour : colours;
+  days : (mon, tue, wed);
+  fail : (blue, green, purple);
+
+begin
+  colour := pred(yellow);
+  colour := pred(wed);
+end.

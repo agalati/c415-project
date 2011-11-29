@@ -1,0 +1,51 @@
+// Once a type is in scope, it can't be redefined
+// Errors on line 15, 19, 25, 30, 33, might cascade to 40-44
+
+program Test(input, output);
+
+procedure a(b : integer);
+var c : integer;
+begin end;
+
+procedure b();
+var integer : char;
+begin end;
+
+procedure c(b : integer);
+var integer : char; //ERROR, already in use in this scope
+##semantic:15: Variable 'integer' already declared.
+begin end;
+
+procedure d();
+var integer : integer; //ERROR, already in use in this scope
+##semantic:19: Variable 'integer' already declared.
+begin end;
+
+procedure e();
+type
+	int = integer;
+	integer = char;//ERROR, already in use in this scope
+##semantic:25: Type 'integer' already declared at this scope.
+begin end;
+
+procedure f();
+type int = integer;
+var integer : int; //ERROR, already in use in this scope
+##semantic:30: Variable 'integer' already declared.
+begin end;
+
+procedure g(integer : integer); //ERROR, already in use in this scope
+##semantic:33: 'integer' is already in use at this scope.
+begin end;
+
+
+begin
+	a(1);
+	b();
+	c(1);
+	d();
+	e();
+	f();
+	g(1);
+end.
+

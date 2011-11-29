@@ -1,0 +1,80 @@
+//check stringish types
+//Errors on lines 38, 39, 43, 45
+//Might be errors on lines 48 - 55
+//Errors on lines 59, 60, 64, 66
+
+
+program foo(input,output);
+
+const
+	vs = '1234567890';
+	vc = '1234567890';
+	va = '1234567890';
+	vi = '1234567890';
+
+type
+	str = array[1..10] of char;
+	chr = array[0..9] of char;
+	arr = array[1..10] of array[1..1] of char;
+	int = array[1..10] of integer;
+
+var
+	s1,s2,s3,s4:    str;
+	c1,c2,c3,c4,c5: chr;
+	a1,a2,a3,a4,a5: arr;
+	i1,i2,i3,i4,i5: int;
+
+begin
+
+	s1 := vs;
+	s2 := '1234567890';
+	s3[1] := '1';
+	s3[10] := '0';
+	s4 := s3;
+
+	write(s4);
+
+
+	c1 := vc; //ERROR, wrong type
+##semantic:38: assignment type is incompatible
+	c2 := '1234567890'; //ERROR, wrong type
+##semantic:39: assignment type is incompatible
+	c3[0] := '0';
+	c3[9] := '9';
+	c4 := c3;
+	c5 := s1; //ERROR, wrong type
+##semantic:43: assignment type is incompatible
+
+	write(c4); //ERROR, not a string
+##semantic:45: Argmument 1 of 'write' must be of type integer, real, char, or string
+
+
+	a1 := va; //ERROR, wrong type
+##semantic:48: assignment type is incompatible
+	a2 := '1234567890'; //ERROR, wrong type
+##semantic:49: assignment type is incompatible
+	a3[1] := '1';
+	a3[2][1] := '2';
+	a3[10] := '0';
+	a4 := a3;
+	a5 := s2; //ERROR, wrong type
+##semantic:54: assignment type is incompatible
+
+	write(a4); //ERROR, not a string
+##semantic:56: Argmument 1 of 'write' must be of type integer, real, char, or string
+
+
+	i1 := vi; //ERROR, wrong type
+##semantic:59: assignment type is incompatible
+	i2 := '1234567890'; //ERROR, wrong type
+##semantic:60: assignment type is incompatible
+	i3[1] := 1;
+	i3[10] := 0;
+	i4 := i3;
+	i5 := s3; //ERROR, wrong type
+##semantic:64: assignment type is incompatible
+
+	write(i4); //ERROR, not a string
+##semantic:66: Argmument 1 of 'write' must be of type integer, real, char, or string
+end.
+

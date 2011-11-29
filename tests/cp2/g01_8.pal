@@ -26,7 +26,7 @@ var letter, letter2 : char;
 function writeln(false:mine):integer; 
 begin
     if false = D then
-        writeln := 'b'
+        writeln := 'd';
         writeln := writeln; // ERROR #2 Return on rhs
 end;
 
