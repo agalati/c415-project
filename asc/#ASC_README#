@@ -5,6 +5,11 @@
 We'll have to give the labels names that don't
 clash with user defined functions and procedures.
 
+---we can just append any user function name 
+with a tag
+	e.g. myfunc()
+			label myfunc_userdefined
+
 Required:
 
     String Library

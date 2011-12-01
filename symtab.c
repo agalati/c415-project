@@ -58,7 +58,7 @@ struct sym_rec init_items[] = {
   [4] = { .name = "true", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=1 },
   [5] = { .name = "false", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.boolean=0 },
   [6] = { .name = "maxint", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL },
-  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.real=3.1415 },
+  [7] = { .name = "pi", .level = -1, .class = OC_CONST, .desc.const_attr.type = NULL, .desc.const_attr.value.real= 3.141592653589793238462643383279 },
   
   /* Predefined Procedures */
   [8] = { .name = "writeln", .level = -1, .class = OC_PROC, .desc.proc_attr.parms = NULL },
@@ -79,25 +79,27 @@ struct sym_rec init_items[] = {
   [23] = { .name = "exp", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
   [24] = { .name = "ln", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
   [25] = { .name = "cos", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
-  [26] = { .name = "arctan", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [26] = { .name = "tan", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
+  [27] = { .name = "arctan", .level = -1, .class = OC_FUNC, .desc.proc_attr.parms = NULL },
 
   /* Param lists for the above functions */
-  [27] = { .name = "ord_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [28] = { .name = "chr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [29] = { .name = "trunc_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [30] = { .name = "round_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [31] = { .name = "succ_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [32] = { .name = "pred_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [33] = { .name = "odd_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [28] = { .name = "ord_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [29] = { .name = "chr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [30] = { .name = "trunc_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [31] = { .name = "round_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [32] = { .name = "succ_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [33] = { .name = "pred_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [34] = { .name = "odd_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
 
-  [34] = { .name = "abs_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [35] = { .name = "sqr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [36] = { .name = "sqrt_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [37] = { .name = "sin_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [38] = { .name = "exp_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [39] = { .name = "ln_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [40] = { .name = "cos_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [41] = { .name = "arctan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [35] = { .name = "abs_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [36] = { .name = "sqr_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [37] = { .name = "sqrt_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [38] = { .name = "sin_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [39] = { .name = "exp_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [40] = { .name = "ln_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [41] = { .name = "cos_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [42] = { .name = "arctan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [43] = { .name = "tan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
   
 };
 
