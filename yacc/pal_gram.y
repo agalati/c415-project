@@ -93,7 +93,7 @@ struct temp_array_var* temp_array_vars = NULL;
 
 %% /* Start of grammer */
 
-program                 : program_head decls compound_stat PERIOD	
+program                 : program_head decls compound_stat PERIOD	 { emit_stop(); }
                         | error
                         ;
 
@@ -574,7 +574,7 @@ field                   : ID COLON type
                           }
                         ;
 
-var_decl_part           : VAR var_decl_list S_COLON { adjust_stack(); }
+var_decl_part           : VAR var_decl_list S_COLON { adjust_stack(SCOPE_BEGIN); }
                         |
                         ;
 

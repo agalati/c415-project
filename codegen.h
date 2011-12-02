@@ -16,6 +16,9 @@
 #include "semantics.h"
 #include "symtab.h"
 
+#define SCOPE_BEGIN 1
+#define SCOPE_END   0
+
 FILE* asc_file;
 
 void stop_codegen(void);
@@ -40,7 +43,9 @@ void emit_push(int display, int offset);
 void emit_pushi(int display);
 void emit_pusha(int display, int offset);
 
-void adjust_stack(void);
+void emit_stop(void);
+
+void adjust_stack(int scope_action);
 
 void emit(char* output, int a, int b);
 

@@ -117,7 +117,7 @@ void emit_rconst(float val)
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tCONSTR %d\n", val);
+  fprintf(asc_file, "\tCONSTR %f\n", val);
 }
 
 void emit_addi(void)
@@ -160,10 +160,23 @@ void emit_pusha(int display, int offset)
   fprintf(asc_file, "\tPUSHA %d[%d]\n", offset, display);
 }
 
-void adjust_stack(void)
+void emit_stop(void)
 {
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tADJUST %d\n", get_current_offset());
+  fprintf(asc_file, "\tSTOP\n");
+}
+
+void adjust_stack(int scope_action)
+{
+  if (!do_codegen)
+    return;
+
+  if (scope_action == SCOPE_BEGIN)
+    fprintf(asc_file, "\tADJUST %d\n", get_current_offset());
+  else if (scope_action == SCOPE_END)
+    fprintf(asc_file, "\tADJUST %d\n", -get_current_offset());
+  else
+    printf("adjust_stack: Invalid scope_action\n");
 }
