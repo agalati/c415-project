@@ -15,9 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codegen.h"
+#include "pal.h"
 #include "semantics.h"
 #include "symtab.h"
-#include "pal.h"
 
 struct sym_rec* prev_fields;
 
@@ -573,7 +574,7 @@ field                   : ID COLON type
                           }
                         ;
 
-var_decl_part           : VAR var_decl_list S_COLON
+var_decl_part           : VAR var_decl_list S_COLON { adjust_stack(); }
                         |
                         ;
 
@@ -798,10 +799,12 @@ simple_stat             : var ASSIGNMENT expr
                                  semantic_error(error);
                               } else if ($1->class == OC_VAR || $1->class == OC_RETURN) {
                                 if (assignment_compatible($1->desc.var_attr.type, $3->type) == 0) {
-                                   char error[1024];
-                                   sprintf(error, "assignment type is incompatible", $1);
-                                   semantic_error(error);
-                                   }
+                                  char error[1024];
+                                  sprintf(error, "assignment type is incompatible", $1);
+                                  semantic_error(error);
+                                } else {
+                                  emit_assignment($1, $3);
+                                }
                               } else {
                                  char error[1024];
                                  if ($1->name) {
@@ -1445,7 +1448,10 @@ simple_expr             : term { $$ = $1; }
                                     $$->value.integer = ($1->value.integer) + ($3->value.integer);
                                 }
                                 else
+                                {
                                   $$->is_const = 0;
+                                  emit_addition($1, $3);
+                                }
                                 $$->location = NULL;
                               }
                             }
@@ -1738,12 +1744,12 @@ factor                  : var
                                   break;
                                 case OC_VAR:
                                   $$->type = $1->desc.var_attr.type;
-                                  $$->location = $1->desc.var_attr.location;
+                                  $$->location = &($1->desc.var_attr.location);
                                   $$->is_const = 0;
                                   break;
                                 case OC_CONST:
                                   $$->type = $1->desc.const_attr.type;
-                                  $$->location = $1->desc.const_attr.location;
+                                  $$->location = &($1->desc.const_attr.location);
                                   $$->is_const = 1;
                                   switch(get_type_class($1))
                                   {

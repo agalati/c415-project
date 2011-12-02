@@ -17,7 +17,7 @@ GRAMMAR = yacc/pal_gram.y
 GRAMMAR_C = pal_gram.tab.c
 LEXICAL = lex/pal.l
 LEXICAL_C = lex.yy.c
-SOURCES = pal.c symtab.c semantics.c schomp.c
+SOURCES = pal.c symtab.c semantics.c schomp.c codegen.c
 
 all: pal
 

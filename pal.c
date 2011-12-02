@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codegen.h"
 #include "pal.h"
 #include "pal_gram.tab.h"
 #include "symtab.h"
@@ -23,32 +24,27 @@ main (  int     argc,
         char**  argv)
 {
   err_buf = NULL;
-  s_emit = 0;
-  leave_asc = 1;		// for testing always leave asc file, set flag to false for release
+  leave_asc = 0;
+
   parse_args(argc, argv);
   sym_tab_init();
   
-  char* namein;
-  char* nameout;
-  
-  namein = (char*) malloc( sizeof(argv[argc-1]));
-  namein = argv[argc-1];
-  namein[strlen(namein)-3] = '\0';
-  nameout = (char*) malloc( sizeof(namein) + sizeof("asc"));
-  nameout = strcat(namein, "asc");
-  out_file = fopen(nameout, "w");
+  char* ascname = get_new_file_ext(argv[argc-1], ".asc");
+  asc_file = fopen(ascname, "w");
   
   int ret =  yyparse ();
   //printsym();
   new_position_line();
   fclose(stdin);
   fclose(prog_file);
-  fclose(out_file);
+  fclose(asc_file);
   if (do_listing)
     fclose(lst_file);
-				// pipe to asc interpreter before removing
- if(!leave_asc)
-	cleanasc(nameout);
+  // pipe to asc interpreter before removing
+  if(!leave_asc)
+	  cleanasc(ascname);
+  free(ascname);
+
   return ret;
 }
 
@@ -169,21 +165,7 @@ void parse_args(int argc, char** argv)
 
   if (do_listing)
   {
-    // find the last . in the filename, remove the extension, and append .lst to it
-    const char* ext = strrchr(argv[argc-1], '.');
-    unsigned long stripped_length = (unsigned long)ext - (unsigned long)argv[argc-1];
-    char* temp = (char*)malloc((stripped_length+4+1)*sizeof(char));
-    strncpy(temp, argv[argc-1], stripped_length);
-    temp[stripped_length] = '\0';
-    strcat(temp, ".lst");
-
-    char* token  = strtok(temp, "/");
-    char* lst_filename = token;
-    while (token != NULL)
-    {
-      lst_filename = token;
-      token = strtok(NULL, "/");
-    }
+    char* lst_filename = get_new_file_ext(argv[argc-1], ".lst");
 
     lst_file = fopen(lst_filename, "w");
     if (!lst_file)
@@ -192,7 +174,7 @@ void parse_args(int argc, char** argv)
       exit(-3);
     }
 
-    free(temp);
+    free(lst_filename);
   }
 }
 
@@ -421,91 +403,32 @@ void replace_substr(char* pretty, const char* substr, const char* replacement)
   }
 }
 
-void emit(char* output, int a, int b)
+char* get_new_file_ext(char* filename, const char* new_ext)
 {
-	
-	if(!s_emit)							// check for error flag set
-	{
-		 if (strcmp(output, "addi") == 0)
-		 {
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t ADDI \n ");
-		}
-			
-		else if(strcmp(output, "addr") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t ADDR \n ");
-		}
-		
-		else if(strcmp(output, "subi") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t SUBI \n ");
-		}
-		
-		else if(strcmp(output, "subr") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t SUBR \n ");
-		}
-		
-		else if(strcmp(output, "muli") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t MULI \n ");
-		}
-		
-		else if(strcmp(output, "mulr") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t MULR \n ");
-		}
-		
-		else if(strcmp(output, "divi") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t DIVI \n ");
-		}
-		
-		else if(strcmp(output, "divr") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t DIVR \n ");
-		}
-		
-		else if(strcmp(output, "mod") == 0)
-		{
-			fprintf(out_file, "\t CONSTI %d \n ", a);	
-			fprintf(out_file, "\t CONSTI %d \n ", b);
-			fprintf(out_file, "\t MOD \n ");
-		}
-		
-		else if(strcmp(output, "itor") == 0)
-		{
-			fprintf(out_file, "\t ITOR \n ");
-		}
-		
-		else if(strcmp(output, "rtoi") == 0)
-		{
-			fprintf(out_file, "\t RTOI \n ");
-		}
-		
-		else
-			fprintf(out_file, "\t %s \n ", output);
-		
-	}
+  // find the last . in the filename, remove the extension, and append .lst to it
+  const char* ext = strrchr(filename, '.');
+  unsigned long stripped_length = (unsigned long)ext - (unsigned long)filename;
+  char* temp = (char*)malloc((stripped_length+strlen(new_ext)+1)*sizeof(char));
+  strncpy(temp, filename, stripped_length);
+  temp[stripped_length] = '\0';
+  strcat(temp, new_ext);
+
+  char* token  = strtok(temp, "/");
+  char* new_filename = token;
+  while (token != NULL)
+  {
+    new_filename = token;
+    token = strtok(NULL, "/");
+  }
+
+  char* ret = (char*)malloc((1+strlen(new_filename))*sizeof(char));
+  strcpy(ret, new_filename);
+
+  free(temp);
+  return ret;
 }
 
-void cleanasc( char* filename)
+void cleanasc(char* filename)
 {
 	if( remove( filename ) != 0 )
 		printf( "Error cleaning asc file %s", filename );

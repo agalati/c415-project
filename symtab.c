@@ -20,6 +20,9 @@
 /* Real level + 1 = current_level (so this value is initialized for level 0) */
 int current_level = 1;
 
+/* Variable offsets into the current display register */
+int current_offset = 0;
+
 /* The symbol table : levels -1 through 15 are available and map to [n+1] */
 struct sym_rec *sym_tab[MAX_LEVEL + 1];
 
@@ -337,6 +340,9 @@ void pushlevel(struct sym_rec* func_rec)
   new_node->next = pf_list;
   new_node->func_entry = func_rec;
   pf_list = new_node;
+
+  // reset variable offset counter
+  current_offset = 0;
 }
 
 /*****************************************
@@ -446,24 +452,9 @@ struct sym_rec *addconst(char* name, struct sym_rec* type)
   s->class = OC_CONST;
   s->desc.const_attr.type = type;
 
-  /* Constants currently don't have a value */
-  /*
-  switch (type->type_class)
-    {
-    case TC_INTEGER :
-      s->desc.const_attr.value.integer = integer;
-      break;
-    case TC_REAL :
-      s->desc.const_attr.value.real = real;
-      break;
-    case TC_STRING :
-      s->desc.const_attr.value.string = strdup(string);
-      break;
-    default :
-      fprintf(stderr, "Error: constant type failed in addconst()\n");
-      exit(EXIT_FAILURE);
-    }
-  */
+  // set the constant's location
+  s->desc.const_attr.location.display = current_level-1;
+  s->desc.const_attr.location.offset = current_offset++;
   
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
@@ -485,6 +476,10 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->level = current_level - 1;
   s->class = OC_VAR;
   s->desc.var_attr.type = type;
+
+  // set the variable's location
+  s->desc.var_attr.location.display = current_level-1;
+  s->desc.var_attr.location.offset = current_offset++;
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
@@ -724,4 +719,9 @@ int get_type_class(struct sym_rec* s)
   if (type)
     return type->desc.type_attr.type_class;
   return -1;
+}
+
+int get_current_offset(void)
+{
+  return current_offset;
 }
