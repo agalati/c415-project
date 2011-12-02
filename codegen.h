@@ -101,18 +101,26 @@ FILE* asc_file;
 
 void stop_codegen(void);
 
+char* get_next_while_label();
+char* get_next_if_label();
+
+void asc_while(int action);
+void asc_assignment(struct sym_rec* var, struct expr_t* expr);
+void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
+void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);
+void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2);
+void asc_logic(int op, struct expr_t* operand1, struct expr_t* operand2);
+
 // Only pushes onto the stack if it isn't already there
 void push_operand(struct expr_t* operand);
 
-void asc_addition(struct expr_t* operand1, struct expr_t* operand2);
-
 /* Stack Operations */
 void emit_push(int display, int offset);
-void emit_pushi(int display); // if reg < 0, it is ignored
+void emit_pushi(int display); // if display < 0, it is ignored
 void emit_pusha(int display, int offset);
 
 void emit_pop(int display, int offset);
-void emit_popi(int display); // if reg < 0, it is ignored
+void emit_popi(int display); // if display < 0, it is ignored
 
 void emit_consti(int n);
 void emit_constr(float r);

@@ -45,7 +45,10 @@
 "{".*"}"                          DB_PRINTF("(Single line COMMENT) ");
 
  /* Reserved words ---------- */
-and                               DB_PRINTF("AND "); return AND;
+and                               DB_PRINTF("AND ");  yylval.integer = AND; return AND;
+or                                DB_PRINTF("OR ");   yylval.integer = OR;  return OR;
+not                               DB_PRINTF("NOT ");  yylval.integer = NOT; return NOT;
+
 array                             DB_PRINTF("ARRAY "); return ARRAY;
 begin                             DB_PRINTF("P_BEGIN "); return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
@@ -60,9 +63,7 @@ exit                              DB_PRINTF("EXIT "); return EXIT;
 function                          DB_PRINTF("FUNCTION "); return FUNCTION;
 if                                DB_PRINTF("IF "); return IF;
 mod                               DB_PRINTF("MOD "); return MOD;
-not                               DB_PRINTF("NOT "); return NOT;
 of                                DB_PRINTF("OF "); return OF;
-or                                DB_PRINTF("OR "); return OR;
 procedure                         DB_PRINTF("PROCEDURE "); return PROCEDURE;
 program                           DB_PRINTF("PROGRAM "); return PROGRAM;
 record                            DB_PRINTF("RECORD "); return RECORD;
@@ -99,16 +100,16 @@ while                             DB_PRINTF("WHILE "); incrementWhileCounter(); 
 
  /* Operators ---------- */
 ":="                              DB_PRINTF("ASSIGNMENT "); return ASSIGNMENT;
-"="                               DB_PRINTF("EQUALS "); return EQUALS;
-"<>"                              DB_PRINTF("NOT_EQUAL "); return NOT_EQUAL;
-"<"                               DB_PRINTF("LESS_THAN "); return LESS_THAN;
-">"                               DB_PRINTF("GREATER_THAN "); return GREATER_THAN;
-"<="                              DB_PRINTF("LESS_EQUAL"); return LESS_EQUAL;
-">="                              DB_PRINTF("GREATER_EQUAL"); return GREATER_EQUAL; 
-"+"                               DB_PRINTF("PLUS "); return PLUS;
-"-"                               DB_PRINTF("MINUS "); return MINUS;
-"*"                               DB_PRINTF("MULTIPLY "); return MULTIPLY;
-"/"                               DB_PRINTF("DIVIDE "); return DIVIDE;
+"="                               DB_PRINTF("EQUALS ");       yylval.integer = EQUALS;        return EQUALS;
+"<>"                              DB_PRINTF("NOT_EQUAL ");    yylval.integer = NOT_EQUAL;     return NOT_EQUAL;
+"<"                               DB_PRINTF("LESS_THAN ");    yylval.integer = LESS_THAN;     return LESS_THAN;
+">"                               DB_PRINTF("GREATER_THAN "); yylval.integer = GREATER_THAN;  return GREATER_THAN;
+"<="                              DB_PRINTF("LESS_EQUAL");    yylval.integer = LESS_EQUAL;    return LESS_EQUAL;
+">="                              DB_PRINTF("GREATER_EQUAL"); yylval.integer = GREATER_EQUAL; return GREATER_EQUAL; 
+"+"                               DB_PRINTF("PLUS ");         yylval.integer = PLUS;          return PLUS;
+"-"                               DB_PRINTF("MINUS ");        yylval.integer = MINUS;         return MINUS;
+"*"                               DB_PRINTF("MULTIPLY ");     yylval.integer = MULTIPLY;      return MULTIPLY;
+"/"                               DB_PRINTF("DIVIDE ");       yylval.integer = DIVIDE;        return DIVIDE;
  /* div and mod are under reserved words */
 
  /* Other lexical characters ---------- */

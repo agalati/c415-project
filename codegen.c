@@ -8,13 +8,43 @@
  *   - Stevan Clement
  */
 
+#include <stdlib.h>
+
+#include "pal_gram.tab.h"
+
 #include "codegen.h"
 
 int do_codegen = 1;
 
 void stop_codegen(void)
 {
+  emit_comment("Stopping code generation.");
   do_codegen = 0;
+}
+
+
+char* get_next_while_label()
+{
+  static unsigned int n = 0;
+  ++n;
+  // max label size is 16
+  char* label = (char*)malloc(16*sizeof(char));
+  sprintf(label, "wlab_%d", n);
+  return label;
+}
+
+char* get_next_if_label()
+{
+  static unsigned int n = 0;
+  ++n;
+  // max label size is 16
+  char* label = (char*)malloc(16*sizeof(char));
+  sprintf(label, "ilab_%d", n);
+  return label;
+}
+
+void asc_while(int action)
+{
 }
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr)
@@ -28,7 +58,7 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
   emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
-void asc_addition(struct expr_t* operand1, struct expr_t* operand2)
+void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)
 {
   if (!do_codegen)
     return;
@@ -36,13 +66,18 @@ void asc_addition(struct expr_t* operand1, struct expr_t* operand2)
   int tc1 = operand1->type->desc.type_attr.type_class,
       tc2 = operand2->type->desc.type_attr.type_class;
 
-  int real_addition = 0;
+  int real_math = 0;
 
   if (tc1 == TC_REAL || tc2 == TC_REAL)
-    real_addition = 1;
+    real_math = 1;
 
   int convert_to_real[2] = {0, 0};
-  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
+  if (op == DIVIDE)
+  {
+    convert_to_real[0] = 1;
+    convert_to_real[1] = 1;
+  }
+  else if (tc1 == TC_REAL && tc2 == TC_INTEGER)
     convert_to_real[1] = 1;
   else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
     convert_to_real[0] = 1;
@@ -55,10 +90,153 @@ void asc_addition(struct expr_t* operand1, struct expr_t* operand2)
   if (convert_to_real[1])
     emit(ASC_ITOR);
 
-  if (real_addition)
-    emit(ASC_ADDR);
-  else
-    emit(ASC_ADDI);
+  switch(op)
+  {
+    case PLUS:
+      if (real_math)
+        emit(ASC_ADDR);
+      else
+        emit(ASC_ADDI);
+      break;
+    case MINUS:
+      if (real_math)
+        emit(ASC_SUBR);
+      else
+        emit(ASC_SUBI);
+      break;
+    case MULTIPLY:
+      if (real_math)
+        emit(ASC_MULR);
+      else
+        emit(ASC_MULI);
+      break;
+    case DIVIDE:
+        emit(ASC_DIVR);
+      break;
+    default:
+      printf("asc_math: unknown operation code\n");
+  }
+}
+
+void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2)
+{
+  if (!do_codegen)
+    return;
+
+  // Only pushes onto the stack if it isn't already there
+  push_operand(operand1);
+  push_operand(operand2);
+
+  switch(op)
+  {
+    case MOD:
+        emit(ASC_MOD);
+        break;
+    case DIV:
+        emit(ASC_DIVI);
+      break;
+    default:
+      printf("asc_integer_math: unknown operation code\n");
+  }
+}
+
+void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
+{
+  if (!do_codegen)
+    return;
+
+  int tc1 = operand1->type->desc.type_attr.type_class,
+      tc2 = operand2->type->desc.type_attr.type_class;
+
+  int real_comparisons = 0;
+
+  if (tc1 == TC_REAL || tc2 == TC_REAL)
+    real_comparisons = 1;
+
+  int convert_to_real[2] = {0, 0};
+  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
+    convert_to_real[1] = 1;
+  else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
+    convert_to_real[0] = 1;
+
+  push_operand(operand1);
+  if (convert_to_real[0])
+    emit(ASC_ITOR);
+
+  push_operand(operand2);
+  if (convert_to_real[1])
+    emit(ASC_ITOR);
+
+  switch(op)
+  {
+    case EQUALS:
+      if (real_comparisons)
+        emit(ASC_EQR);
+      else
+        emit(ASC_EQI);
+      break;
+    case NOT_EQUAL:
+      if (real_comparisons)
+        emit(ASC_EQR);
+      else
+        emit(ASC_EQI);
+      emit(ASC_NOT);
+      break;
+    case LESS_THAN:
+      if (real_comparisons)
+        emit(ASC_LTR);
+      else
+        emit(ASC_LTI);
+      break;
+    case GREATER_THAN:
+      if(real_comparisons)
+        emit(ASC_GTR);
+      else
+        emit(ASC_GTI);
+      break;
+    case LESS_EQUAL:
+      if(real_comparisons)
+        emit(ASC_GTR);
+      else
+        emit(ASC_GTI);
+      emit(ASC_NOT);
+      break;
+    case GREATER_EQUAL:
+      if (real_comparisons)
+        emit(ASC_LTR);
+      else
+        emit(ASC_LTI);
+      emit(ASC_NOT);
+      break;
+    default:
+      printf("asc_comparisons: Unknown comparison code\n");
+  }
+}
+
+void asc_logic(int op, struct expr_t* operand1, struct expr_t* operand2)
+{
+  if (!do_codegen)
+    return;
+
+  // Only pushes onto the stack if it isn't already there
+  push_operand(operand1);
+  if (operand2)
+    push_operand(operand2);
+
+  switch(op)
+  {
+    case AND:
+      emit(ASC_AND);
+      break;
+    case OR:
+      emit(ASC_OR);
+      break;
+    case NOT:
+      emit(ASC_NOT);
+      break;
+    default:
+      printf("asc_logic: unknown operation code\n");
+  }
 }
 
 void push_operand(struct expr_t* operand)
@@ -93,7 +271,10 @@ void emit_push(int display, int offset)
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tPUSH %d[%d]\n", offset, display);
+  if (display < 0)
+    fprintf(asc_file, "\tPUSH %d\n", offset);
+  else
+    fprintf(asc_file, "\tPUSH %d[%d]\n", offset, display);
 }
 
 void emit_pushi(int display)
@@ -120,7 +301,10 @@ void emit_pop(int display, int offset)
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tPOP %d[%d]\n", offset, display);
+  if(display < 0)
+    fprintf(asc_file, "\tPOP %d\n", offset, display);
+  else
+    fprintf(asc_file, "\tPOP %d[%d]\n", offset, display);
 }
 
 void emit_popi(int display)

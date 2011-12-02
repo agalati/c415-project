@@ -48,24 +48,25 @@ struct temp_array_var* temp_array_vars = NULL;
   }
 
 /* New tokens */
-%token          ASSIGNMENT EQUALS NOT_EQUAL LESS_THAN
-%token          GREATER_THAN LESS_EQUAL GREATER_EQUAL
-%token          PLUS MINUS MULTIPLY DIVIDE O_BRACKET C_BRACKET
-%token          PERIOD COLON O_SBRACKET C_SBRACKET
-%token          COMMA START_COM END_COM NSTRING DDOT
-%token <ch>     S_COLON 
-%token          BOGUS
+%token            ASSIGNMENT
+%token  <integer> GREATER_THAN LESS_EQUAL GREATER_EQUAL EQUALS NOT_EQUAL LESS_THAN
+%token            O_BRACKET C_BRACKET
+%token            PERIOD COLON O_SBRACKET C_SBRACKET
+%token            COMMA START_COM END_COM NSTRING DDOT
+%token  <ch>      S_COLON 
+%token  <integer> PLUS MINUS MULTIPLY DIVIDE MOD DIV
 
 /* Original tokens */
-%token            AND ARRAY P_BEGIN BOOL CHAR CONST CONTINUE DIV
+%token            ARRAY P_BEGIN BOOL CHAR CONST CONTINUE
 %token            DO ELSE END EXIT
 %token  <name>    ID FUNCTION PROCEDURE 
-%token            IF MOD
-%token            NOT OF OR PROGRAM REAL RECORD
+%token            IF 
+%token            OF PROGRAM REAL RECORD
 %token            THEN TYPE VAR WHILE 
 %token  <name>    STRING 
 %token  <integer> INT_CONST
 %token  <real_t>  REAL_CONST
+%token  <integer> AND OR NOT
 
 %type   <symrec>  type 
 %type   <symrec>  simple_type
@@ -209,7 +210,6 @@ scalar_list             : ID
                               semantic_error(error);
                             }
                           }
-                        | ID BOGUS { $$ = NULL; }
                         | scalar_list COMMA ID
                           {
                             if (locallookup($3) == NULL)
@@ -1348,6 +1348,11 @@ expr                    : simple_expr { $$ = $1; }
                                   $$->is_const = 1;
                                   do_op($1, $3, $2, $$);
                                 }
+                                else
+                                {
+                                  $$->is_const = 0;
+                                  asc_comparisons($2, $1, $3);
+                                }
                               }
                             }
                             else
@@ -1450,7 +1455,7 @@ simple_expr             : term { $$ = $1; }
                                 else
                                 {
                                   $$->is_const = 0;
-                                  asc_addition($1, $3);
+                                  asc_math($2, $1, $3);
                                 }
                                 $$->location = NULL;
                               }
@@ -1497,7 +1502,10 @@ simple_expr             : term { $$ = $1; }
                                     $$->value.integer = ($1->value.integer) - ($3->value.integer);
                                 }
                                 else
+                                {
                                   $$->is_const = 0;
+                                  asc_math($2, $1, $3);
+                                }
                                 $$->location = NULL;
                               }
                             }
@@ -1520,6 +1528,7 @@ simple_expr             : term { $$ = $1; }
                                 {
                                   $$->is_const = 0;
                                   $$->location = NULL;
+                                  asc_logic($2, $1, $3);
                                 }
                               }
                               else
@@ -1575,7 +1584,10 @@ term                    : factor { $$ = $1; }
                                     $$->value.integer = ($1->value.integer) * ($3->value.integer);
                                 }
                                 else
+                                {
                                   $$->is_const = 0;
+                                  asc_math($2, $1, $3);
+                                }
                                 $$->location = NULL;
                               }
                             }
@@ -1626,7 +1638,10 @@ term                    : factor { $$ = $1; }
                                   $$->is_const = 1;
                                 }
                                 else
+                                {
                                   $$->is_const = 0;
+                                  asc_math($2, $1, $3);
+                                }
                                 $$->location = NULL;
                               }
                             }
@@ -1649,6 +1664,7 @@ term                    : factor { $$ = $1; }
                                 {
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  asc_integer_math($2, $1, $3);
                                 }
                               }
                               else
@@ -1680,6 +1696,7 @@ term                    : factor { $$ = $1; }
                                 {
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  asc_integer_math($2, $1, $3);
                                 }
                               }
                               else
@@ -1709,6 +1726,7 @@ term                    : factor { $$ = $1; }
                                 }
                                 else
                                 {  
+                                  asc_logic($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
                                 }
@@ -1749,7 +1767,7 @@ factor                  : var
                                   break;
                                 case OC_CONST:
                                   $$->type = $1->desc.const_attr.type;
-                                  $$->location = &($1->desc.const_attr.location);
+                                  $$->location = NULL;// &($1->desc.const_attr.location);
                                   $$->is_const = 1;
                                   switch(get_type_class($1))
                                   {
@@ -1773,6 +1791,7 @@ factor                  : var
                                       $$->value.integer = $1->desc.const_attr.value.integer;
                                       break;
                                     default:
+                                      printf("factor: var - OC_CONST has some weird type_class that will probably break things\n");
                                       $$->is_const = 0;
                                       break;
                                   }
@@ -1805,6 +1824,8 @@ factor                  : var
                                 $$->location = NULL;
                                 if ($$->is_const)
                                   $$->value.boolean = !($$->value.boolean);
+                                else
+                                  asc_logic($1, $2, NULL);
                               }
                               else
                               {
