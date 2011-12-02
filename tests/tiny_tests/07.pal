@@ -1,0 +1,10 @@
+program TinyTest07 (input, output);
+
+{Array test - basic}
+
+type
+        someintarray = array[1..7] of integer;
+
+begin {main function}
+
+end.
