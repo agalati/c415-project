@@ -93,7 +93,7 @@ struct temp_array_var* temp_array_vars = NULL;
 
 %% /* Start of grammer */
 
-program                 : program_head decls compound_stat PERIOD	 { emit_stop(); }
+program                 : program_head decls compound_stat PERIOD	 { emit(ASC_STOP); }
                         | error
                         ;
 
@@ -574,7 +574,7 @@ field                   : ID COLON type
                           }
                         ;
 
-var_decl_part           : VAR var_decl_list S_COLON { adjust_stack(SCOPE_BEGIN); }
+var_decl_part           : VAR var_decl_list S_COLON
                         |
                         ;
 
@@ -803,7 +803,7 @@ simple_stat             : var ASSIGNMENT expr
                                   sprintf(error, "assignment type is incompatible", $1);
                                   semantic_error(error);
                                 } else {
-                                  emit_assignment($1, $3);
+                                  asc_assignment($1, $3);
                                 }
                               } else {
                                  char error[1024];
@@ -1450,7 +1450,7 @@ simple_expr             : term { $$ = $1; }
                                 else
                                 {
                                   $$->is_const = 0;
-                                  emit_addition($1, $3);
+                                  asc_addition($1, $3);
                                 }
                                 $$->location = NULL;
                               }

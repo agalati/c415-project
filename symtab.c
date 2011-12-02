@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codegen.h"
 #include "pal.h"
 #include "symtab.h"
 
@@ -455,6 +456,8 @@ struct sym_rec *addconst(char* name, struct sym_rec* type)
   // set the constant's location
   s->desc.const_attr.location.display = current_level-1;
   s->desc.const_attr.location.offset = current_offset++;
+
+  emit_adjust(1);
   
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
@@ -480,6 +483,8 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   // set the variable's location
   s->desc.var_attr.location.display = current_level-1;
   s->desc.var_attr.location.offset = current_offset++;
+
+  emit_adjust(1);
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;

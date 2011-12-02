@@ -17,18 +17,18 @@ void stop_codegen(void)
   do_codegen = 0;
 }
 
-void emit_assignment(struct sym_rec* var, struct expr_t* expr)
+void asc_assignment(struct sym_rec* var, struct expr_t* expr)
 {
   if (!do_codegen)
     return;
 
   int expr_tc = expr->type->desc.type_attr.type_class;
 
-  emit_operand(expr);
+  push_operand(expr);
   emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
-void emit_addition(struct expr_t* operand1, struct expr_t* operand2)
+void asc_addition(struct expr_t* operand1, struct expr_t* operand2)
 {
   if (!do_codegen)
     return;
@@ -48,20 +48,20 @@ void emit_addition(struct expr_t* operand1, struct expr_t* operand2)
     convert_to_real[0] = 1;
 
   // Only pushes onto the stack if it isn't already there
-  emit_operand(operand1);
+  push_operand(operand1);
   if (convert_to_real[0])
-    emit_itor();
-  emit_operand(operand2);
+    emit(ASC_ITOR);
+  push_operand(operand2);
   if (convert_to_real[1])
-    emit_itor();
+    emit(ASC_ITOR);
 
   if (real_addition)
-    emit_addr();
+    emit(ASC_ADDR);
   else
-    emit_addi();
+    emit(ASC_ADDI);
 }
 
-void emit_operand(struct expr_t* operand)
+void push_operand(struct expr_t* operand)
 {
   if (!do_codegen)
     return;
@@ -72,68 +72,20 @@ void emit_operand(struct expr_t* operand)
     switch(operand->type->desc.type_attr.type_class)
     {
       case TC_INTEGER:
-        emit_iconst(operand->value.integer);
+        emit_consti(operand->value.integer);
         break;
       case TC_REAL:
-        emit_rconst(operand->value.real);
+        emit_constr(operand->value.real);
         break;
       case TC_CHAR:
-        emit_iconst((int)operand->value.character);
+        emit_consti((int)operand->value.character);
         break;
       case TC_BOOLEAN:
-        emit_iconst(operand->value.boolean);
+        emit_consti(operand->value.boolean);
         break;
       default:
         printf("emit_operand: Trying to push something weird onto the stack\n");
     }
-}
-
-void emit_pop(int display, int offset)
-{
-  if (!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tPOP %d[%d]\n", offset, display);
-}
-
-void emit_itor(void)
-{
-  if (!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tITOR\n");
-}
-
-void emit_iconst(int val)
-{
-  if (!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tCONSTI %d\n", val);
-}
-
-void emit_rconst(float val)
-{
-  if (!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tCONSTR %f\n", val);
-}
-
-void emit_addi(void)
-{
-  if (!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tADDI\n");
-}
-
-void emit_addr(void)
-{
-  if(!do_codegen)
-    return;
-
-  fprintf(asc_file, "\tADDR\n");
 }
 
 void emit_push(int display, int offset)
@@ -149,7 +101,10 @@ void emit_pushi(int display)
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tPUSHI %d\n", display);
+  if (display < 0)
+    fprintf(asc_file, "\tPUSHI%d\n");
+  else
+    fprintf(asc_file, "\tPUSHI %d\n", display);
 }
 
 void emit_pusha(int display, int offset)
@@ -160,23 +115,133 @@ void emit_pusha(int display, int offset)
   fprintf(asc_file, "\tPUSHA %d[%d]\n", offset, display);
 }
 
-void emit_stop(void)
+void emit_pop(int display, int offset)
 {
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "\tSTOP\n");
+  fprintf(asc_file, "\tPOP %d[%d]\n", offset, display);
 }
 
-void adjust_stack(int scope_action)
+void emit_popi(int display)
 {
   if (!do_codegen)
     return;
 
-  if (scope_action == SCOPE_BEGIN)
-    fprintf(asc_file, "\tADJUST %d\n", get_current_offset());
-  else if (scope_action == SCOPE_END)
-    fprintf(asc_file, "\tADJUST %d\n", -get_current_offset());
+  if (display < 0)
+    fprintf(asc_file, "\tPOPI\n");
   else
-    printf("adjust_stack: Invalid scope_action\n");
+    fprintf(asc_file, "\tPOPI %d\n", display);
+}
+
+void emit_consti(int n)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tCONSTI %d\n", n);
+}
+
+void emit_constr(float r)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tCONSTR %f\n", r);
+}
+
+void emit_adjust(int amount)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tADJUST %d\n", amount);
+}
+
+void emit_alloc(int n)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tALLOC %d\n", n);
+}
+
+void emit_ifz(char* label)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tIFZ %s\n", label);
+}
+
+void emit_ifnz(char* label)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tIFNZ %s\n", label);
+}
+
+void emit_iferr(char* label)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tIFERR %s\n", label);
+}
+
+void emit_goto(char* label)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tGOTO %s\n", label);
+}
+
+void emit_call(int display, char* label)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tCALL %d, %s\n", display, label);
+}
+
+void emit_ret(int display)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\tRET %d\n", display);
+}
+
+void emit_comment(char* comment)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "# %s\n", comment);
+}
+
+void emit_trace(int n)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "!T=%d\n", n);
+}
+
+void emit_dump(void)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "!D\n");
+}
+
+void emit(char* op)
+{
+  if (!do_codegen)
+    return;
+
+  fprintf(asc_file, "\t%s\n", op);
 }
