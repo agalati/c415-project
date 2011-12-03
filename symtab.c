@@ -484,7 +484,7 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->desc.var_attr.location.display = current_level-1;
   s->desc.var_attr.location.offset = current_offset++;
 
-  emit_adjust(1);
+  asc_increment_var_count();
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
@@ -523,6 +523,8 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->level = current_level;
   s->class = OC_RETURN;
   s->desc.var_attr.type = return_type;
+  s->desc.var_attr.location.display = get_current_level()+1;
+  s->desc.var_attr.location.offset = -3;
 
   s->next = sym_tab[current_level+1];
   sym_tab[current_level+1] = s;
@@ -586,7 +588,7 @@ struct sym_rec *addtype(char* name, struct type_desc* type)
 }
 
 /* Add parameters to the parameter list and also add the variable to the next level */
-struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list)
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location)
 {
   struct sym_rec *s;
   struct sym_rec *t;
@@ -603,6 +605,8 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
     s->level = current_level;
     s->class = OC_VAR;
     s->desc.var_attr.type = type;
+    s->desc.var_attr.location.display = location->display;
+    s->desc.var_attr.location.offset = location->offset;
 
     /* Add to next level of symbol table */
     s->next = sym_tab[current_level + 1];
@@ -662,6 +666,8 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
   else
     t->class = OC_ERROR;
   t->desc.var_attr.type = type;
+  t->desc.var_attr.location.display = location->display;
+  t->desc.var_attr.location.offset = location->offset;
 
   t->next = parm_list;
   parm_list = t;

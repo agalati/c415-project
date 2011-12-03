@@ -99,6 +99,11 @@ program                 : program_head decls compound_stat PERIOD	 { emit(ASC_ST
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
+                          { 
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, NULL);
+                            asc_set_start($2);
+                          }
+
                         | error { yyerrok; yyclearin; }
                         ;
 
@@ -598,6 +603,7 @@ proc_decl_list          : proc_decl
 proc_decl               : proc_heading decls compound_stat S_COLON
                           {
                             poplevel();
+                            asc_function_definition(ASC_FUNCTION_END, NULL, NULL);
                           }
                         //| error S_COLON { yyerrok; yyclearin; }
                         ;
@@ -613,6 +619,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               semantic_error(error);
                             }
                             pushlevel(NULL);
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list);
                             parm_list = NULL;
                           }
                         | PROCEDURE error f_parm_decl S_COLON { yyerrok; yyclearin; parm_list = NULL; pushlevel(NULL);}
@@ -652,6 +659,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               }
                             }
                             pushlevel(func_rec);
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list);
                             parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl S_COLON
@@ -728,7 +736,10 @@ f_parm                  : ID COLON ID
                             }
 
                             if (parm_error) s = NULL;
-                            parm_list = addparm($1, s, parm_list);
+
+                            struct location_t location;
+                            asc_next_parameter_location(&location);
+                            parm_list = addparm($1, s, parm_list, &location);
                             $$ = parm_list;
                           }
                         // TODO: We need to have some way of telling that this parameter was passed by reference
@@ -764,7 +775,10 @@ f_parm                  : ID COLON ID
                             }
 
                             if (parm_error) s = NULL;
-                            parm_list = addparm($2, s, parm_list);
+
+                            struct location_t location;
+                            asc_next_parameter_location(&location);
+                            parm_list = addparm($2, s, parm_list, &location);
                             $$ = parm_list;
                           }
                         ;
@@ -1911,6 +1925,11 @@ func_invok              : plist_finvok C_BRACKET
                             $$->type = $1->return_type; 
                             $$->location = NULL;
                             $$->is_const = 0;
+
+                            struct sym_rec* func = isCurrentFunction($1->name);
+                            if (!func)
+                              func = globallookup($1->name);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func);
                           } else {
                             $$ = NULL;
                           }
@@ -1930,6 +1949,8 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->type = func->desc.func_attr.return_type;
                                   $$->location = NULL;
                                   $$->is_const = 0;
+
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func);
                                 }
                                 else
                                 {
@@ -2030,18 +2051,27 @@ plist_finvok            : ID O_BRACKET parm
                                   
                                   /* This should be an OC_VAR always */
                                     if (last_parm->class == OC_VAR) {
-                                       if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
-                                       {
-                                          char error[1024];
-                                          sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
-                                          semantic_error(error);
-                                       }
+                                      if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
+                                      else
+                                      {
+                                        func = isCurrentFunction($1);
+                                        if (!func)
+                                          func = globallookup($1);
+                                        asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
+                                        asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
+                                      }
                                     }
                                   }
                                 }
 
                                 $$->counter = $$->counter - 1;
                               }
+                              // TODO: do we even need this case, if all it does is set the return type differently this is rediculous
                               else if (func->class == OC_PROC)
                               {
                                 $$ = (struct plist_t*)malloc(sizeof(struct plist_t));
@@ -2074,13 +2104,21 @@ plist_finvok            : ID O_BRACKET parm
                                   
                                   /* This should be an OC_VAR */
                                      if (last_parm->class == OC_VAR) {
-                                        if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
-                                        {
-                                          char error[1024];
-                                          sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
-                                          semantic_error(error);
-                                        }
-                                     }
+                                      if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
+                                      else
+                                      {
+                                        func = isCurrentFunction($1);
+                                        if (!func)
+                                          func = globallookup($1);
+                                        asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
+                                        asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
+                                      }
+                                    }
                                   }
                                 }
 
@@ -2137,6 +2175,10 @@ plist_finvok            : ID O_BRACKET parm
                                       sprintf(error, "Incompatible parameter passed in position %d", $1->max - $1->counter + 1);
                                       semantic_error(error);
                                     }
+                                  }
+                                  else
+                                  {
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
                                   }
                                 }
                               }

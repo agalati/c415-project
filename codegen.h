@@ -105,23 +105,46 @@
 #define ASC_WHILE_CONTINUE    3
 #define ASC_WHILE_EXIT        4
 
+/* Function sections */
+
+#define ASC_FUNCTION_BEGIN    0
+#define ASC_FUNCTION_END      1
+
+/* Function call sections */
+
+#define ASC_FUNCTION_CALL_BEGIN 0
+#define ASC_FUNCTION_CALL_ARG   1
+#define ASC_FUNCTION_CALL_END   2
+
 FILE* asc_file;
 
 void stop_codegen(void);
 
+// Only pushes onto the stack if it isn't already there
+void push_expr(struct expr_t* expr);
+
 char* get_next_while_label();
 char* get_next_if_label();
 
-void asc_function_call(struct sym_rec* func);
+void write_function_info();
+
+void asc_set_start();
+void asc_notify_last_token(int token);
+
+void asc_increment_var_count();
+
+void asc_next_parameter_location(struct location_t* location);
+void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
+void asc_function_call(int section, void* info);
+
 void asc_while(int section);
+void asc_if(int section);
+
 void asc_assignment(struct sym_rec* var, struct expr_t* expr);
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_logic(int op, struct expr_t* operand1, struct expr_t* operand2);
-
-// Only pushes onto the stack if it isn't already there
-void push_operand(struct expr_t* operand);
 
 /* Stack Operations */
 void emit_push(int display, int offset);

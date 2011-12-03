@@ -18,7 +18,12 @@
 #include "pal_gram.tab.h"
 #include "semantics.h"
 
-#define YY_USER_ACTION update_position(strlen(yytext)); if (last_token == DO) asc_while(ASC_WHILE_DO); last_token = -1;
+#define YY_USER_ACTION {              \
+  update_position(strlen(yytext));    \
+  if (last_token != -1)               \
+    asc_notify_last_token(last_token);\
+  last_token = -1;                    \
+  }
 
 //extern YYLTYPE yylloc;
 
@@ -52,7 +57,7 @@ or                                DB_PRINTF("OR ");   yylval.integer = OR;  retu
 not                               DB_PRINTF("NOT ");  yylval.integer = NOT; return NOT;
 
 array                             DB_PRINTF("ARRAY "); return ARRAY;
-begin                             DB_PRINTF("P_BEGIN "); return P_BEGIN;
+begin                             DB_PRINTF("P_BEGIN "); last_token = P_BEGIN; return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
  /*true								              DB_PRINTF("BOOL - TRUE "); return BOOL;     */
  /*false								              DB_PRINTF("BOOL - FALSE "); return BOOL;  */
