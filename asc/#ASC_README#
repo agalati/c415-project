@@ -2,8 +2,13 @@
 # Runtime Library
 #
 
-We'll have to give the labels wild names so they don't
+We'll have to give the labels names that don't
 clash with user defined functions and procedures.
+
+---we can just append any user function name 
+with a tag
+	e.g. myfunc()
+			label myfunc_userdefined
 
 Required:
 
@@ -32,3 +37,4 @@ Required:
 Completed:
         (Still needs testing)
         String copy
+        String compare
