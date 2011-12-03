@@ -13,11 +13,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "codegen.h"
 #include "pal.h"
 #include "pal_gram.tab.h"
 #include "semantics.h"
 
-#define YY_USER_ACTION update_position(strlen(yytext));
+#define YY_USER_ACTION update_position(strlen(yytext)); if (last_token == DO) asc_while(ASC_WHILE_DO); last_token = -1;
 
 //extern YYLTYPE yylloc;
 
@@ -30,6 +31,7 @@
 #define DB_PRINTF(format, a...)
 #endif
 
+int last_token = -1;
 %}
 
 %option noyywrap
@@ -56,7 +58,7 @@ const                             DB_PRINTF("CONST "); return CONST;
  /*false								              DB_PRINTF("BOOL - FALSE "); return BOOL;  */
 continue                          DB_PRINTF("CONTINUE "); return CONTINUE;
 div                               DB_PRINTF("DIV "); return DIV;
-do                                DB_PRINTF("DO "); return DO;
+do                                DB_PRINTF("DO "); last_token = DO; return DO;
 else                              DB_PRINTF("ELSE "); return ELSE;
 end                               DB_PRINTF("END "); return END;
 exit                              DB_PRINTF("EXIT "); return EXIT;
@@ -70,7 +72,7 @@ record                            DB_PRINTF("RECORD "); return RECORD;
 then                              DB_PRINTF("THEN "); return THEN;
 type                              DB_PRINTF("TYPE "); return TYPE;
 var                               DB_PRINTF("VAR "); return VAR;
-while                             DB_PRINTF("WHILE "); incrementWhileCounter(); return WHILE;
+while                             DB_PRINTF("WHILE "); incrementWhileCounter(); asc_while(ASC_WHILE_BEGIN); return WHILE;
 
  /* Numbers and variables ---------- */
 (([0-9]+"."[0-9]+(E("-"|"+")?[0-9]+)?)|([0-9]+(E("-"|"+")?[0-9]+)))  {

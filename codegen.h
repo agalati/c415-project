@@ -97,6 +97,14 @@
 //#define ASC_TRACE   "!T="
 #define ASC_DUMP    "!D"
 
+/* While loop sections */
+
+#define ASC_WHILE_BEGIN       0
+#define ASC_WHILE_DO          1
+#define ASC_WHILE_END         2
+#define ASC_WHILE_CONTINUE    3
+#define ASC_WHILE_EXIT        4
+
 FILE* asc_file;
 
 void stop_codegen(void);
@@ -104,7 +112,8 @@ void stop_codegen(void);
 char* get_next_while_label();
 char* get_next_if_label();
 
-void asc_while(int action);
+void asc_function_call(struct sym_rec* func);
+void asc_while(int section);
 void asc_assignment(struct sym_rec* var, struct expr_t* expr);
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);

@@ -22,7 +22,6 @@ void stop_codegen(void)
   do_codegen = 0;
 }
 
-
 char* get_next_while_label()
 {
   static unsigned int n = 0;
@@ -43,8 +42,39 @@ char* get_next_if_label()
   return label;
 }
 
-void asc_while(int action)
+void asc_while(int section)
 {
+  if (!do_codegen)
+    return;
+
+  static char* label = NULL;
+  static char* endlabel = NULL;
+  switch(section)
+  {
+    case ASC_WHILE_BEGIN:
+      label = get_next_while_label();
+      endlabel = (char*)malloc(16*sizeof(char));
+      sprintf(endlabel, "end_%s", label);
+      fprintf(asc_file, "\n%s\n", label);
+      break;
+    case ASC_WHILE_DO:
+      emit_ifz(endlabel);
+      break;
+    case ASC_WHILE_END:
+      emit_goto(label);
+      fprintf(asc_file, "%s\n\n", endlabel);
+      free(label);
+      free(endlabel);
+      break;
+    case ASC_WHILE_CONTINUE:
+      emit_goto(label);
+      break;
+    case ASC_WHILE_EXIT:
+      emit_goto(endlabel);
+      break;
+    default:
+      printf("asc_while: invalid section\n");
+  }
 }
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr)

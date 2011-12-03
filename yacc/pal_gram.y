@@ -2185,6 +2185,7 @@ struct_stat             : IF expr THEN stat
                               semantic_error(error);
                             }
                             decrementWhileCounter();
+                            asc_while(ASC_WHILE_END);
                           }
                         | WHILE error DO { decrementWhileCounter(); yyerrok; yyclearin; }
                         | DO stat { yyerror("Missing 'while' required to match 'do' statement"); }
@@ -2196,6 +2197,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "continue statement used outside of a loop");
                               semantic_error(error);
                             }
+                            asc_while(ASC_WHILE_CONTINUE);
                           }
                         | EXIT
                           {
@@ -2205,6 +2207,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "exit statement used outside of a loop");
                               semantic_error(error);
                             }
+                            asc_while(ASC_WHILE_EXIT);
                           }
                         ;
 
@@ -2220,7 +2223,7 @@ matched_stat            : simple_stat
                           }
                         | IF error THEN matched_stat ELSE matched_stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE matched_stat { yyerrok; yyclearin; }
-                        | WHILE expr DO matched_stat { decrementWhileCounter(); }
+                        | WHILE expr DO matched_stat { asc_while(ASC_WHILE_END); decrementWhileCounter(); }
                         | WHILE error DO matched_stat { decrementWhileCounter(); yyerrok; yyclearin; }
                         | CONTINUE
                           {
@@ -2230,6 +2233,7 @@ matched_stat            : simple_stat
                               sprintf(error, "continue statement used outside of a loop");
                               semantic_error(error);
                             }
+                            asc_while(ASC_WHILE_CONTINUE);
                           }
                         | EXIT
                           {
@@ -2239,6 +2243,6 @@ matched_stat            : simple_stat
                               sprintf(error, "exit statement used outside of a loop");
                               semantic_error(error);
                             }
+                            asc_while(ASC_WHILE_EXIT);
                           }
                         ;
-%% /* End of grammer */
