@@ -1,0 +1,30 @@
+program main(input, output);
+var
+  a : integer;
+  b : real;
+  c : real;
+
+  aa : integer;
+  ab : integer;
+
+  ba : real;
+  bb : real;
+
+  r1 : boolean;
+  r2 : boolean;
+  r3 : boolean;
+begin
+  aa := 1 + 2;
+  ab := 15*2 div 3;
+
+  ba := 1.5 + 1.5;
+  bb := 1.5*1.5;
+
+  a := aa + ab;
+  b := ba + bb;
+  c := aa + bb;
+
+  r1 := a < b; // false
+  r2 := c = b; // true
+  r3 := aa + bb - ab >= a + b + c // false
+end.

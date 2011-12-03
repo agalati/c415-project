@@ -1,0 +1,10 @@
+program main(input, output);
+var
+  a : integer;
+begin
+  a := 0;
+  while a < 10 do
+  begin
+    a := a + 1;
+  end;
+end.

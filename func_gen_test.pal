@@ -1,0 +1,13 @@
+program main(input, output);
+var
+  a : integer;
+
+  function f1 (a : integer) : integer;
+  begin
+    f1 := a + 1;
+  end;
+
+begin
+  a := 1;
+  a := f1(a);
+end.
