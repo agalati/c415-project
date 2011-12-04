@@ -862,7 +862,7 @@ proc_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                           }
                         }
                         | ID O_BRACKET C_BRACKET
@@ -881,8 +881,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
                                 }
                               }
                               else if (proc->class == OC_FUNC)
@@ -894,8 +894,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
                                 }
                               }
                               else
@@ -1945,7 +1945,7 @@ func_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                           } else {
                             $$ = NULL;
                           }
@@ -1966,8 +1966,8 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->location = NULL;
                                   $$->is_const = 0;
 
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, func);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                                 }
                                 else
                                 {
@@ -1991,6 +1991,7 @@ func_invok              : plist_finvok C_BRACKET
 plist_finvok            : ID O_BRACKET parm
                           {
                             struct sym_rec* func = isCurrentFunction($1);
+                            int convert_int_to_real = 0;
                             if (!func)
                               func = globallookup($1);
                             if (func)
@@ -2074,6 +2075,10 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+
+                                      if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                          last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                        convert_int_to_real = 1;
                                     }
                                   }
                                 }
@@ -2083,8 +2088,8 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2128,6 +2133,10 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+
+                                      if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                          last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                        convert_int_to_real = 1;
                                     }
                                   }
                                 }
@@ -2137,8 +2146,8 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2161,6 +2170,7 @@ plist_finvok            : ID O_BRACKET parm
                           }
                         | plist_finvok COMMA parm
                         {
+                          int convert_int_to_real = 0;
                           if ($1) {
                             if (isIOFunc($1))
                             {
@@ -2195,12 +2205,16 @@ plist_finvok            : ID O_BRACKET parm
                                       semantic_error(error);
                                     }
                                   }
+
+                                  if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                      last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                    convert_int_to_real = 1;
                                 }
                               }
                             }
                               
                             if ($3 && $3->type)
-                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
+                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
 
                             $1->counter = $1->counter - 1;
                             $$ = $1;

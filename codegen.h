@@ -116,12 +116,22 @@
 #define ASC_FUNCTION_CALL_ARG   1
 #define ASC_FUNCTION_CALL_END   2
 
+struct func_call_info_t
+{
+  struct sym_rec* func;
+  int argc;
+  int builtin;
+
+  struct func_call_info_t* next;
+};
+
 FILE* asc_file;
 
 void stop_codegen(void);
 
 // Only pushes onto the stack if it isn't already there
-void push_expr(struct expr_t* expr);
+// returns 0 if nothing was pushed, or 1 otherwise
+int push_expr(struct expr_t* expr);
 
 char* get_next_while_label();
 char* get_next_if_label();
@@ -137,8 +147,8 @@ void asc_increment_var_count();
 
 void asc_next_parameter_location(struct location_t* location);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
-void asc_function_call(int section, void* info);
-void builtin_function_call(int section, void* info);
+void asc_function_call(int section, void* info, int convert_int_to_real);
+void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
 char* required_builtins(char* name);
 
 void asc_while(int section);
