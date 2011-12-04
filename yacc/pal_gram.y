@@ -94,14 +94,14 @@ struct temp_array_var* temp_array_vars = NULL;
 
 %% /* Start of grammer */
 
-program                 : program_head decls compound_stat PERIOD	 { emit(ASC_STOP); }
+program                 : program_head decls compound_stat PERIOD	 { asc_stop(); }
                         | error
                         ;
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
                           { 
                             asc_function_definition(ASC_FUNCTION_BEGIN, $2, NULL);
-                            asc_set_start($2);
+                            asc_start($2);
                           }
 
                         | error { yyerrok; yyclearin; }
@@ -858,6 +858,11 @@ proc_invok              : plist_finvok C_BRACKET
                                sprintf(error, "Wrong number of parameters.");
                               semantic_error(error);
                             }
+
+                            struct sym_rec* func = isCurrentFunction($1->name);
+                            if (!func)
+                              func = globallookup($1->name);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                           }
                         }
                         | ID O_BRACKET C_BRACKET
@@ -874,6 +879,11 @@ proc_invok              : plist_finvok C_BRACKET
                                   sprintf(error, "Missing arguments for procedure '%s'.", $1);
                                   semantic_error(error);
                                 }
+                                else
+                                {
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
+                                }
                               }
                               else if (proc->class == OC_FUNC)
                               {
@@ -881,6 +891,11 @@ proc_invok              : plist_finvok C_BRACKET
                                 {
                                   sprintf(error, "Missing arguments for function '%s'.", $1);
                                   semantic_error(error);
+                                }
+                                else
+                                {
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
                                 }
                               }
                               else
@@ -1261,8 +1276,8 @@ subscripted_var         : var O_SBRACKET expr
                         }
                         ;
 
-expr                    : simple_expr { $$ = $1; }
-                        | simple_expr operator expr
+expr                    : simple_expr { $$ = $1; asc_store_simple_expr($$); }
+                        | expr operator simple_expr 
                           {
                             char error[1024];
                             if ($1 && $3 && $1->type && $3->type)
@@ -1364,8 +1379,8 @@ expr                    : simple_expr { $$ = $1; }
                                 }
                                 else
                                 {
-                                  $$->is_const = 0;
                                   asc_comparisons($2, $1, $3);
+                                  $$->is_const = 0;
                                 }
                               }
                             }
@@ -1468,8 +1483,8 @@ simple_expr             : term { $$ = $1; }
                                 }
                                 else
                                 {
-                                  $$->is_const = 0;
                                   asc_math($2, $1, $3);
+                                  $$->is_const = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1517,8 +1532,8 @@ simple_expr             : term { $$ = $1; }
                                 }
                                 else
                                 {
-                                  $$->is_const = 0;
                                   asc_math($2, $1, $3);
+                                  $$->is_const = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1540,9 +1555,9 @@ simple_expr             : term { $$ = $1; }
                                 }
                                 else
                                 {
+                                  asc_logic($2, $1, $3);
                                   $$->is_const = 0;
                                   $$->location = NULL;
-                                  asc_logic($2, $1, $3);
                                 }
                               }
                               else
@@ -1599,8 +1614,8 @@ term                    : factor { $$ = $1; }
                                 }
                                 else
                                 {
-                                  $$->is_const = 0;
                                   asc_math($2, $1, $3);
+                                  $$->is_const = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1653,8 +1668,8 @@ term                    : factor { $$ = $1; }
                                 }
                                 else
                                 {
-                                  $$->is_const = 0;
                                   asc_math($2, $1, $3);
+                                  $$->is_const = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1676,9 +1691,9 @@ term                    : factor { $$ = $1; }
                                 }
                                 else
                                 {
+                                  asc_integer_math($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
-                                  asc_integer_math($2, $1, $3);
                                 }
                               }
                               else
@@ -1708,9 +1723,9 @@ term                    : factor { $$ = $1; }
                                 }
                                 else
                                 {
+                                  asc_integer_math($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
-                                  asc_integer_math($2, $1, $3);
                                 }
                               }
                               else
@@ -1778,6 +1793,7 @@ factor                  : var
                                   $$->type = $1->desc.var_attr.type;
                                   $$->location = &($1->desc.var_attr.location);
                                   $$->is_const = 0;
+                                  //asc_push_var($1);
                                   break;
                                 case OC_CONST:
                                   $$->type = $1->desc.const_attr.type;
@@ -1835,11 +1851,11 @@ factor                  : var
                               if ($2->type->class == OC_TYPE && $2->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $2;
-                                $$->location = NULL;
                                 if ($$->is_const)
                                   $$->value.boolean = !($$->value.boolean);
                                 else
                                   asc_logic($1, $2, NULL);
+                                $$->location = NULL;
                               }
                               else
                               {
@@ -1929,7 +1945,7 @@ func_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                           } else {
                             $$ = NULL;
                           }
@@ -1950,7 +1966,8 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->location = NULL;
                                   $$->is_const = 0;
 
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
                                 }
                                 else
                                 {
@@ -1974,6 +1991,7 @@ func_invok              : plist_finvok C_BRACKET
 plist_finvok            : ID O_BRACKET parm
                           {
                             struct sym_rec* func = isCurrentFunction($1);
+                            int convert_int_to_real = 0;
                             if (!func)
                               func = globallookup($1);
                             if (func)
@@ -2057,16 +2075,21 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
-                                      else
-                                      {
-                                        func = isCurrentFunction($1);
-                                        if (!func)
-                                          func = globallookup($1);
-                                        asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
-                                        asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
-                                      }
+
+                                      if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                          last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                        convert_int_to_real = 1;
                                     }
                                   }
+                                }
+
+                                if ($3 && $3->type)
+                                {
+                                  func = isCurrentFunction($1);
+                                  if (!func)
+                                    func = globallookup($1);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2110,16 +2133,21 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
-                                      else
-                                      {
-                                        func = isCurrentFunction($1);
-                                        if (!func)
-                                          func = globallookup($1);
-                                        asc_function_call(ASC_FUNCTION_CALL_BEGIN, func); 
-                                        asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
-                                      }
+
+                                      if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                          last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                        convert_int_to_real = 1;
                                     }
                                   }
+                                }
+
+                                if ($3 && $3->type)
+                                {
+                                  func = isCurrentFunction($1);
+                                  if (!func)
+                                    func = globallookup($1);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2142,6 +2170,7 @@ plist_finvok            : ID O_BRACKET parm
                           }
                         | plist_finvok COMMA parm
                         {
+                          int convert_int_to_real = 0;
                           if ($1) {
                             if (isIOFunc($1))
                             {
@@ -2176,14 +2205,17 @@ plist_finvok            : ID O_BRACKET parm
                                       semantic_error(error);
                                     }
                                   }
-                                  else
-                                  {
-                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3);
-                                  }
+
+                                  if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
+                                      last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
+                                    convert_int_to_real = 1;
                                 }
                               }
                             }
                               
+                            if ($3 && $3->type)
+                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+
                             $1->counter = $1->counter - 1;
                             $$ = $1;
                           } else {
@@ -2203,6 +2235,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END_NO_ELSE);
                           }
                         | IF error THEN stat { yyerrok; yyclearin; }
                         | IF expr THEN matched_stat ELSE stat
@@ -2213,6 +2246,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END);
                           }
                         | IF error THEN matched_stat ELSE stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE stat
@@ -2262,6 +2296,7 @@ matched_stat            : simple_stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END);
                           }
                         | IF error THEN matched_stat ELSE matched_stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE matched_stat { yyerrok; yyclearin; }

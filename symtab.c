@@ -459,8 +459,6 @@ struct sym_rec *addconst(char* name, struct sym_rec* type)
   s->desc.const_attr.location.display = current_level-1;
   s->desc.const_attr.location.offset = current_offset++;
 
-  emit_adjust(1);
-  
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
 
@@ -482,11 +480,22 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->class = OC_VAR;
   s->desc.var_attr.type = type;
 
+  int size = 1;
+  int type_class = s->desc.var_attr.type->desc.type_attr.type_class;
+  if (type_class == TC_ARRAY)
+  {
+  }
+  else if (type_class == TC_STRING)
+    size = s->desc.var_attr.type->desc.type_attr.type_description.string->high;
+  else if (type_class == TC_RECORD)
+  {
+  }
+
   // set the variable's location
   s->desc.var_attr.location.display = current_level-1;
-  s->desc.var_attr.location.offset = current_offset++;
-
-  asc_increment_var_count();
+  s->desc.var_attr.location.offset = current_offset;
+  current_offset += size;
+  asc_increment_var_count(size);
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
@@ -525,8 +534,14 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->level = current_level;
   s->class = OC_RETURN;
   s->desc.var_attr.type = return_type;
+
+  int argc = 0;
+  struct sym_rec* curr_parm = parm_list;
+  for (; curr_parm != NULL; curr_parm = curr_parm->next, ++argc);
   s->desc.var_attr.location.display = get_current_level()+1;
-  s->desc.var_attr.location.offset = -3;
+  s->desc.var_attr.location.offset = -(argc) - 2;
+  if (argc == 0)
+    s->desc.var_attr.location.offset = -3;
 
   s->next = sym_tab[current_level+1];
   sym_tab[current_level+1] = s;

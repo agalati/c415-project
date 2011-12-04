@@ -9,6 +9,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "pal_gram.tab.h"
 
@@ -18,9 +19,25 @@ struct function_info_t
 {
   char* name;
   int   level, argc, varc;
+  int   handled;
 
   struct function_info_t* next;
 };
+
+struct rb_t
+{
+  char* name;
+  struct rb_t* next;
+};
+
+struct label_t
+{
+  char *label, *endlabel;
+  struct label_t* next;
+};
+
+struct expr_t* curr_simple_expr = NULL;
+int curr_simple_expr_handled = 0;
 
 struct function_info_t* function_list = NULL;
 
@@ -34,14 +51,27 @@ void stop_codegen(void)
   do_codegen = 0;
 }
 
-void push_expr(struct expr_t* expr)
+void asc_store_simple_expr(struct expr_t* simple_expr)
+{
+  curr_simple_expr = simple_expr;
+  curr_simple_expr_handled = 0;
+}
+
+int push_expr(struct expr_t* expr)
 {
   if (!do_codegen)
-    return;
+    return 0;
+
+  if (expr == curr_simple_expr)
+    curr_simple_expr_handled = 1;
 
   if (expr->location)
+  {
     emit_push(expr->location->display, expr->location->offset);
+    return 1;
+  }
   else if (expr->is_const)
+  {
     switch(expr->type->desc.type_attr.type_class)
     {
       case TC_INTEGER:
@@ -59,6 +89,10 @@ void push_expr(struct expr_t* expr)
       default:
         printf("push_expr: Trying to push something weird onto the stack\n");
     }
+    return 1;
+  }
+
+  return 0;
 }
 
 void push_expr_address(struct expr_t* expr)
@@ -87,28 +121,105 @@ char* get_next_if_label()
 
 void write_function_info()
 {
-  if (!do_codegen)
+  if (!do_codegen || !function_list)
     return;
 
   if (function_list->level != get_current_level())
     return;
 
-  struct function_info_t* curr_function = function_list;
-  function_list = function_list->next;
+  fprintf(asc_file, "\n%s\n", function_list->name);
 
-  fprintf(asc_file, "\n%s\n", curr_function->name);
-  emit_adjust(curr_function->argc);
-  emit_adjust(curr_function->varc);
+  int i;
+  for(i=function_list->argc; i>0; --i)
+    emit_push(function_list->level, -(i+2));
 
-  free(curr_function);
+  //emit_adjust(function_list->argc);
+  emit_adjust(function_list->varc);
+  function_list->handled = 1;
 }
 
-void asc_set_start(char* program_name)
+void asc_start(char* program_name)
 {
   if (!do_codegen)
     return;
 
   emit_goto(program_name);
+}
+
+void asc_stop()
+{
+  if (!do_codegen)
+    return;
+
+  emit_dump();
+  emit(ASC_STOP);
+
+  int num_builtin_files = 11;
+  char* builtin_filenames[] = {
+    "asc/get_sp.asc",
+    "asc/swap_top.asc",
+    "asc/math_functions.asc",
+    "asc/odd.asc",
+    "asc/read_functions.asc",
+    "asc/scalar_operations.asc",
+    "asc/string_compare.asc",
+    "asc/string_copy.asc",
+    "asc/transfer_functions.asc",
+    "asc/trig_functions.asc",
+    "asc/write_procedures.asc"
+  };
+
+
+
+  char buf[1024];
+  memset(buf, 0, 1024*sizeof(char));
+  FILE* builtin_file;
+  int i, j;
+  fprintf(asc_file, "\n");
+  for (i=0; i<num_builtin_files; ++i)
+  {
+    fprintf(asc_file, "\n");
+
+    builtin_file = fopen(builtin_filenames[i], "r");
+    if (!builtin_file)
+    {
+      fprintf(stderr, "Cannot find builtin function file %s\n", builtin_filenames[i]);
+      exit(-2);
+    }
+
+    j = fread(buf, sizeof(char), 1024, builtin_file);
+    while(j)
+    {
+      fwrite(buf, sizeof(char), j, asc_file);
+      memset(buf, 0, 1024*sizeof(char));
+      j = fread(buf, sizeof(char), 1024, builtin_file);
+    }
+  }
+
+  /*
+  char* builtin = NULL;
+  char* filename;
+  char buf[1024];
+  while((builtin = required_builtins(NULL)) != NULL)
+  {
+    filename = (char*)malloc((1+4+4+strlen(builtin))*sizeof(char));
+    strcpy(filename, "asc/");
+    strcat(filename, builtin);
+    strcat(filename, ".asc")
+    FILE* builtin_file = fopen(filename, "r");
+    if (!builtin_file)
+    {
+      fprintf(stderr, "Cannot find builtin function file %s\n", filename);
+      exit(-2);
+    }
+
+    while(fread(buf, sizeof(char), 1024, builtin_file))
+      fwrite(buf, sizeof(char), 1024, asc_file);
+
+    free(filename);
+    fprintf(asc_file, "requires %s\n", builtin);
+  }
+  */
 }
 
 void asc_notify_last_token(int token)
@@ -119,20 +230,30 @@ void asc_notify_last_token(int token)
   switch(token)
   {
     case DO:
+      if (!curr_simple_expr_handled)
+        push_expr(curr_simple_expr);
       asc_while(ASC_WHILE_DO);
       break;
-    case P_BEGIN:
-      write_function_info();
+    case ELSE:
+      asc_if(ASC_IF_ELSE);
       break;
+    case P_BEGIN:
+      if (function_list && function_list->level == get_current_level() && !function_list->handled)
+        write_function_info();
+      break;
+    case THEN:
+      if (!curr_simple_expr_handled)
+        push_expr(curr_simple_expr);
+      asc_if(ASC_IF_BEGIN);
   }
 }
 
-void asc_increment_var_count()
+void asc_increment_var_count(int size)
 {
   if (!do_codegen)
     return;
 
-  function_list->varc++;
+  function_list->varc = function_list->varc + size;
 }
 
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
@@ -140,7 +261,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
   if (!do_codegen)
     return;
 
-  static int argc = -1;
+  static int argc = -999;
 
   switch(section)
   {
@@ -155,17 +276,27 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       info->level = get_current_level();
       info->argc = argc;
       info->varc = 0;
+      info->handled = 0;
       info->next = function_list;
 
       function_list = info;
+      argc = -999;
+      current_parameter_offset = 0;
       break;
     }
     case ASC_FUNCTION_END:
-      emit_adjust(-argc);
-      emit_ret(get_current_level());
+    {
+      struct function_info_t* curr_function = function_list;
+      function_list = function_list->next;
+
+      emit_adjust(-(curr_function->argc));
+      emit_adjust(-(curr_function->varc));
+      emit_ret(get_current_level()+1);
       fprintf(asc_file, "\n");
-      argc = -1;
+
+      free(curr_function);
       break;
+    }
   }
 }
 
@@ -175,12 +306,12 @@ void asc_next_parameter_location(struct location_t* location)
   location->offset = current_parameter_offset++;
 }
 
-void asc_function_call (int section, void* info)
+void asc_function_call (int section, void* info, int convert_int_to_real)
 {
   if (!do_codegen)
     return;
 
-  static int argc = 0;
+  static struct func_call_info_t* call_info = NULL; 
 
   switch(section)
   {
@@ -188,16 +319,12 @@ void asc_function_call (int section, void* info)
     {
       struct sym_rec* func = (struct sym_rec*)info;
 
-      // different calling convention for builtins
-      if (func == builtinlookup(func->name))
-        break;
-
-      // make room for return value
-      if (func->class == OC_FUNC)
-        emit_adjust(1);
-
-      // make room for the stuff call puts on the stack
-      emit_adjust(2);
+      struct func_call_info_t* info = (struct func_call_info_t*)malloc(sizeof(struct func_call_info_t));
+      info->func = func;
+      info->next = call_info;
+      info->argc = 0;
+      info->builtin = 0;
+      call_info = info;
 
       break;
     }
@@ -205,29 +332,60 @@ void asc_function_call (int section, void* info)
     {
       struct expr_t* arg = (struct expr_t*)info;
       push_expr(arg);
-      argc++;
+      if (convert_int_to_real)
+        emit(ASC_ITOR);
+      call_info->argc++;
       break;
     }
     case ASC_FUNCTION_CALL_END:
     {
-      struct sym_rec* func = (struct sym_rec*)info;
+      // make room for return value if room has not been made by args
+      if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
+        emit_adjust(1);
 
-      // different calling convention for builtins
-      if (func == builtinlookup(func->name))
-        break;
+      emit_call(call_info->func->level+1, call_info->func->name);
 
-      // adjust back through all the args
-      emit_adjust(-argc);
+      if (call_info->argc)
+      {
+        if (call_info->func->class == OC_FUNC)
+          emit_adjust(-(call_info->argc-1));
+        else
+          emit_adjust(-(call_info->argc));
+      }
 
-      // adjust back through the stuff call puts on the stack
-      emit_adjust(-2);
-
-      emit_call(func->level+1, func->name);
+      struct func_call_info_t* curr = call_info;
+      call_info = call_info->next;
+      free(curr);
       break;
     }
     default:
       printf("asc_function_call: unknown section\n");
-    }
+  }
+}
+
+char* required_builtins(char* name)
+{
+  static struct rb_t* rb_list = NULL;
+
+  struct rb_t* rb;
+  if (name)
+  {
+    rb = (struct rb_t*)malloc(sizeof(struct rb_t));
+    rb->name = name;
+    rb->next = rb_list;
+    rb_list = rb;
+  }
+  else
+  {
+    rb = rb_list;
+    if (!rb)
+      return NULL;
+
+    rb_list = rb_list->next;
+    char* ret = rb->name;
+    free(rb);
+    return ret; 
+  }
 }
 
 void asc_while(int section)
@@ -235,34 +393,103 @@ void asc_while(int section)
   if (!do_codegen)
     return;
 
-  static char* label = NULL;
-  static char* endlabel = NULL;
+  static struct label_t* label_stack = NULL;
   switch(section)
   {
     case ASC_WHILE_BEGIN:
-      label = get_next_while_label();
-      endlabel = (char*)malloc(16*sizeof(char));
-      sprintf(endlabel, "end_%s", label);
-      fprintf(asc_file, "\n%s\n", label);
+    {
+      struct label_t* labels = (struct label_t*)malloc(sizeof(struct label_t));
+      labels->next = label_stack;
+      label_stack = labels;
+      labels->label = get_next_while_label();
+      labels->endlabel = (char*)malloc(16*sizeof(char));
+      sprintf(labels->endlabel, "end_%s", labels->label);
+      fprintf(asc_file, "\n%s\n", labels->label);
       break;
+    }
     case ASC_WHILE_DO:
-      emit_ifz(endlabel);
+      emit_ifz(label_stack->endlabel);
       break;
     case ASC_WHILE_END:
-      emit_goto(label);
-      fprintf(asc_file, "%s\n\n", endlabel);
-      free(label);
-      free(endlabel);
+    {
+      emit_goto(label_stack->label);
+      fprintf(asc_file, "%s\n\n", label_stack->endlabel);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
       break;
+    }
     case ASC_WHILE_CONTINUE:
-      emit_goto(label);
+      emit_goto(label_stack->label);
       break;
     case ASC_WHILE_EXIT:
-      emit_goto(endlabel);
+      emit_goto(label_stack->endlabel);
       break;
     default:
       printf("asc_while: invalid section\n");
   }
+}
+
+
+void asc_if(int section)
+{
+  if (!do_codegen)
+    return;
+
+  static struct label_t* label_stack = NULL;
+
+  switch(section)
+  {
+    case ASC_IF_BEGIN:
+    {
+      struct label_t* labels = (struct label_t*)malloc(sizeof(struct label_t));
+      labels->next = label_stack;
+      label_stack = labels;
+      labels->label = get_next_if_label();
+      labels->endlabel = (char*)malloc(16*sizeof(char));
+      sprintf(labels->endlabel, "end_%s", labels->label);
+      emit_ifz(labels->label);
+      break;
+    }
+    case ASC_IF_ELSE:
+    {
+      emit_goto(label_stack->endlabel);
+      fprintf(asc_file, "\n%s\n", label_stack->label);
+      break;
+    }
+    case ASC_IF_END:
+    {
+      fprintf(asc_file, "%s\n\n", label_stack->endlabel);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
+      break;
+    }
+    case ASC_IF_END_NO_ELSE:
+    {
+      fprintf(asc_file, "\n%s\n", label_stack->label);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
+      break;
+    }
+    default:
+      printf("asc_if: invalid section\n");
+  }
+}
+
+void asc_push_var(struct sym_rec* var)
+{
+  if (!do_codegen || !var)
+    return;
+
+  emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr)
@@ -273,6 +500,18 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
   int expr_tc = expr->type->desc.type_attr.type_class;
 
   push_expr(expr);
+
+  int tc1 = var->desc.var_attr.type->desc.type_attr.type_class,
+      tc2 = expr->type->desc.type_attr.type_class;
+
+  int convert_to_real = 0;
+
+  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
+    convert_to_real = 1;
+
+  if (convert_to_real)
+    emit(ASC_ITOR);
+
   emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 

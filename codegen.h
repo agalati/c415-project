@@ -105,6 +105,13 @@
 #define ASC_WHILE_CONTINUE    3
 #define ASC_WHILE_EXIT        4
 
+/* If sections */
+
+#define ASC_IF_BEGIN        0
+#define ASC_IF_ELSE         1
+#define ASC_IF_END          2
+#define ASC_IF_END_NO_ELSE  3
+
 /* Function sections */
 
 #define ASC_FUNCTION_BEGIN    0
@@ -116,29 +123,45 @@
 #define ASC_FUNCTION_CALL_ARG   1
 #define ASC_FUNCTION_CALL_END   2
 
+struct func_call_info_t
+{
+  struct sym_rec* func;
+  int argc;
+  int builtin;
+
+  struct func_call_info_t* next;
+};
+
 FILE* asc_file;
 
 void stop_codegen(void);
 
 // Only pushes onto the stack if it isn't already there
-void push_expr(struct expr_t* expr);
+// returns 0 if nothing was pushed, or 1 otherwise
+int push_expr(struct expr_t* expr);
 
 char* get_next_while_label();
 char* get_next_if_label();
 
 void write_function_info();
 
-void asc_set_start();
+void asc_start();
+void asc_stop();
+
 void asc_notify_last_token(int token);
 
-void asc_increment_var_count();
+void asc_increment_var_count(int size);
 
 void asc_next_parameter_location(struct location_t* location);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
-void asc_function_call(int section, void* info);
+void asc_function_call(int section, void* info, int convert_int_to_real);
+void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
+char* required_builtins(char* name);
 
 void asc_while(int section);
 void asc_if(int section);
+
+void asc_push_var(struct sym_rec* var);
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr);
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);

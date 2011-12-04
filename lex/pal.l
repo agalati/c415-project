@@ -56,25 +56,26 @@ and                               DB_PRINTF("AND ");  yylval.integer = AND; retu
 or                                DB_PRINTF("OR ");   yylval.integer = OR;  return OR;
 not                               DB_PRINTF("NOT ");  yylval.integer = NOT; return NOT;
 
+div                               DB_PRINTF("DIV ");  yylval.integer = DIV; return DIV;
+mod                               DB_PRINTF("MOD ");  yylval.integer = MOD; return MOD;
+
 array                             DB_PRINTF("ARRAY "); return ARRAY;
 begin                             DB_PRINTF("P_BEGIN "); last_token = P_BEGIN; return P_BEGIN;
 const                             DB_PRINTF("CONST "); return CONST;
  /*true								              DB_PRINTF("BOOL - TRUE "); return BOOL;     */
  /*false								              DB_PRINTF("BOOL - FALSE "); return BOOL;  */
 continue                          DB_PRINTF("CONTINUE "); return CONTINUE;
-div                               DB_PRINTF("DIV "); return DIV;
 do                                DB_PRINTF("DO "); last_token = DO; return DO;
-else                              DB_PRINTF("ELSE "); return ELSE;
 end                               DB_PRINTF("END "); return END;
 exit                              DB_PRINTF("EXIT "); return EXIT;
 function                          DB_PRINTF("FUNCTION "); return FUNCTION;
 if                                DB_PRINTF("IF "); return IF;
-mod                               DB_PRINTF("MOD "); return MOD;
+then                              DB_PRINTF("THEN "); last_token = THEN; return THEN;
+else                              DB_PRINTF("ELSE "); last_token = ELSE; return ELSE;
 of                                DB_PRINTF("OF "); return OF;
 procedure                         DB_PRINTF("PROCEDURE "); return PROCEDURE;
 program                           DB_PRINTF("PROGRAM "); return PROGRAM;
 record                            DB_PRINTF("RECORD "); return RECORD;
-then                              DB_PRINTF("THEN "); return THEN;
 type                              DB_PRINTF("TYPE "); return TYPE;
 var                               DB_PRINTF("VAR "); return VAR;
 while                             DB_PRINTF("WHILE "); incrementWhileCounter(); asc_while(ASC_WHILE_BEGIN); return WHILE;

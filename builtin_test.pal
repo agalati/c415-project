@@ -1,0 +1,8 @@
+program builtintest (input, output);
+var
+  a,b,c : real;
+begin
+  a := sqrt(4);   // 2
+  b := ln(2.71828); // 1
+  c := sin(3.1415); // 0
+end.
