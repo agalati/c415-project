@@ -1,13 +1,45 @@
 program main(input, output);
 var
-  a : integer;
+  a,b,c : integer;
 
   function f1 (a : integer) : integer;
+    
+    function f2 () : integer;
+    var
+      d : integer;
+      c : boolean;
+
+      procedure p1 (b : integer);
+      begin
+        d := d + b;
+      end;
+
+    begin
+      d := 0;
+      c := d < 10;
+      while c do
+      begin
+        p1(1);
+        c := d < 10;
+      end;
+      f2 := d;
+    end;
+
   begin
-    f1 := a + 1;
+    f1 := a +f2();
+  end;
+
+  procedure p2 ();
+  begin
+    b := b - 1;
   end;
 
 begin
-  a := 1;
-  a := f1(a);
+  a := 21;
+  a := f1(a); // 31
+  
+  b := 1;
+  p2(); // 0
+  
+  c := 3;
 end.

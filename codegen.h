@@ -128,7 +128,9 @@ char* get_next_if_label();
 
 void write_function_info();
 
-void asc_set_start();
+void asc_start();
+void asc_stop();
+
 void asc_notify_last_token(int token);
 
 void asc_increment_var_count();
@@ -136,9 +138,13 @@ void asc_increment_var_count();
 void asc_next_parameter_location(struct location_t* location);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
 void asc_function_call(int section, void* info);
+void builtin_function_call(int section, void* info);
+char* required_builtins(char* name);
 
 void asc_while(int section);
 void asc_if(int section);
+
+void asc_push_var(struct sym_rec* var);
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr);
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
