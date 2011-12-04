@@ -525,8 +525,14 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->level = current_level;
   s->class = OC_RETURN;
   s->desc.var_attr.type = return_type;
+
+  int argc = 0;
+  struct sym_rec* curr_parm = parm_list;
+  for (; curr_parm != NULL; curr_parm = curr_parm->next, ++argc);
   s->desc.var_attr.location.display = get_current_level()+1;
-  s->desc.var_attr.location.offset = -3;
+  s->desc.var_attr.location.offset = -(argc) - 2;
+  if (argc == 0)
+    s->desc.var_attr.location.offset = -3;
 
   s->next = sym_tab[current_level+1];
   sym_tab[current_level+1] = s;

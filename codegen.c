@@ -121,7 +121,12 @@ void write_function_info()
     return;
 
   fprintf(asc_file, "\n%s\n", function_list->name);
-  emit_adjust(function_list->argc);
+
+  int i;
+  for(i=function_list->argc; i>0; --i)
+    emit_push(function_list->level, -(i+2));
+
+  //emit_adjust(function_list->argc);
   emit_adjust(function_list->varc);
   function_list->handled = 1;
 }
@@ -142,8 +147,10 @@ void asc_stop()
   emit_dump();
   emit(ASC_STOP);
 
-  int num_builtin_files = 9;
+  int num_builtin_files = 11;
   char* builtin_filenames[] = {
+    "asc/get_sp.asc",
+    "asc/swap_top.asc",
     "asc/math_functions.asc",
     "asc/odd.asc",
     "asc/read_functions.asc",
@@ -240,7 +247,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
   if (!do_codegen)
     return;
 
-  static int argc = -1;
+  static int argc = -999;
 
   switch(section)
   {
@@ -305,80 +312,8 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
       info->builtin = 0;
       call_info = info;
 
-      // different calling convention for builtins
-      if (func == builtinlookup(func->name))
-      {
-        call_info->builtin = 1;
-        required_builtins(func->name);
-        break;
-      }
-
-      // make room for return value
-      if (func->class == OC_FUNC)
-        emit_adjust(1);
-
-      // make room for the stuff call puts on the stack
-      emit_adjust(2);
-
       break;
     }
-    case ASC_FUNCTION_CALL_ARG:
-    {
-      if (call_info->builtin)
-      {
-        builtin_function_call(call_info, ASC_FUNCTION_CALL_ARG, info, convert_int_to_real);
-        break;
-      }
-
-      struct expr_t* arg = (struct expr_t*)info;
-      if(!push_expr(arg));
-      {
-        emit_call(0, "get_sp");
-        emit_consti(2);
-        emit(ASC_ADDI);
-        emit_call(0, "swap_top");
-        emit_popi(-1);
-      }
-      if (convert_int_to_real)
-        emit(ASC_ITOR);
-      call_info->argc++;
-      break;
-    }
-    case ASC_FUNCTION_CALL_END:
-    {
-      // different calling convention for builtins
-      if (call_info->builtin)
-        builtin_function_call(call_info, ASC_FUNCTION_CALL_END, info, convert_int_to_real);
-      else
-      {
-        // adjust back through all the args
-        emit_adjust(-(call_info->argc));
-
-        // adjust back through the stuff call puts on the stack
-        emit_adjust(-2);
-
-        emit_call(call_info->func->level+1, call_info->func->name);
-      }
-
-      struct func_call_info_t* curr = call_info;
-      call_info = call_info->next;
-      free(curr);
-      break;
-    }
-    default:
-      printf("asc_function_call: unknown section\n");
-    }
-}
-
-void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real)
-{
-  if (!do_codegen)
-    return;
-
-  switch(section)
-  {
-    case ASC_FUNCTION_CALL_BEGIN:
-      break;
     case ASC_FUNCTION_CALL_ARG:
     {
       struct expr_t* arg = (struct expr_t*)info;
@@ -390,16 +325,27 @@ void builtin_function_call(struct func_call_info_t* call_info, int section, void
     }
     case ASC_FUNCTION_CALL_END:
     {
+      // make room for return value if room has not been made by args
+      if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
+        emit_adjust(1);
+
       emit_call(call_info->func->level+1, call_info->func->name);
 
-      // adjust back through all the args less one which is the return
       if (call_info->argc)
-        emit_adjust(-(call_info->argc -1));
+      {
+        if (call_info->func->class == OC_FUNC)
+          emit_adjust(-(call_info->argc-1));
+        else
+          emit_adjust(-(call_info->argc));
+      }
 
+      struct func_call_info_t* curr = call_info;
+      call_info = call_info->next;
+      free(curr);
       break;
     }
     default:
-      printf("builtin_function_call: unknown section\n");
+      printf("asc_function_call: unknown section\n");
   }
 }
 
