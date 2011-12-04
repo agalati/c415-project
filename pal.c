@@ -25,6 +25,7 @@ main (  int     argc,
 {
   err_buf = NULL;
   leave_asc = 0;
+  bounds_checking = 1;
 
   parse_args(argc, argv);
   sym_tab_init();
@@ -152,9 +153,10 @@ void parse_args(int argc, char** argv)
     arg = argv[narg];
     if (strcmp(arg, "-S") == 0)
 		leave_asc = 1;
-    else if (strcmp(arg, "-a") == 0)
-      printf("-a option not implemented yet, ignoring...\n");
-    else if (strcmp(arg, "-n") == 0)
+    else if (strcmp(arg, "-a") == 0){
+		bounds_checking = 0;
+		stop_boundscheck();
+    } else if (strcmp(arg, "-n") == 0)
       do_listing = 0;
     else
     {
@@ -183,7 +185,7 @@ usage(void)
 {
   printf("pal [options] file\n");
   printf("Options:\n");
-  printf("\t-S\tLeave ASC code in file.asc instead of removing it (not implemented)\n");
+  printf("\t-S\tLeave ASC code in file.asc instead of removing it. \n");
   printf("\t-n\tDo not produce a program listing.\n");
   printf("\t-a\tDo not generate run-time array subscript bounds checking.\n");
   exit(-1);

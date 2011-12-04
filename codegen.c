@@ -25,6 +25,7 @@ struct function_info_t
 struct function_info_t* function_list = NULL;
 
 int do_codegen = 1;
+int bounds_checking = 1;
 int current_parameter_offset = 0;
 
 void stop_codegen(void)
@@ -618,4 +619,38 @@ void emit(char* op)
     return;
 
   fprintf(asc_file, "\t%s\n", op);
+}
+
+void stop_boundscheck(void)
+{
+  emit_comment("No run-time bounds checking.");
+  bounds_checking = 0;
+}
+
+/* emit before any call to dereference an array */
+void emit_boundscheck(int index, int lowbound, int highbound)
+{
+	if (!do_codegen)
+		return;
+	if (!bounds_checking)
+		return;
+		
+	/* check low bound */
+	fprintf(asc_file, "lowbound_check\n");
+	fprintf(asc_file, "\tCONSTI %d\n", index);
+	fprintf(asc_file, "\tCONSTI %d\n", lowbound);
+	fprintf(asc_file, "\tGTI\n");
+	fprintf(asc_file, "\tIFZ out_of_bounds\n");
+	fprintf(asc_file, "\tGOTO highbound_check\n");
+	
+	/* is out of bound, sandwich between checks */
+	fprintf(asc_file, "out_of_bounds\n");
+	fprintf(asc_file, "\tSTOP\n");	/* some kind of error message? */
+	
+	/*check high bound */
+	fprintf(asc_file, "highbound_check\n");
+	fprintf(asc_file, "\tCONSTI %d\n", index);
+	fprintf(asc_file, "\tCONSTI %d\n", highbound);
+	fprintf(asc_file, "\tLTI\n");
+	fprintf(asc_file, "\tIFZ out_of_bounds\n");
 }

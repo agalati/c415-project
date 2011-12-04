@@ -181,4 +181,8 @@ void emit_dump(void);
 /* single function to take care of all ASC operations that don't have arguments */
 void emit(char* op);
 
+/* bounds checking */
+void stop_boundscheck(void);
+void emit_boundscheck(int index, int lowbound, int highbound);
+
 #endif

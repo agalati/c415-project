@@ -24,6 +24,7 @@ unsigned int num_lines;
 
 int do_listing;
 int leave_asc;
+int bounds_checking;
 
 struct error_msgs;
 struct error_msgs
