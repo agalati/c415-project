@@ -1,0 +1,29 @@
+program nestedwhile (input, output);
+var
+  a : integer;
+  b : integer;
+  c : integer;
+  d : integer;
+begin
+  a := 1;
+  d := 0;
+  while a < 10 do
+  begin
+
+    b := 1;
+    while b < 10 do
+    begin
+
+      c := 1;
+      while c < 10 do
+      begin
+        d := d + 1;
+        c := c + 1;
+      end;
+
+      b := b + 1;
+    end;
+
+    a := a + 1;
+  end;
+end.

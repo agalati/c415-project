@@ -30,6 +30,12 @@ struct rb_t
   struct rb_t* next;
 };
 
+struct label_t
+{
+  char *label, *endlabel;
+  struct label_t* next;
+};
+
 struct expr_t* curr_simple_expr = NULL;
 int curr_simple_expr_handled = 0;
 
@@ -227,19 +233,26 @@ void asc_notify_last_token(int token)
         push_expr(curr_simple_expr);
       asc_while(ASC_WHILE_DO);
       break;
+    case ELSE:
+      asc_if(ASC_IF_ELSE);
+      break;
     case P_BEGIN:
       if (function_list && function_list->level == get_current_level() && !function_list->handled)
         write_function_info();
       break;
+    case THEN:
+      if (!curr_simple_expr_handled)
+        push_expr(curr_simple_expr);
+      asc_if(ASC_IF_BEGIN);
   }
 }
 
-void asc_increment_var_count()
+void asc_increment_var_count(int size)
 {
   if (!do_codegen)
     return;
 
-  function_list->varc++;
+  function_list->varc = function_list->varc + size;
 }
 
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
@@ -379,30 +392,39 @@ void asc_while(int section)
   if (!do_codegen)
     return;
 
-  static char* label = NULL;
-  static char* endlabel = NULL;
+  static struct label_t* label_stack = NULL;
   switch(section)
   {
     case ASC_WHILE_BEGIN:
-      label = get_next_while_label();
-      endlabel = (char*)malloc(16*sizeof(char));
-      sprintf(endlabel, "end_%s", label);
-      fprintf(asc_file, "\n%s\n", label);
+    {
+      struct label_t* labels = (struct label_t*)malloc(sizeof(struct label_t));
+      labels->next = label_stack;
+      label_stack = labels;
+      labels->label = get_next_while_label();
+      labels->endlabel = (char*)malloc(16*sizeof(char));
+      sprintf(labels->endlabel, "end_%s", labels->label);
+      fprintf(asc_file, "\n%s\n", labels->label);
       break;
+    }
     case ASC_WHILE_DO:
-      emit_ifz(endlabel);
+      emit_ifz(label_stack->endlabel);
       break;
     case ASC_WHILE_END:
-      emit_goto(label);
-      fprintf(asc_file, "%s\n\n", endlabel);
-      free(label);
-      free(endlabel);
+    {
+      emit_goto(label_stack->label);
+      fprintf(asc_file, "%s\n\n", label_stack->endlabel);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
       break;
+    }
     case ASC_WHILE_CONTINUE:
-      emit_goto(label);
+      emit_goto(label_stack->label);
       break;
     case ASC_WHILE_EXIT:
-      emit_goto(endlabel);
+      emit_goto(label_stack->endlabel);
       break;
     default:
       printf("asc_while: invalid section\n");
@@ -415,8 +437,50 @@ void asc_if(int section)
   if (!do_codegen)
     return;
 
-  static char* label = NULL;
-  static char* endlabel = NULL;
+  static struct label_t* label_stack = NULL;
+
+  switch(section)
+  {
+    case ASC_IF_BEGIN:
+    {
+      struct label_t* labels = (struct label_t*)malloc(sizeof(struct label_t));
+      labels->next = label_stack;
+      label_stack = labels;
+      labels->label = get_next_if_label();
+      labels->endlabel = (char*)malloc(16*sizeof(char));
+      sprintf(labels->endlabel, "end_%s", labels->label);
+      emit_ifz(labels->label);
+      break;
+    }
+    case ASC_IF_ELSE:
+    {
+      emit_goto(label_stack->endlabel);
+      fprintf(asc_file, "\n%s\n", label_stack->label);
+      break;
+    }
+    case ASC_IF_END:
+    {
+      fprintf(asc_file, "%s\n\n", label_stack->endlabel);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
+      break;
+    }
+    case ASC_IF_END_NO_ELSE:
+    {
+      fprintf(asc_file, "\n%s\n", label_stack->label);
+      free(label_stack->label);
+      free(label_stack->endlabel);
+      struct label_t* curr_label = label_stack;
+      label_stack = label_stack->next;
+      free(curr_label);
+      break;
+    }
+    default:
+      printf("asc_if: invalid section\n");
+  }
 }
 
 void asc_push_var(struct sym_rec* var)

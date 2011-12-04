@@ -2235,6 +2235,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END_NO_ELSE);
                           }
                         | IF error THEN stat { yyerrok; yyclearin; }
                         | IF expr THEN matched_stat ELSE stat
@@ -2245,6 +2246,7 @@ struct_stat             : IF expr THEN stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END);
                           }
                         | IF error THEN matched_stat ELSE stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE stat
@@ -2294,6 +2296,7 @@ matched_stat            : simple_stat
                               sprintf(error, "If statement conditionals must be of type boolean.");
                               semantic_error(error);
                             }
+                            asc_if(ASC_IF_END);
                           }
                         | IF error THEN matched_stat ELSE matched_stat { yyerrok; yyclearin; }
                         | IF expr THEN error ELSE matched_stat { yyerrok; yyclearin; }

@@ -105,6 +105,13 @@
 #define ASC_WHILE_CONTINUE    3
 #define ASC_WHILE_EXIT        4
 
+/* If sections */
+
+#define ASC_IF_BEGIN        0
+#define ASC_IF_ELSE         1
+#define ASC_IF_END          2
+#define ASC_IF_END_NO_ELSE  3
+
 /* Function sections */
 
 #define ASC_FUNCTION_BEGIN    0
@@ -143,7 +150,7 @@ void asc_stop();
 
 void asc_notify_last_token(int token);
 
-void asc_increment_var_count();
+void asc_increment_var_count(int size);
 
 void asc_next_parameter_location(struct location_t* location);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
