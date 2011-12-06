@@ -123,6 +123,17 @@
 #define ASC_FUNCTION_CALL_ARG   1
 #define ASC_FUNCTION_CALL_END   2
 
+/* Builtin function names */
+
+#define BUILTIN_STR_EQ    "string_eq"
+#define BUILTIN_STR_NEQ   "string_neq"
+#define BUILTIN_STR_LT    "string_lt"
+#define BUILTIN_STR_LE    "string_le"
+#define BUILTIN_STR_GT    "string_gt"
+#define BUILTIN_STR_GE    "string_ge"
+
+#define BUILTIN_STR_COPY  "string_copy"
+
 struct func_call_info_t
 {
   struct sym_rec* func;
@@ -155,6 +166,8 @@ void asc_increment_var_count(int size);
 void asc_next_parameter_location(struct location_t* location);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
 void asc_function_call(int section, void* info, int convert_int_to_real);
+void handle_string_arg(struct expr_t* arg);
+
 void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
 char* required_builtins(char* name);
 
@@ -164,10 +177,15 @@ void asc_if(int section);
 void asc_push_var(struct sym_rec* var);
 
 void asc_assignment(struct sym_rec* var, struct expr_t* expr);
+void assign_strings(struct sym_rec* var, struct expr_t* expr);
+
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_logic(int op, struct expr_t* operand1, struct expr_t* operand2);
+
+void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2);
+void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2);
 
 /* Stack Operations */
 void emit_push(int display, int offset);

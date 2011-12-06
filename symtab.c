@@ -455,9 +455,10 @@ struct sym_rec *addconst(char* name, struct sym_rec* type)
   s->class = OC_CONST;
   s->desc.const_attr.type = type;
 
-  // set the constant's location
-  s->desc.const_attr.location.display = current_level-1;
-  s->desc.const_attr.location.offset = current_offset++;
+  // this has to be fixed for constant arrays, strings, and records, as we can't simply push their values onto the stack when we need them
+  // set the constant's location - NO constants don't have locations
+  //s->desc.const_attr.location.display = current_level-1;
+  //s->desc.const_attr.location.offset = current_offset++;
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;

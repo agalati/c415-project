@@ -501,23 +501,23 @@ void declare_const(char* name, struct expr_t* s)
     {
       case TC_INTEGER:
         c->desc.const_attr.value.integer = s->value.integer;
-        printf("Setting value of '%s' to %d\n", name, s->value.integer);
+        //printf("Setting value of '%s' to %d\n", name, s->value.integer);
         break;
       case TC_REAL:
         c->desc.const_attr.value.real = s->value.real;
-        printf("Setting value of '%s' to %lf\n", name, s->value.real);
+        //printf("Setting value of '%s' to %lf\n", name, s->value.real);
         break;
       case TC_CHAR:
         c->desc.const_attr.value.character = s->value.character;
-        printf("Setting value of '%s' to %c\n", name, s->value.character);
+        //printf("Setting value of '%s' to %c\n", name, s->value.character);
         break;
       case TC_BOOLEAN:
         c->desc.const_attr.value.boolean = s->value.boolean;
-        printf("Setting value of '%s' to %d\n", name, s->value.boolean);
+        //printf("Setting value of '%s' to %d\n", name, s->value.boolean);
         break;
       case TC_STRING:
         c->desc.const_attr.value.string = strdup(s->value.string);
-        printf("Setting value of '%s' to %s\n", name, s->value.string);
+        //printf("Setting value of '%s' to %s\n", name, s->value.string);
         break;
       default:
         printf("Invalid type class in declare_const()\n");

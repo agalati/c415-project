@@ -67,7 +67,10 @@ int push_expr(struct expr_t* expr)
 
   if (expr->location)
   {
-    emit_push(expr->location->display, expr->location->offset);
+    if (expr->type->desc.type_attr.type_class == TC_STRING)
+      emit_pusha(expr->location->display, expr->location->offset);
+    else
+      emit_push(expr->location->display, expr->location->offset);
     return 1;
   }
   else if (expr->is_const)
@@ -331,10 +334,19 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
     case ASC_FUNCTION_CALL_ARG:
     {
       struct expr_t* arg = (struct expr_t*)info;
-      push_expr(arg);
-      if (convert_int_to_real)
-        emit(ASC_ITOR);
-      call_info->argc++;
+      int expr_tc = arg->type->desc.type_attr.type_class;
+      if (expr_tc == TC_STRING)
+      {
+        handle_string_arg(arg);
+        call_info->argc += arg->type->desc.type_attr.type_description.string->high;
+      }
+      else
+      {
+        push_expr(arg);
+        if (convert_int_to_real)
+          emit(ASC_ITOR);
+        call_info->argc++;
+      }
       break;
     }
     case ASC_FUNCTION_CALL_END:
@@ -360,6 +372,19 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
     }
     default:
       printf("asc_function_call: unknown section\n");
+  }
+}
+
+void handle_string_arg(struct expr_t* arg)
+{
+  int len = arg->type->desc.type_attr.type_description.string->high;
+  int i;
+  for (i=len; i>0; --i)
+  {
+    if (arg->is_const)
+      emit_consti(arg->value.string[i-1]);
+    else
+      emit_push(arg->location->display, arg->location->offset+(i-1));
   }
 }
 
@@ -497,22 +522,50 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
   if (!do_codegen)
     return;
 
-  int expr_tc = expr->type->desc.type_attr.type_class;
-
-  push_expr(expr);
-
   int tc1 = var->desc.var_attr.type->desc.type_attr.type_class,
       tc2 = expr->type->desc.type_attr.type_class;
 
-  int convert_to_real = 0;
+  if (tc1 == TC_STRING)
+    assign_strings(var, expr);
+  else
+  {
+    // else
+    push_expr(expr);
 
-  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
-    convert_to_real = 1;
+    int convert_to_real = 0;
 
-  if (convert_to_real)
-    emit(ASC_ITOR);
+    if (tc1 == TC_REAL && tc2 == TC_INTEGER)
+      convert_to_real = 1;
 
-  emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    if (convert_to_real)
+      emit(ASC_ITOR);
+
+    emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+  }
+}
+
+void assign_strings(struct sym_rec* var, struct expr_t* expr)
+{
+  int len = expr->type->desc.type_attr.type_description.string->high;
+  if (expr->is_const)
+  {
+    int i;
+    for (i = 0; i < len; ++i)
+    {
+      emit_consti((int)expr->value.string[i]);
+      emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
+    }
+  }
+  else if (expr->location)
+  {
+    emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    emit_pusha(expr->location->display, expr->location->offset);
+    emit_consti(len);
+    emit_call(0, BUILTIN_STR_COPY);
+    emit_adjust(-3);
+  }
+  else
+    printf("assign_strings: String doesn't have a location and isn't constant...\n");
 }
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)
@@ -605,11 +658,6 @@ void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
   int tc1 = operand1->type->desc.type_attr.type_class,
       tc2 = operand2->type->desc.type_attr.type_class;
 
-  int real_comparisons = 0;
-
-  if (tc1 == TC_REAL || tc2 == TC_REAL)
-    real_comparisons = 1;
-
   int convert_to_real[2] = {0, 0};
   if (tc1 == TC_REAL && tc2 == TC_INTEGER)
     convert_to_real[1] = 1;
@@ -623,6 +671,57 @@ void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
   push_expr(operand2);
   if (convert_to_real[1])
     emit(ASC_ITOR);
+
+  if (tc1 == TC_STRING)
+    string_comparison(op, operand1, operand2);
+  else
+    number_comparison(op, operand1, operand2);
+}
+
+void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
+{
+  emit_consti(operand1->type->desc.type_attr.type_description.string->high);
+  switch(op)
+  {
+    case EQUALS:
+      emit_call(0, BUILTIN_STR_EQ);
+      emit_adjust(-2);
+      break;
+    case NOT_EQUAL:
+      emit_call(0, BUILTIN_STR_NEQ);
+      emit_adjust(-2);
+      break;
+    case LESS_THAN:
+      emit_call(0, BUILTIN_STR_LT);
+      emit_adjust(-2);
+      break;
+    case GREATER_THAN:
+      emit_call(0, BUILTIN_STR_GT);
+      emit_adjust(-2);
+      break;
+    case LESS_EQUAL:
+      emit_call(0, BUILTIN_STR_LE);
+      emit_adjust(-2);
+      break;
+    case GREATER_EQUAL:
+      emit_call(0, BUILTIN_STR_GE);
+      emit_adjust(-2);
+      break;
+    default:
+      printf("string_comparison: Unknown comparison code\n");
+
+  }
+}
+
+void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
+{
+  int tc1 = operand1->type->desc.type_attr.type_class,
+      tc2 = operand2->type->desc.type_attr.type_class;
+
+  int real_comparisons = 0;
+
+  if (tc1 == TC_REAL || tc2 == TC_REAL)
+    real_comparisons = 1;
 
   switch(op)
   {
@@ -666,7 +765,7 @@ void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
       emit(ASC_NOT);
       break;
     default:
-      printf("asc_comparisons: Unknown comparison code\n");
+      printf("number_comparison: Unknown comparison code\n");
   }
 }
 

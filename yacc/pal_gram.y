@@ -1817,7 +1817,7 @@ factor                  : var
                                       $$->value.string = $1->desc.const_attr.value.string;
                                       break;
                                     case TC_SCALAR:
-                                      printf("Settings value of scalar '%s' to %d\n", $1->name, $1->desc.const_attr.value.integer);
+                                      //printf("Setting value of scalar '%s' to %d\n", $1->name, $1->desc.const_attr.value.integer);
                                       $$->value.integer = $1->desc.const_attr.value.integer;
                                       break;
                                     default:
