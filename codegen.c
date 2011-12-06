@@ -21,6 +21,9 @@ struct function_info_t
   int   level, argc, varc;
   int   handled;
 
+  /* This is what you'll adjust by */
+  int   size;
+  
   struct function_info_t* next;
 };
 
@@ -132,8 +135,8 @@ void write_function_info()
 
   fprintf(asc_file, "\n%s\n", function_list->name);
 
-  int i;
-  for(i=function_list->argc; i>0; --i)
+  int i;              /* argc */
+  for(i=function_list->size; i>0; --i)
     emit_push(function_list->level, -(i+2));
 
   //emit_adjust(function_list->argc);
@@ -266,14 +269,24 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
 
   static int argc = -999;
 
+  static int size = 0;
+  
   switch(section)
   {
     case ASC_FUNCTION_BEGIN:
     {
       int i=0;
-      for(; parm_list; parm_list=parm_list->next, ++i);
+      ///////
+      for(; parm_list; parm_list=parm_list->next, ++i)
+      {
+        if (parm_list->class = OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+          size += parm_list->desc.var_attr.type->desc.type_attr.type_description.string->high;
+        else
+          size += 1;
+      }
+      ///////
       argc = i;
-
+      
       struct function_info_t* info = (struct function_info_t*)malloc(sizeof(struct function_info_t));
       info->name = name;
       info->level = get_current_level();
@@ -282,6 +295,9 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       info->handled = 0;
       info->next = function_list;
 
+      info->size = size;
+      size = 0;
+      
       function_list = info;
       argc = -999;
       current_parameter_offset = 0;
@@ -292,7 +308,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       struct function_info_t* curr_function = function_list;
       function_list = function_list->next;
 
-      emit_adjust(-(curr_function->argc));
+      emit_adjust(-(curr_function->size));
       emit_adjust(-(curr_function->varc));
       emit_ret(get_current_level()+1);
       fprintf(asc_file, "\n");
@@ -379,12 +395,12 @@ void handle_string_arg(struct expr_t* arg)
 {
   int len = arg->type->desc.type_attr.type_description.string->high;
   int i;
-  for (i=len; i>0; --i)
+  for (i = 0; i < len; ++i)
   {
     if (arg->is_const)
-      emit_consti(arg->value.string[i-1]);
+      emit_consti(arg->value.string[i]);
     else
-      emit_push(arg->location->display, arg->location->offset+(i-1));
+      emit_push(arg->location->display, arg->location->offset+i);
   }
 }
 
