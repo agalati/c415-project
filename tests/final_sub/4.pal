@@ -1,0 +1,72 @@
+{====================================================
+Test Program 4.pal 
+Tests: Compiles Properly - tests built in functions
+Written by: Group 4
+-----------------------------------
+
+Description
+-----------------------------------
+This program utilitizes all of the compilers built-in functions
+except for read and readln, to make sure they are working as intended.  
+The program computes various values using the built-ins, then prints them
+out using write and writeln. 
+
+=====================================================}
+
+program builtins (input, output)
+
+var
+  a, b, c, l, m, n, o : real;
+  d, f, g, j, k, p : integer;
+  e, h, i : char;
+begin
+  a := sqrt(4);   // 2
+  b := ln(2.71828); // 1
+  c := sin(3.1415); // 0
+  d := ord('C'); // 67 
+  e := chr(65); // A
+  f := trunc(3.5); // 3
+  g := round(3.5); // 4 
+  h := succ('d'); // e
+  i := pred('d'); // c
+  j := odd(5); // true
+  k := abs(-21); // 21
+  l := cos(0); // 1
+  m := tan(0); // 0
+  n := arctan(0); // 0
+  o := exp(10); // e^10
+  p := sqr(2) // 4
+  
+  write("sqrt of 4 should be 2, returns ");
+  writeln(a);
+  write("ln of 2.71828 should be 1, returns ");
+  writeln(b);
+  write("sin of 3.1415 should be 0, returns ");
+  write(c);
+  write("ord of 'C' should be 67, returns ");
+  writeln(d);
+  write("chr of 65 should be 'A', returns ");
+  writeln(e);
+  write("trunc of 3.5 should be 3, returns ");
+  writeln(f);
+  write("round of 3.5 should be 4, returns ");
+  writeln(g);
+  write("succ of 'd' should be 'e', returns ");
+  writeln(h);
+  write("pred of 'd' should be 'c', returns ");
+  writeln(i);
+  write("odd of 5 should be 1, returns ");
+  writeln(j);
+  write("abs of -21 should be 21, returns ");
+  writeln(k);
+  write("cos of 0 should be 1, returns ");
+  writeln(l);
+  write("tan of 0 should be 0, returns ");
+  writeln(m);
+  write("arctan of 0 should be 0, returns ");
+  writeln(n);
+  write("exp of 10 should be e^10, returns ");
+  writeln(o);
+  write("sqr of 2 should be 4, returns ");
+  writeln(o);
+end.
