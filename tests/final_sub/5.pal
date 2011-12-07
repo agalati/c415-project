@@ -258,11 +258,6 @@ begin
 	else
 		writeln('ar1[1] = ar2[1] wrong');
 		
-	if ar1[1] = ar4[1] then
-		writeln('ar1[1] = ar4[1] wrong')
-	else
-		writeln('ar1[1] = ar4[1] correct');
-		
 	if ar1[1] <> ar2[1] then
 		writeln('ar1[1] <> ar2[1] wrong')
 	else
@@ -302,7 +297,6 @@ begin
 		writeln('ar1[1] > ar7[1] wrong')
 	else
 		writeln('ar1[1] > ar7[1] correct');
-		
 		
 	if ar1[1] <= ar7[1] then
 		writeln('ar1[1] <= ar7[1] correct')

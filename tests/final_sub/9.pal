@@ -1,0 +1,85 @@
+{====================================================
+Test Program 9.pal - the errors from 8.pal as well as more record tests,
+function return type testing, and dangling exit status testing
+
+Tests:
+Written by: Group 4
+-----------------------------------
+
+Description
+-----------------------------------
+#All the errors from 8.pal - There are record errors on lines 33 & 35, an array error on line 59,
+a too long string on line 73 and an incorrect assignment attempt on line 78.
+
+#plus - duplicate field in a record line 55.  Attempt at returning incorrect type in
+a function on line 68. 'exit' found outside a loop on line 80.  
+Assigning to a record field which does not exist on line 82.
+
+=====================================================}
+
+program testing(input, output);
+
+const
+	okay = 'a {comment inside a string?} a';
+	yup = 2;
+
+type
+	bubble = integer;
+	hark = array[1..7] of array[1..8] of char;
+	harken = hark;
+	myrec = record
+       a : integer;
+	   b : real;
+	   c : char;  { ERROR - last entry in a record should not have a semicolon }
+	 end;
+	 secondtry = record (   { ERROR - bad brackets in a record }
+		a2 : integer;
+		b2 : real;
+		c2 : char
+	 )
+	 end;
+	 thirdtry = record
+		a3 : integer;
+		b3 : real;
+		c3 : char;
+		c3 : boolean;	{ ERROR - duplicate field in record }
+	end;
+	
+	goodrec = record
+		a4 : integer;
+		b4 : real
+	end;
+	 
+	stringer = '\t /t \t /t \n /n \n but whhhhhy?';
+	anonEnum = (this, is, a, list, of, enums);
+	arr1 = array[1..5] of integer;
+     
+var 
+	
+    bigray : ARRAY[1..99] of char; { ERROR - array is only a reserve word in lowercase }
+	{}{}{}{}{}{}{}{}{}{}{}{}{many comments on same line}
+	{{// // // //}	{very odd nested comments}
+	mareal : real;
+    maint : int;
+	arec : goodrec;
+
+	function badfunc(okie : maint) : integer;
+begin
+    badfunc := 99.999;		{ ERROR - trying to return a real value when func should return an int }
+end;
+
+begin
+	{ ERROR - length of string exceeds 255 }
+	stringer := 'hhhhhhoooooooo00000000000000000000000000000oooooowwwwwwwwwwwww looooooooooooooo00000000000000000000000000000000000oooooooooooonnnnnnnnnggggggggggggggggggggggggg iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiissssssssssssssssssssssssssssssss tttttttttttttttttttttttttttttttttttttttttttttttttttttttthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssssssssssssssssssssssssssssssssssssssssssss sssssssssssssssssssssssssssssttttttttttttttttttttttttttttttttttrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrriiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg??????????????????????????????????????????';
+    arr1 := anonEnum; { ERROR - incorrect type assignment }
+	arr1[1] := yup;
+	
+	mareal := 0.99;
+	maint := mareal;	{ ERROR - assigning a real to an int }
+	
+	exit;   { ERROR - exit found outside of a loop }
+	
+	arec.f := 1;	{ ERROR - there is no field 'f' in type goodrec }
+	
+	
+end.
