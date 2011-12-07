@@ -763,10 +763,9 @@ f_parm                  : ID COLON ID
 
                             struct location_t location;
                             asc_next_parameter_location(&location, size);
-                            parm_list = addparm($1, s, parm_list, &location);
+                            parm_list = addparm($1, s, parm_list, &location, 0);
                             $$ = parm_list;
                           }
-                        // TODO: We need to have some way of telling that this parameter was passed by reference
                         | VAR ID COLON ID
                         {
                             int parm_error = 0;
@@ -802,7 +801,7 @@ f_parm                  : ID COLON ID
 
                             struct location_t location;
                             asc_next_parameter_location(&location, 1);
-                            parm_list = addparm($2, s, parm_list, &location);
+                            parm_list = addparm($2, s, parm_list, &location, 1); // 1 because we passing by reference
                             $$ = parm_list;
                           }
                         ;
@@ -2264,10 +2263,25 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
 
                                       if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                        convert_int_to_real = 1;
+                                      {
+                                        if (last_parm->desc.var_attr.reference_semantics)
+                                        {
+                                          char error[1024];
+                                          sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                          semantic_error(error);
+                                        }
+                                        else
+                                          convert_int_to_real = 1;
+                                      }
                                     }
                                     else
                                       printf("last_parm->class == %d\n", last_parm->class);
@@ -2324,10 +2338,25 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
 
                                       if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                        convert_int_to_real = 1;
+                                      {
+                                        if (last_parm->desc.var_attr.reference_semantics)
+                                        {
+                                          char error[1024];
+                                          sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                          semantic_error(error);
+                                        }
+                                        else
+                                          convert_int_to_real = 1;
+                                      }
                                     }
                                   }
                                 }
@@ -2396,10 +2425,25 @@ plist_finvok            : ID O_BRACKET parm
                                       semantic_error(error);
                                     }
                                   }
+                                  else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                    semantic_error(error);
+                                  }
 
                                   if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                       last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                    convert_int_to_real = 1;
+                                  {
+                                    if (last_parm->desc.var_attr.reference_semantics)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                      semantic_error(error);
+                                    }
+                                    else
+                                      convert_int_to_real = 1;
+                                  }
                                 }
                               }
                             }

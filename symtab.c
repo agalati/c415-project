@@ -481,6 +481,7 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->level = current_level - 1;
   s->class = OC_VAR;
   s->desc.var_attr.type = type;
+  s->desc.var_attr.reference_semantics = 0; 
 
   int size = 1;
   int type_class = -1;
@@ -604,7 +605,7 @@ struct sym_rec *addtype(char* name, struct type_desc* type)
 }
 
 /* Add parameters to the parameter list and also add the variable to the next level */
-struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location)
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location, int reference_semantics)
 {
   struct sym_rec *s;
   struct sym_rec *t;
@@ -623,8 +624,12 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
     s->desc.var_attr.type = type;
     s->desc.var_attr.location.display = location->display;
     s->desc.var_attr.location.offset = location->offset;
+    s->desc.var_attr.reference_semantics = reference_semantics;
 
-    next_level_var_offset = location->offset + sizeof_type(type);
+    if (reference_semantics)
+      next_level_var_offset = location->offset + 1; // if its passed by reference, we just have its address
+    else 
+      next_level_var_offset = location->offset + sizeof_type(type);
 
     /* Add to next level of symbol table */
     s->next = sym_tab[current_level + 1];
@@ -686,6 +691,7 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
   t->desc.var_attr.type = type;
   t->desc.var_attr.location.display = location->display;
   t->desc.var_attr.location.offset = location->offset;
+  t->desc.var_attr.reference_semantics = reference_semantics;
 
   t->next = parm_list;
   parm_list = t;

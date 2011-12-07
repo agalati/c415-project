@@ -142,6 +142,9 @@ int push_expr(struct expr_t* expr)
       case TC_BOOLEAN:
         emit_consti(expr->value.boolean);
         break;
+      case TC_SCALAR:
+        emit_consti(expr->value.integer);
+        break;
       default:
         printf("push_expr: Trying to push something weird onto the stack\n");
     }
@@ -393,7 +396,14 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
       info->func = func;
       info->next = call_info;
       info->argc = 0;
-      info->builtin = 0;
+
+      if (func == builtinlookup("read") || func == builtinlookup("readln"))
+        info->read = 0;
+      else if (func == builtinlookup("write"))
+        info->write = 0;
+      else if (func == builtinlookup("writeln"))
+        info->writeln = 0;
+
       call_info = info;
 
       break;
@@ -414,6 +424,16 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
           emit(ASC_ITOR);
         call_info->argc++;
       }
+
+      if (call_info->read)
+      {
+      }
+      else if (call_info->write)
+      {
+      }
+      else if (call_info->writeln)
+      {
+      }
       break;
     }
     case ASC_FUNCTION_CALL_END:
@@ -431,7 +451,6 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
         else
           emit_adjust(-(call_info->argc));
       }
-
       struct func_call_info_t* curr = call_info;
       call_info = call_info->next;
       free(curr);

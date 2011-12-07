@@ -105,6 +105,7 @@ struct const_desc {
 struct var_desc {
   struct sym_rec*     type;
   struct location_t   location;
+  int reference_semantics;
 };
 
 struct func_desc {
@@ -189,7 +190,7 @@ struct sym_rec *addproc(char* name, struct sym_rec* parm_list);
 struct sym_rec *addtype(char* name, struct type_desc* type);
 
 /* Not sure if we need this last one */
-struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location);
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location, int reference_semantics);
 
 struct sym_rec *isCurrentFunction(char* name);
 
