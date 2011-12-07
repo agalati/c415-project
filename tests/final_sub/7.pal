@@ -1,16 +1,24 @@
 {====================================================
-Test Program 6.pal 
-Tests: Compiles Properly - 
+Test Program 7.pal 
+Tests: Compiles Properly - basis arithmetic operations
 Written by: Group 4
 -----------------------------------
 
 Description
 -----------------------------------
-
+Test to make sure arithmetic is working, especially with odd variable
+configurations
 
 =====================================================}
 
 program builtins (input, output);
+
+const
+	one = 1;
+	two = 2;
+	three = 3;
+	four = 4;
+	five = 5;
 
 var
   a, b, c, d : integer;
@@ -22,7 +30,67 @@ var
   ar7, ar8 : array[1..99] of integer;
   
 begin
+        { Addition }
+	a := one + two + three + four + five; // 15
+	b := a + a + two + a + five; // 52
+	c := a + b + b + a + one; // 135
+	d := c + 0 + 0 + 0 + 0 + 0; // 135
 	
+	e := 0.5 + 0.5 + 0.5; // 1.5
+	f := e + 0.2 + 0.1 + e; // 3.3
 	
+	ar1[1] := 2;
+	ar1[2] := 2;
+	
+	a:= ar1[1] + ar1[2]; // 4
 		
+		{ Subtraction }
+		
+	a := a - 1 -1 -1; // 1
+	b := b - b - b; // -52
+	c := c - one - four; // 130
+	d := d - 0 - 0 - 0 - 0;  // 135
+	
+	e := e -0.5 - 0.5; // 0.5
+	f := f - 0.1 - 0.1 - 0.1 - e;  // 2.5
+
+    ar1[2] := ar1[1] - 1; // 1	
+		
+		
+		{ Multiplication }
+		
+	a := 5 * 5;	// 25
+	b := a * 2 * 1; // 50
+	c := b * b;  // 2500
+	
+	e := 0.5 * 0.5;  // 0.25
+	f := e * 2;  // 0.5
+	
+	ar1[1] := 2;
+	ar1[2] := 3;
+	d := ar1[1] * ar2[2]; // 6
+		
+		{ Division }
+		
+	a := a div 5;  // 5				
+	b := 100 div 2 div 2;  // 25
+	c := 25 div 1;  // 25
+	
+	e := 2 / 0.5;  // 4
+	f := e / 0.1;  // 40
+	
+	d := ar1[1] div 1 div 1 div 1;  // 2
+	d := ar1[2] div 3;  // 1
+	
+		{ Unary }
+		
+	a := -5;  // -5
+	b := -a;  // 5
+	c := -(-a); // -5
+	
+	e := -0.5;  // -0.5
+	f := -e;  // 0.5
+	
+	d := -ar1[1];  // -2
+
 end.
