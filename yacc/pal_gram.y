@@ -886,7 +886,7 @@ proc_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                           }
                         }
                         | ID O_BRACKET C_BRACKET
@@ -905,8 +905,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
                                 }
                               }
                               else if (proc->class == OC_FUNC)
@@ -918,8 +918,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
                                 }
                               }
                               else
@@ -1635,7 +1635,6 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1657,6 +1656,7 @@ simple_expr             : term { $$ = $1; }
                                   $$->is_const = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
                               }
                             }
                             else
@@ -1685,7 +1685,6 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1707,6 +1706,7 @@ simple_expr             : term { $$ = $1; }
                                   $$->is_const = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
                               }
                             }
                             else
@@ -1719,17 +1719,18 @@ simple_expr             : term { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = $1->value.boolean || $3->value.boolean;
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 else
                                 {
                                   asc_logic($2, $1, $3);
                                   $$->is_const = 0;
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                               }
                               else
@@ -1769,7 +1770,6 @@ term                    : factor { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1792,6 +1792,7 @@ term                    : factor { $$ = $1; }
                                   $$->is_in_address_on_stack = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
                               }
                             }
                             else
@@ -1822,7 +1823,6 @@ term                    : factor { $$ = $1; }
                                   $$ = (struct expr_t*)malloc(sizeof(struct expr_t));
                                   $$->type = builtinlookup("real");
                                 }
-                                $$->is_in_address_on_stack = 0;
 
                                 if ($1->is_const && $3->is_const)
                                 {
@@ -1849,6 +1849,7 @@ term                    : factor { $$ = $1; }
                                   $$->is_in_address_on_stack = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
                               }
                             }
                             else
@@ -1861,7 +1862,6 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) / ($3->value.integer);
@@ -1896,17 +1896,18 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) % ($3->value.integer);
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 else
                                 {
                                   asc_integer_math($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                               }
                               else
@@ -1929,7 +1930,6 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = ($1->value.boolean) && ($3->value.boolean);
@@ -1941,6 +1941,7 @@ term                    : factor { $$ = $1; }
                                   $$->location = NULL;
                                   $$->is_const = 0;
                                 }
+                                $$->is_in_address_on_stack = 0;
                               }
                               else
                               {
@@ -1971,17 +1972,20 @@ factor                  : var
                                   $$->type = $1->var;
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_reference = 0;
                                   break;
                                 case OC_VAR:
                                   $$->type = $1->var->desc.var_attr.type;
                                   $$->location = &($1->var->desc.var_attr.location);
                                   $$->is_const = 0;
+                                  $$->is_reference = $1->var->desc.var_attr.reference_semantics;
                                   //asc_push_var($1);
                                   break;
                                 case OC_CONST:
                                   $$->type = $1->var->desc.const_attr.type;
                                   $$->location = NULL;// &($1->desc.const_attr.location);
                                   $$->is_const = 1;
+                                  $$->is_reference = 0;
                                   switch(get_type_class($1->var))
                                   {
                                     case TC_INTEGER:
@@ -2040,6 +2044,7 @@ factor                  : var
                                   asc_logic($1, $2, NULL);
                                 $$->location = NULL;
                                 $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                               else
                               {
@@ -2072,6 +2077,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->location = NULL;
                               $$->is_const = 1;
                               $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
                               $$->value.string = strdup(yylval.name);
                             }
                             else
@@ -2081,6 +2087,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->location = NULL;
                               $$->is_const = 1;
                               $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
                               $$->value.character = yylval.name[0];
                             }
                           }
@@ -2097,6 +2104,7 @@ unsigned_num            : INT_CONST
                             $$->location = NULL;
                             $$->is_const = 1;
                             $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
                             $$->value.integer = yylval.integer;
                           }
 						            | REAL_CONST
@@ -2106,6 +2114,7 @@ unsigned_num            : INT_CONST
                             $$->location = NULL;
                             $$->is_const = 1;
                             $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
                             $$->value.real = yylval.real_t;
                           }
 						            ;                                
@@ -2129,11 +2138,13 @@ func_invok              : plist_finvok C_BRACKET
                             $$->type = $1->return_type; 
                             $$->location = NULL;
                             $$->is_const = 0;
+                            $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
 
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                           } else {
                             $$ = NULL;
                           }
@@ -2153,9 +2164,11 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->type = func->desc.func_attr.return_type;
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
 
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                                 }
                                 else
                                 {
@@ -2193,6 +2206,7 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->name = func->name;
                                 $$->level = func->level;
 
+                                struct sym_rec* last_parm = NULL;
                                 if (isIOFunc($$))
                                 {
                                   if($3 && $3->type && !checkIOArg($3->type))
@@ -2245,7 +2259,6 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 else
                                 {
-                                  struct sym_rec* last_parm = NULL;
                                   for(func = $$->parmlist; func != NULL; func = func->next)
                                   {
                                     $$->counter = $$->counter + 1; 
@@ -2263,7 +2276,7 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
-                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
                                       {
                                         char error[1024];
                                         sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
@@ -2293,8 +2306,8 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2309,6 +2322,7 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->name = func->name;
                                 $$->level = func->level;
 
+                                struct sym_rec* last_parm = NULL;
                                 if (isIOFunc($$))
                                 {
                                   if($3 && $3->type && !checkIOArg($3->type))
@@ -2320,7 +2334,6 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 else
                                 {
-                                  struct sym_rec* last_parm = NULL;
                                   for(func = $$->parmlist; func != NULL; func = func->next)
                                   {
                                     $$->counter = $$->counter + 1;
@@ -2338,7 +2351,7 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
-                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
                                       {
                                         char error[1024];
                                         sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
@@ -2366,8 +2379,8 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2391,6 +2404,7 @@ plist_finvok            : ID O_BRACKET parm
                         | plist_finvok COMMA parm
                         {
                           int convert_int_to_real = 0;
+                          struct sym_rec* last_parm = NULL;
                           if ($1) {
                             if (isIOFunc($1))
                             {
@@ -2404,8 +2418,6 @@ plist_finvok            : ID O_BRACKET parm
                             else
                             {
                               int i;
-                              struct sym_rec* last_parm = NULL;
-                              
                               for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
 
                               if ($1->counter <= 0)
@@ -2425,10 +2437,10 @@ plist_finvok            : ID O_BRACKET parm
                                       semantic_error(error);
                                     }
                                   }
-                                  else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack));
+                                  else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
                                   {
                                     char error[1024];
-                                    sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                    sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1->name, $$->max - $$->counter + 1);
                                     semantic_error(error);
                                   }
 
@@ -2449,7 +2461,7 @@ plist_finvok            : ID O_BRACKET parm
                             }
                               
                             if ($3 && $3->type)
-                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
 
                             $1->counter = $1->counter - 1;
                             $$ = $1;

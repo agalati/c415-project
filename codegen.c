@@ -379,7 +379,7 @@ int asc_get_return_offset()
     return -3;
 }
 
-void asc_function_call (int section, void* info, int convert_int_to_real)
+void asc_function_call (int section, void* info, int convert_int_to_real, int reference_semantics)
 {
   if (!do_codegen)
     return;
@@ -412,16 +412,35 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
     {
       struct expr_t* arg = (struct expr_t*)info;
       int expr_tc = arg->type->desc.type_attr.type_class;
-      if (expr_tc == TC_STRING || expr_tc == TC_RECORD || expr_tc == TC_ARRAY)
+
+      // if it is passed by reference we leave the address on the stack
+      if (!reference_semantics)
       {
-        handle_composite_arg(arg);
-        call_info->argc += sizeof_type(arg->type);
+        emit_comment("passing by value");
+        if (expr_tc == TC_STRING || expr_tc == TC_RECORD || expr_tc == TC_ARRAY)
+        {
+          handle_composite_arg(arg);
+          call_info->argc += sizeof_type(arg->type);
+        }
+        else
+        {
+          push_expr(arg);
+          if (convert_int_to_real)
+            emit(ASC_ITOR);
+          call_info->argc++;
+        }
       }
       else
       {
-        push_expr(arg);
-        if (convert_int_to_real)
-          emit(ASC_ITOR);
+        emit_comment("passing by reference");
+        if (!(arg->is_in_address_on_stack))
+        {
+          if (!(arg->location))
+            printf("asc_function_call: trying to pass by reference something without an address\n");
+          else
+            emit_pusha(arg->location->display, arg->location->offset);
+        }
+
         call_info->argc++;
       }
 
