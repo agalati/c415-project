@@ -454,25 +454,38 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
 
 void handle_composite_arg(struct expr_t* arg)
 {
-  int len = sizeof_type(arg->type);
-  int i;
-  for (i = 0; i < len; ++i)
+  if (arg->is_in_address_on_stack)
+    bubble_copy(arg);
+  else
   {
-    if (arg->is_in_address_on_stack)
+    int len = sizeof_type(arg->type);
+    int i;
+    for (i = 0; i < len; ++i)
     {
-      /* TODO: adjust rooom for new variable on the stack and call asc_memcpy to put the stuff pointed to tbe the address onto the stack */
-      /* break this case out of the loop if this works */
-
-      //emit(ASC_DUP);
-      //emit_consti(i);
-      //emit(ASC_ADDI);
-      //emit
+      if (arg->is_const) // only strings can be constant
+        emit_consti(arg->value.string[i]);
+      else if (arg->location)
+        emit_push(arg->location->display, arg->location->offset+i);
+      else
+        printf("handle_composite_arg: the argument is in an unknown location\n");
     }
-    else if (arg->is_const) // only strings can be constant
-      emit_consti(arg->value.string[i]);
-    else
-      emit_push(arg->location->display, arg->location->offset+i);
   }
+}
+
+// given an address on the stack, copy it's contents onto the stack
+void bubble_copy(struct expr_t* arg)
+{
+  int size = sizeof_type(arg->type);
+  int i;
+  for (i=0; i<size; ++i)
+  {
+    emit(ASC_DUP);
+    emit_consti(i);
+    emit(ASC_ADDI);
+    emit_pushi(-1);
+    emit_call(0, "swap_top");
+  }
+  emit_adjust(-1); // get rid of last dup'ed address
 }
 
 char* required_builtins(char* name)
