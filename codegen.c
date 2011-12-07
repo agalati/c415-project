@@ -139,6 +139,11 @@ int push_expr(struct expr_t* expr)
     }
     return 1;
   }
+  else if (expr->is_in_address_on_stack)
+  {
+    emit_pushi(-1);
+    return 1;
+  }
 
   return 0;
 }

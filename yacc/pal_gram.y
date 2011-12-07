@@ -1940,6 +1940,7 @@ factor                  : var
                             {
                               char error[1024];
                               $$ = (struct expr_t*)malloc(sizeof(struct expr_t));
+                              $$->is_in_address_on_stack = $1->location_on_stack;
                               switch($1->var->class)
                               {
                                 // this should be an impossible case, and we have to stop code generation if we get this case
