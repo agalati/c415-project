@@ -540,7 +540,7 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   struct sym_rec* curr_parm = parm_list;
   for (; curr_parm != NULL; curr_parm = curr_parm->next, ++argc);
   s->desc.var_attr.location.display = get_current_level()+1;
-  s->desc.var_attr.location.offset = -(argc) - 2;
+  s->desc.var_attr.location.offset = asc_get_return_offset();//-(argc) - 2;
   if (argc == 0)
     s->desc.var_attr.location.offset = -3;
 

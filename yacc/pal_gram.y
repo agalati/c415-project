@@ -737,8 +737,22 @@ f_parm                  : ID COLON ID
 
                             if (parm_error) s = NULL;
 
+                            int size = 1;
+                            if (s && s->class == OC_TYPE)
+                            {
+                              switch (s->desc.type_attr.type_class)
+                              {
+                                case TC_STRING:
+                                  size = s->desc.type_attr.type_description.string->high;
+                                  break;
+                                case TC_ARRAY:
+                                  break;
+                                case TC_RECORD:
+                                  break;
+                              }
+                            }
                             struct location_t location;
-                            asc_next_parameter_location(&location);
+                            asc_next_parameter_location(&location, size);
                             parm_list = addparm($1, s, parm_list, &location);
                             $$ = parm_list;
                           }
@@ -777,7 +791,7 @@ f_parm                  : ID COLON ID
                             if (parm_error) s = NULL;
 
                             struct location_t location;
-                            asc_next_parameter_location(&location);
+                            asc_next_parameter_location(&location, 1);
                             parm_list = addparm($2, s, parm_list, &location);
                             $$ = parm_list;
                           }

@@ -150,6 +150,7 @@ void stop_codegen(void);
 // Only pushes onto the stack if it isn't already there
 // returns 0 if nothing was pushed, or 1 otherwise
 int push_expr(struct expr_t* expr);
+int push_const_string_to_stack(struct expr_t* expr);
 
 char* get_next_while_label();
 char* get_next_if_label();
@@ -163,7 +164,7 @@ void asc_notify_last_token(int token);
 
 void asc_increment_var_count(int size);
 
-void asc_next_parameter_location(struct location_t* location);
+void asc_next_parameter_location(struct location_t* location, int size);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
 void asc_function_call(int section, void* info, int convert_int_to_real);
 void handle_string_arg(struct expr_t* arg);

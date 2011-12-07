@@ -1,0 +1,28 @@
+program strings (input, output);
+const
+  str1 = 'str1';
+type
+  string = array [1..4] of char;
+var
+  str2 : array [1..4] of char;
+  str3 : array [1..4] of char;
+  str4 : array [1..4] of char;
+  str5 : string;
+
+  procedure stringtest (str1 : string; str2 : string);
+  begin
+    if str1 = str2 then
+      str5 := 'pass'
+    else
+      str5 := 'fail'
+  end;
+
+begin
+  str2 := 'test';
+  str3 := str1;
+
+  if str2 = str3 then
+    str4 := 'pass'
+  else
+    str4 := 'fail'
+end.
