@@ -1095,7 +1095,7 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
 
-                                  index -= lower;
+                                  //index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
                                   /*
@@ -1107,7 +1107,7 @@ subscripted_var         : var O_SBRACKET expr
                                   else // the expression should already be on the stack
                                   {
                                   */
-                                  //asc_push_expr_if_unhandled();
+                                  asc_push_expr_if_unhandled();
                                   emit_consti(-lower);
                                   emit(ASC_ADDI);
                                   emit_consti(sizeof_type($$->var->desc.var_attr.type));

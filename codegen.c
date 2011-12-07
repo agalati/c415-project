@@ -639,7 +639,7 @@ void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* e
         emit(ASC_ADDI);
         emit_consti((int)expr->value.string[i]);
         emit_popi(-1);
-        fprintf(asc_file, "\n");
+        //fprintf(asc_file, "\n");
       }
       else
       {
@@ -647,6 +647,11 @@ void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* e
         emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
       }
     }
+
+    // Pop off the extra address on the stack left over after all our duping
+    if (location_on_stack)
+      emit_adjust(-1);
+
   }
   else if (expr->location)
   {
@@ -764,19 +769,16 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
     curr_simple_expr_handled = 1;
 
   int excess = 0; // crap on the stack that we push in case of constant strings and addresses
-  if (operand1->is_in_address_on_stack)
-  {
-    printf("do nothing, its already there\n");
-  }// THIS IS LEGIT - we do nothing, since the addresses are the stack
+  if (operand1->is_in_address_on_stack); // THIS IS LEGIT - we do nothing, since the addresses are the stack
   else if (operand1->is_const)
     excess += push_const_string_to_stack(operand1);
   else if (operand1->location)
     emit_pusha(operand1->location->display, operand1->location->offset);
 
-  if (operand2->is_in_address_on_stack)
-  {
-    printf("not doing anythign again\n");
-  }
+  if (operand2->is_in_address_on_stack);
+  //{
+  //  printf("not doing anythign again\n");
+  //}
   else if (operand2->is_const)
   {
     excess += push_const_string_to_stack(operand2);
