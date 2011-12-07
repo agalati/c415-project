@@ -1,15 +1,15 @@
 {====================================================
-Test Program 2.pal 
-Tests: Semantic Errors - procedure with return type, function without return 
-type and junk after 'end.'
+Test Program 3.pal 
+Tests: Semantic Errors - Invalid subranges and floating continue
 Written by: Group 4
 -----------------------------------
 
 Location and Description of Errors
 -----------------------------------
-This program has a procedure which specifies a return type on line 124, as well as 
-a function which does not specify a return type on line 127.  It also tries to writeln
-after 'end.' on line 133.  
+In type declarations there are two attempts to declar arrays using
+invalid subranges.  The first is on line 53 and the second is on line 71
+Lastly the keyword continue is found in the main body of the program,
+but it is used outside a while loop.  This is found on line 121.
 
 =====================================================}
 
@@ -49,6 +49,9 @@ const
 		
 { Type declaration }
 type
+		buttons = (Large, Medium, Small, Tiny);
+		dismabuttons = array[Medium..Large] of real; { ERROR - this is not a valid subrange }
+		
 		tlist = (zero, one, two, fourteen);
 		string = array[1..7] of char;
         int = integer;    
@@ -65,7 +68,8 @@ type
 		f3 = array [1..1] of integer;
 		g3 = array [1..10] of newtype;
 		h3 = array [1..10] of array [boolean] of array [char] of array [-50..1000] of array[1..1] of array [1..2] of newtype;
-       
+        oops = array [b3..a3] of char; { ERROR - very invalid subrange }
+	   
 { Variable declarations }
 var
         plane, trains, automobiles : integer;
@@ -114,20 +118,14 @@ begin
 	    c4[98] := ord('a');
 	    c4[97] := ord('M');
 		
+		continue;	{ ERROR - continue keyword without while loop }
 		vc := ca1*10;
 		
 		if true then
 			write('this will print')
 		else	
 			writeln('this wont print');
-			
-		procedure procforever(cha : char) : integer;	{ ERROR - procedure should not have a return type }
-		begin end;
-
-		function funcforever(too : integer);		{ ERROR - function should have a return type }
-		begin funcforever := 99 end;
-		
+	
 		
 end. 
 
-		writeln('why am I writing after the end of program?!');	{ ERROR - program continues after end of program declarator}
