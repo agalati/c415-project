@@ -113,6 +113,7 @@ int push_expr(struct expr_t* expr)
     if (tc == TC_STRING || tc == TC_ARRAY || tc == TC_RECORD)
       return 0; // leave address on top of stack
     emit_pushi(-1);
+    emit_comment("push_expr: pushi");
     return 1;
   }
   else if (expr->location)
@@ -411,10 +412,10 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
     {
       struct expr_t* arg = (struct expr_t*)info;
       int expr_tc = arg->type->desc.type_attr.type_class;
-      if (expr_tc == TC_STRING)
+      if (expr_tc == TC_STRING || expr_tc == TC_RECORD || expr_tc == TC_ARRAY)
       {
-        handle_string_arg(arg);
-        call_info->argc += arg->type->desc.type_attr.type_description.string->high;
+        handle_composite_arg(arg);
+        call_info->argc += sizeof_type(arg->type);
       }
       else
       {
@@ -451,13 +452,23 @@ void asc_function_call (int section, void* info, int convert_int_to_real)
   }
 }
 
-void handle_string_arg(struct expr_t* arg)
+void handle_composite_arg(struct expr_t* arg)
 {
-  int len = arg->type->desc.type_attr.type_description.string->high;
+  int len = sizeof_type(arg->type);
   int i;
   for (i = 0; i < len; ++i)
   {
-    if (arg->is_const)
+    if (arg->is_in_address_on_stack)
+    {
+      /* TODO: adjust rooom for new variable on the stack and call asc_memcpy to put the stuff pointed to tbe the address onto the stack */
+      /* break this case out of the loop if this works */
+
+      //emit(ASC_DUP);
+      //emit_consti(i);
+      //emit(ASC_ADDI);
+      //emit
+    }
+    else if (arg->is_const) // only strings can be constant
       emit_consti(arg->value.string[i]);
     else
       emit_push(arg->location->display, arg->location->offset+i);
@@ -593,7 +604,7 @@ void asc_push_var(struct sym_rec* var)
   emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
-void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
+void asc_assignment(struct sym_rec* var, int var_address_on_stack, struct expr_t* expr)
 {
   if (!do_codegen)
     return;
@@ -601,11 +612,10 @@ void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* e
   int tc1 = var->desc.var_attr.type->desc.type_attr.type_class,
       tc2 = expr->type->desc.type_attr.type_class;
 
-  if (tc1 == TC_STRING)
-    assign_strings(var, location_on_stack, expr);
+  if (tc1 == TC_STRING || tc1 == TC_RECORD || tc1 == TC_ARRAY)
+    asc_memcpy(var, var_address_on_stack, expr);
   else
   {
-    // else
     push_expr(expr);
 
     int convert_to_real = 0;
@@ -616,40 +626,101 @@ void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* e
     if (convert_to_real)
       emit(ASC_ITOR);
 
-    if (location_on_stack)
+    if (var_address_on_stack)
       emit_popi(-1);
     else
       emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
   }
 }
 
-void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
+void asc_memcpy(struct sym_rec* var, int var_address_on_stack, struct expr_t* expr)
 {
-  int len = expr->type->desc.type_attr.type_description.string->high;
-  if (expr->is_const)
+  int len = sizeof_type(expr->type);
+  int tc = expr->type->desc.type_attr.type_class;
+  if (expr->is_in_address_on_stack && var_address_on_stack)
   {
-    int i;
-    for (i = 0; i < len; ++i)
-    {
-      emit_consti((int)expr->value.string[i]);
-      if (location_on_stack)
-        emit_popi(-1);
-      else
-        emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
-    }
-  }
-  else if (expr->location)
-  {
-    if (!location_on_stack)
-      emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
-
-    emit_pusha(expr->location->display, expr->location->offset);
     emit_consti(len);
     emit_call(0, BUILTIN_STR_COPY);
     emit_adjust(-3);
   }
-  else
-    printf("assign_strings: expression doesn't have a location and isn't constant...\n");
+  else if (expr->is_in_address_on_stack && !var_address_on_stack)
+  {
+    emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    emit_call(0, "swap_top");
+    emit_consti(len);
+    emit_call(0, BUILTIN_STR_COPY);
+    emit_adjust(-3);
+  }
+  else if (!expr->is_in_address_on_stack && var_address_on_stack)
+  {
+    if (expr->is_const) // only strings can be const
+    {
+      if (tc != TC_STRING)
+      {
+        printf("asc_memcpy: someone declared a constant record or array...\n");
+        return;
+      }
+
+      int i;
+      for (i = 0; i < len; ++i)
+      {
+        emit(ASC_DUP);
+        emit_consti(i);
+        emit(ASC_ADDI);
+        emit_consti((int)expr->value.string[i]);
+        emit_popi(-1);
+      }
+      // get rid of the original address
+      emit_adjust(-1);
+    }
+    else if (expr->location)
+    {
+      emit_pusha(expr->location->display, expr->location->offset);
+      emit_consti(len);
+      emit_call(0, BUILTIN_STR_COPY);
+      emit_adjust(-3);
+    }
+    else
+    {
+      printf("asc_memcpy: expression isn't on the stack, isnt't constant, and has no location.\n");
+      return;
+    }
+  }
+  else // neither are on the stack
+  {
+    emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+
+    if (expr->is_const) // only strings can be const
+    {
+      if (tc != TC_STRING)
+      {
+        printf("asc_memcpy: someone declared a constant record or array...\n");
+        return;
+      }
+
+      int i;
+      for (i = 0; i < len; ++i)
+      {
+        emit(ASC_DUP);
+        emit_consti(i);
+        emit(ASC_ADDI);
+        emit_consti((int)expr->value.string[i]);
+        emit_popi(-1);
+      }
+    }
+    else if (expr->location)
+    {
+      emit_pusha(expr->location->display, expr->location->offset);
+      emit_consti(len);
+      emit_call(0, BUILTIN_STR_COPY);
+      emit_adjust(-3);
+    }
+    else
+    {
+      printf("asc_memcpy: expression isn't on the stack, isnt't constant, and has no location.\n");
+      return;
+    }
+  }
 }
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)
@@ -754,12 +825,17 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
     curr_simple_expr_handled = 1;
 
   int excess = 0; // crap on the stack that we push in case of constant strings and addresses
-  if (operand1->is_const)
+  if (operand1->is_in_address_on_stack); // THIS IS LEGIT - we do nothing, since the addresses are the stack
+  else if (operand1->is_const)
     excess += push_const_string_to_stack(operand1);
   else if (operand1->location)
     emit_pusha(operand1->location->display, operand1->location->offset);
 
-  if (operand2->is_const)
+  if (operand2->is_in_address_on_stack);
+  //{
+  //  printf("not doing anythign again\n");
+  //}
+  else if (operand2->is_const)
   {
     excess += push_const_string_to_stack(operand2);
     emit_adjust(1); // make room for stack pointer
@@ -803,13 +879,18 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
     default:
       printf("string_comparison: Unknown comparison code\n");
   }
-  emit_adjust(1); // make room for stack pointer
-  emit_call(0, "get_sp");
-  emit_consti(-(excess+1));
-  emit(ASC_ADDI);
-  emit_call(0, "swap_top");
-  emit_popi(-1);
-  emit_adjust(-(excess-1));
+
+  // clear anything strings we pushed onto the stack becuase they were constant
+  if (excess)
+  {
+    emit_adjust(1); // make room for stack pointer
+    emit_call(0, "get_sp");
+    emit_consti(-(excess+1));
+    emit(ASC_ADDI);
+    emit_call(0, "swap_top");
+    emit_popi(-1);
+    emit_adjust(-(excess-1));
+  }
 }
 
 void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
