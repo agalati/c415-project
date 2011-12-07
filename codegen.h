@@ -170,6 +170,7 @@ void asc_next_parameter_location(struct location_t* location, int size);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
 void asc_function_call(int section, void* info, int convert_int_to_real);
 void handle_composite_arg(struct expr_t* arg);
+void bubble_copy(struct expr_t* arg);
 
 void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
 char* required_builtins(char* name);
