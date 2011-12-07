@@ -169,7 +169,7 @@ void asc_increment_var_count(int size);
 void asc_next_parameter_location(struct location_t* location, int size);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
 void asc_function_call(int section, void* info, int convert_int_to_real);
-void handle_string_arg(struct expr_t* arg);
+void handle_composite_arg(struct expr_t* arg);
 
 void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
 char* required_builtins(char* name);
@@ -179,8 +179,8 @@ void asc_if(int section);
 
 void asc_push_var(struct sym_rec* var);
 
-void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* expr);
-void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* expr);
+void asc_assignment(struct sym_rec* var, int var_address_on_stack, struct expr_t* expr);
+void asc_memcpy(struct sym_rec* var, int var_address_on_stack, struct expr_t* expr);
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);

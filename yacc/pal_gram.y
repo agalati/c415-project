@@ -118,7 +118,7 @@ decls                   : const_decl_part
                           type_decl_part        
                           var_decl_part
                           proc_decl_part
-						  | error S_COLON	{ yyerrok; yyclearin; }
+						            //| error S_COLON	{ yyerrok; yyclearin; }
                         ;
 
 const_decl_part         : CONST const_decl_list S_COLON
@@ -581,6 +581,13 @@ field                   : ID COLON type
                               $$->level = get_current_level();
                               $$->class = OC_VAR;
                               $$->desc.var_attr.type = $3;
+                              if (!prev_fields)
+                                $$->desc.var_attr.location.offset = 0;
+                              else
+                              {
+                                $$->desc.var_attr.location.offset = prev_fields->desc.var_attr.location.offset;
+                                $$->desc.var_attr.location.offset += sizeof_type(prev_fields->desc.var_attr.type);
+                              }
                             }
                             else
                             {
@@ -844,6 +851,7 @@ simple_stat             : var ASSIGNMENT expr
                                   sprintf(error, "assignment type is incompatible", $1);
                                   semantic_error(error);
                                 } else {
+                                  printf("Assigning to %s, with location_on_stack %d\n", $1->var->name, $1->location_on_stack);
                                   asc_assignment($1->var, $1->location_on_stack, $3);
                                 }
                               } else {
@@ -973,6 +981,15 @@ var                     : ID
                                   free($$);
                                   $$ = NULL;
                                 }
+                                else
+                                {
+                                  printf("subscription %s with field %s, whose offset it %d\n", oldvar->name, field->name, field->desc.var_attr.location.offset);
+                                  emit_consti(field->desc.var_attr.location.offset);
+                                  if (!($1->location_on_stack))
+                                    emit_pusha(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
+                                  emit(ASC_ADDI);
+                                  $$->location_on_stack = 1;
+                                }
                               }
                               else
                               {
@@ -1079,9 +1096,10 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
 
-                                  index -= lower;
+                                  //index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  /*
                                   if ($3->is_const)
                                   {
                                     $$->location_on_stack = 0;
@@ -1089,16 +1107,17 @@ subscripted_var         : var O_SBRACKET expr
                                   }
                                   else // the expression should already be on the stack
                                   {
-                                    asc_push_expr_if_unhandled();
-                                    emit_consti(-lower);
-                                    emit(ASC_ADDI);
-                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
-                                    emit(ASC_MULI);
-                                    if (!($$->location_on_stack))
-                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
-                                    emit(ASC_ADDI);
-                                    $$->location_on_stack = 1;
-                                  }
+                                  */
+                                  asc_push_expr_if_unhandled();
+                                  emit_consti(-lower);
+                                  emit(ASC_ADDI);
+                                  emit_consti(sizeof_type($$->var->desc.var_attr.type));
+                                  emit(ASC_MULI);
+                                  if (!($$->location_on_stack))
+                                    emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                  emit(ASC_ADDI);
+                                  $$->location_on_stack = 1;
+                                  //}
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1453,6 +1472,7 @@ expr                    : simple_expr { $$ = $1; asc_store_simple_expr($$); }
                               $$->type = ret_type;
                               $$->location = NULL;
                               $$->is_const = 0;
+                              $$->is_in_address_on_stack = 0;
 
                               if  (   ($1->type->desc.type_attr.type_class != TC_SCALAR && $3->type->desc.type_attr.type_class == TC_SCALAR)
                                   ||  ($1->type->desc.type_attr.type_class == TC_SCALAR && $3->type->desc.type_attr.type_class != TC_SCALAR))
@@ -1536,6 +1556,7 @@ expr                    : simple_expr { $$ = $1; asc_store_simple_expr($$); }
                                 {
                                   $$->is_const = 1;
                                   do_op($1, $3, $2, $$);
+                                  asc_store_simple_expr($$);
                                 }
                                 else
                                 {
@@ -1583,6 +1604,7 @@ simple_expr             : term { $$ = $1; }
                             if ($2->type->desc.type_attr.type_class == TC_REAL || $2->type->desc.type_attr.type_class == TC_INTEGER)
                             {
                               $$ = $2;
+                              $$->is_in_address_on_stack = 0;
                               if ($2->is_const)
                               {
                                 if ($2->type->desc.type_attr.type_class == TC_REAL)
@@ -1626,6 +1648,7 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1675,6 +1698,7 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1708,6 +1732,7 @@ simple_expr             : term { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = $1->value.boolean || $3->value.boolean;
@@ -1757,6 +1782,7 @@ term                    : factor { $$ = $1; }
                                 else
                                   $$ = $1;
 
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1776,6 +1802,7 @@ term                    : factor { $$ = $1; }
                                 {
                                   asc_math($2, $1, $3);
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1808,6 +1835,7 @@ term                    : factor { $$ = $1; }
                                   $$ = (struct expr_t*)malloc(sizeof(struct expr_t));
                                   $$->type = builtinlookup("real");
                                 }
+                                $$->is_in_address_on_stack = 0;
 
                                 if ($1->is_const && $3->is_const)
                                 {
@@ -1825,11 +1853,13 @@ term                    : factor { $$ = $1; }
                                     $$->value.real = 1.0*($1->value.integer) / ($3->value.integer);
 
                                   $$->is_const = 1;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 else
                                 {
                                   asc_math($2, $1, $3);
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 $$->location = NULL;
                               }
@@ -1844,16 +1874,19 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) / ($3->value.integer);
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                                 else
                                 {
                                   asc_integer_math($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
                                 }
                               }
                               else
@@ -1876,6 +1909,7 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) % ($3->value.integer);
@@ -1908,6 +1942,7 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
+                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = ($1->value.boolean) && ($3->value.boolean);
@@ -2017,6 +2052,7 @@ factor                  : var
                                 else
                                   asc_logic($1, $2, NULL);
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
                               }
                               else
                               {
@@ -2048,6 +2084,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               
                               $$->location = NULL;
                               $$->is_const = 1;
+                              $$->is_in_address_on_stack = 0;
                               $$->value.string = strdup(yylval.name);
                             }
                             else
@@ -2056,6 +2093,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->type = builtinlookup("char");
                               $$->location = NULL;
                               $$->is_const = 1;
+                              $$->is_in_address_on_stack = 0;
                               $$->value.character = yylval.name[0];
                             }
                           }
@@ -2071,6 +2109,7 @@ unsigned_num            : INT_CONST
                             $$->type = builtinlookup("integer");
                             $$->location = NULL;
                             $$->is_const = 1;
+                            $$->is_in_address_on_stack = 0;
                             $$->value.integer = yylval.integer;
                           }
 						            | REAL_CONST
@@ -2079,6 +2118,7 @@ unsigned_num            : INT_CONST
                             $$->type = builtinlookup("real");
                             $$->location = NULL;
                             $$->is_const = 1;
+                            $$->is_in_address_on_stack = 0;
                             $$->value.real = yylval.real_t;
                           }
 						            ;                                
