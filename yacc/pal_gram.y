@@ -983,7 +983,6 @@ var                     : ID
                                 }
                                 else
                                 {
-                                  printf("subscription %s with field %s, whose offset it %d\n", oldvar->name, field->name, field->desc.var_attr.location.offset);
                                   emit_consti(field->desc.var_attr.location.offset);
                                   if (!($1->location_on_stack))
                                     emit_pusha(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
@@ -1094,7 +1093,7 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->name = NULL;
                                   $$->var->level = get_current_level();
                                   $$->var->class = OC_VAR;
-                                  $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+                                  $$->var->desc.var_attr.type = oldvar_objtype;
 
                                   //index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
@@ -1113,8 +1112,8 @@ subscripted_var         : var O_SBRACKET expr
                                   emit(ASC_ADDI);
                                   emit_consti(sizeof_type($$->var->desc.var_attr.type));
                                   emit(ASC_MULI);
-                                  if (!($$->location_on_stack))
-                                    emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                  if (!($1->location_on_stack))
+                                    emit_pusha(old_location->display, old_location->offset);
                                   emit(ASC_ADDI);
                                   $$->location_on_stack = 1;
                                   //}
@@ -1194,26 +1193,26 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = builtinlookup("char");
 
-                                  index -= 1;
+                                  //index -= 1;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  if ($3->is_const)
-                                  {
-                                    $$->location_on_stack = 0;
-                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
-                                  }
-                                  else // the expression should already be on the stack
-                                  {
+                                  //if ($3->is_const)
+                                  //{
+                                  //  $$->location_on_stack = 0;
+                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
+                                  //}
+                                  //else // the expression should already be on the stack
+                                  //{
                                     asc_push_expr_if_unhandled();
                                     emit_consti(-lower);
                                     emit(ASC_ADDI);
                                     emit_consti(sizeof_type($$->var->desc.var_attr.type));
                                     emit(ASC_MULI);
-                                    if (!($$->location_on_stack))
-                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    if (!($1->location_on_stack))
+                                      emit_pusha(old_location->display, old_location->offset);
                                     emit(ASC_ADDI);
                                     $$->location_on_stack = 1;
-                                  }
+                                  //}
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1317,25 +1316,24 @@ subscripted_var         : var O_SBRACKET expr
                                   index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  printf("here\n");
-                                  if ($3->is_const)
-                                  {
-                                    $$->location_on_stack = 0;
-                                    printf("offset of previous subscript: %d\n", $$->var->desc.var_attr.location.offset);
-                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
-                                  }
-                                  else // the expression should already be on the stack
-                                  {
+                                  //if ($3->is_const)
+                                  //{
+                                  //  $$->location_on_stack = 0;
+                                  //  printf("offset of previous subscript: %d\n", $$->var->desc.var_attr.location.offset);
+                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
+                                  //}
+                                  //else // the expression should already be on the stack
+                                  //{
                                     asc_push_expr_if_unhandled();
                                     emit_consti(-lower);
                                     emit(ASC_ADDI);
                                     emit_consti(sizeof_type($$->var->desc.var_attr.type));
                                     emit(ASC_MULI);
-                                    if (!($$->location_on_stack))
-                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    if (!($1->location_on_stack))
+                                      emit_pusha(old_location->display, old_location->offset);
                                     emit(ASC_ADDI);
                                     $$->location_on_stack = 1;
-                                  }
+                                  //}
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1415,23 +1413,23 @@ subscripted_var         : var O_SBRACKET expr
                                   index -= 1;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  if ($3->is_const)
-                                  {
-                                    $$->location_on_stack = 0;
-                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type) - 1;
-                                  }
-                                  else // the expression should already be on the stack
-                                  {
+                                  //if ($3->is_const)
+                                  //{
+                                  //  $$->location_on_stack = 0;
+                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type) - 1;
+                                  //}
+                                  //else // the expression should already be on the stack
+                                  //{
                                     asc_push_expr_if_unhandled();
                                     emit_consti(-lower);
                                     emit(ASC_ADDI);
                                     emit_consti(sizeof_type($$->var->desc.var_attr.type));
                                     emit(ASC_MULI);
-                                    if (!($$->location_on_stack))
-                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    if (!($1->location_on_stack))
+                                      emit_pusha(old_location->display, old_location->offset);
                                     emit(ASC_ADDI);
                                     $$->location_on_stack = 1;
-                                  }
+                                  //}
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
