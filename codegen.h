@@ -146,6 +146,8 @@ struct func_call_info_t
 FILE* asc_file;
 
 void stop_codegen(void);
+void asc_store_simple_expr(struct expr_t* simple_expr);
+void asc_push_expr_if_unhandled();
 
 // Only pushes onto the stack if it isn't already there
 // returns 0 if nothing was pushed, or 1 otherwise
@@ -177,8 +179,8 @@ void asc_if(int section);
 
 void asc_push_var(struct sym_rec* var);
 
-void asc_assignment(struct sym_rec* var, struct expr_t* expr);
-void assign_strings(struct sym_rec* var, struct expr_t* expr);
+void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* expr);
+void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* expr);
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2);
 void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2);

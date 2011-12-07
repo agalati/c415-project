@@ -60,6 +60,14 @@ void asc_store_simple_expr(struct expr_t* simple_expr)
   curr_simple_expr_handled = 0;
 }
 
+void asc_push_expr_if_unhandled()
+{
+  if (!do_codegen || curr_simple_expr_handled)
+    return;
+
+  push_expr(curr_simple_expr);
+}
+
 // pushes tring to stack and puts the address of the start of the string on top
 int push_const_string_to_stack(struct expr_t* expr)
 {
@@ -294,6 +302,7 @@ void asc_increment_var_count(int size)
     return;
 
   function_list->varc = function_list->varc + size;
+  //printf("varcount size: %d\n", function_list->varc);
 }
 
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
@@ -576,7 +585,7 @@ void asc_push_var(struct sym_rec* var)
   emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
-void asc_assignment(struct sym_rec* var, struct expr_t* expr)
+void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
 {
   if (!do_codegen)
     return;
@@ -585,7 +594,7 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
       tc2 = expr->type->desc.type_attr.type_class;
 
   if (tc1 == TC_STRING)
-    assign_strings(var, expr);
+    assign_strings(var, location_on_stack, expr);
   else
   {
     // else
@@ -599,11 +608,14 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
     if (convert_to_real)
       emit(ASC_ITOR);
 
-    emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    if (location_on_stack)
+      emit_popi(-1);
+    else
+      emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
   }
 }
 
-void assign_strings(struct sym_rec* var, struct expr_t* expr)
+void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
 {
   int len = expr->type->desc.type_attr.type_description.string->high;
   if (expr->is_const)
@@ -612,19 +624,24 @@ void assign_strings(struct sym_rec* var, struct expr_t* expr)
     for (i = 0; i < len; ++i)
     {
       emit_consti((int)expr->value.string[i]);
-      emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
+      if (location_on_stack)
+        emit_popi(-1);
+      else
+        emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
     }
   }
   else if (expr->location)
   {
-    emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    if (!location_on_stack)
+      emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+
     emit_pusha(expr->location->display, expr->location->offset);
     emit_consti(len);
     emit_call(0, BUILTIN_STR_COPY);
     emit_adjust(-3);
   }
   else
-    printf("assign_strings: String doesn't have a location and isn't constant...\n");
+    printf("assign_strings: expression doesn't have a location and isn't constant...\n");
 }
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)

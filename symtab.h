@@ -198,4 +198,8 @@ int get_type_class(struct sym_rec* s);
 
 int get_current_offset(void);
 
+int sizeof_array(struct sym_rec* array);
+int sizeof_record(struct sym_rec* record);
+int sizeof_type(struct sym_rec* type);
+
 #endif

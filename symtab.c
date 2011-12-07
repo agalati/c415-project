@@ -426,6 +426,8 @@ int isAlias(char* builtin, struct sym_rec* s)
   if (b && s)
     if (b->class == OC_TYPE)
       if (b->desc.type_attr.type_class == s->desc.type_attr.type_class)
+        return 1;
+        /*
         switch(b->desc.type_attr.type_class)
         {
           case TC_CHAR: 
@@ -438,6 +440,8 @@ int isAlias(char* builtin, struct sym_rec* s)
             return 0;
           default: printf("Error - reached unreachable default case in isAlias\n"); return 0;
          }
+         */
+  return 0;
 }
 
 struct sym_rec *addconst(char* name, struct sym_rec* type)
@@ -486,14 +490,21 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   if (s && s->desc.var_attr.type)
     type_class = s->desc.var_attr.type->desc.type_attr.type_class;
 
-  if (type_class == TC_ARRAY)
-  {
+  if (s && type)
+    size = sizeof_type(type);
+
+  /*
+    if (type_class == TC_ARRAY)
+    {
+      size = sizeof_array(type);
+      printf("array size: %d\n", size);
+    }
+    else if (type_class == TC_STRING)
+      size = s->desc.var_attr.type->desc.type_attr.type_description.string->high;
+    else if (type_class == TC_RECORD)
+      size = sizeof_record(type);
   }
-  else if (type_class == TC_STRING)
-    size = s->desc.var_attr.type->desc.type_attr.type_description.string->high;
-  else if (type_class == TC_RECORD)
-  {
-  }
+  */
 
   // set the variable's location
   s->desc.var_attr.location.display = current_level-1;
@@ -756,4 +767,75 @@ int get_type_class(struct sym_rec* s)
 int get_current_offset(void)
 {
   return current_offset;
+}
+
+int sizeof_array(struct sym_rec* array)
+{
+  int size = 1;
+
+  size *= array->desc.type_attr.type_description.array->subrange->high - array->desc.type_attr.type_description.array->subrange->low + 1;
+  array = array->desc.type_attr.type_description.array->object_type;
+  if (!array)
+    return size;
+
+  switch(array->desc.type_attr.type_class)
+  {
+    case TC_ARRAY:
+      size *= sizeof_array(array);
+      break;
+    case TC_RECORD:
+      size *= sizeof_record(array);
+      break;
+    case TC_STRING:
+      size *= array->desc.type_attr.type_description.string->high;
+      break;
+  }
+  return size;
+}
+
+int sizeof_record(struct sym_rec* record)
+{
+  int size = 0;
+  struct sym_rec* field = record->desc.type_attr.type_description.record->field_list;
+  struct sym_rec* field_type = NULL;
+  for (; field != NULL; field = field->next)
+  {
+    field_type = field->desc.var_attr.type;
+    switch(field->desc.var_attr.type->desc.type_attr.type_class)
+    {
+    case TC_ARRAY:
+      size += sizeof_array(field_type);
+      break;
+    case TC_RECORD:
+      size += sizeof_record(field_type);
+      break;
+    case TC_STRING:
+      size += field_type->desc.type_attr.type_description.string->high;
+      break;
+    default:
+      size += 1;
+    }
+  }
+
+  return size;
+}
+
+int sizeof_type(struct sym_rec* type)
+{
+  int size = 0;
+  switch(type->desc.type_attr.type_class)
+  {
+    case TC_ARRAY:
+      size = sizeof_array(type);
+      break;
+    case TC_RECORD:
+      size = sizeof_record(type);
+      break;
+    case TC_STRING:
+      size = type->desc.type_attr.type_description.string->high;
+      break;
+    default:
+      size = 1;
+  }
+  return size;
 }
