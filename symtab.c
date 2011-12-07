@@ -482,7 +482,10 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->desc.var_attr.type = type;
 
   int size = 1;
-  int type_class = s->desc.var_attr.type->desc.type_attr.type_class;
+  int type_class = -1;
+  if (s && s->desc.var_attr.type)
+    type_class = s->desc.var_attr.type->desc.type_attr.type_class;
+
   if (type_class == TC_ARRAY)
   {
   }

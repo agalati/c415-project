@@ -313,7 +313,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       ///////
       for(; parm_list; parm_list=parm_list->next, ++i)
       {
-        if (parm_list->class = OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+        if (parm_list->class == OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
           size += parm_list->desc.var_attr.type->desc.type_attr.type_description.string->high;
         else
           size += 1;

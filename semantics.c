@@ -452,7 +452,6 @@ int compare_types(struct sym_rec* s, struct sym_rec* t, int check_coercion)
     return 1;
   }
 
-
   if (s->desc.type_attr.type_class != t->desc.type_attr.type_class)
     return 0;
 

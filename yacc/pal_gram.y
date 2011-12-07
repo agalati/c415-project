@@ -2082,7 +2082,7 @@ plist_finvok            : ID O_BRACKET parm
                                   if ($3 && $3->type && last_parm) {
                                   
                                   /* This should be an OC_VAR always */
-                                    if (last_parm->class == OC_VAR) {
+                                    if (last_parm->class == OC_VAR || last_parm->class == OC_ERROR) {
                                       if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
                                       {
                                         char error[1024];
@@ -2094,6 +2094,8 @@ plist_finvok            : ID O_BRACKET parm
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
                                         convert_int_to_real = 1;
                                     }
+                                    else
+                                      printf("last_parm->class == %d\n", last_parm->class);
                                   }
                                 }
 
