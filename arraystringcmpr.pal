@@ -9,7 +9,7 @@ begin
   i := 2;
   strarray[i] := 'test2';
 
-  if strarray[2] >= strarray[1] then
+  if strarray[1] <= strarray[2] then
     strarray[3] := 'pass1'
   else
     strarray[3] := 'fail1';

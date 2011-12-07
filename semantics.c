@@ -519,7 +519,7 @@ void declare_const(char* name, struct expr_t* s)
         //printf("Setting value of '%s' to %s\n", name, s->value.string);
         break;
       default:
-        printf("Invalid type class in declare_const()\n");
+        semantic_error("Invalid type for constant");
     }
   }
 }
