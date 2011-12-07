@@ -60,6 +60,45 @@ void asc_store_simple_expr(struct expr_t* simple_expr)
   curr_simple_expr_handled = 0;
 }
 
+void asc_push_expr_if_unhandled()
+{
+  if (!do_codegen || curr_simple_expr_handled)
+    return;
+
+  push_expr(curr_simple_expr);
+}
+
+// pushes tring to stack and puts the address of the start of the string on top
+int push_const_string_to_stack(struct expr_t* expr)
+{
+  if (!do_codegen)
+    return;
+
+  if (!expr->is_const)
+  {
+    printf("push_const_string_to_stack: Trying to push a non-const string to the stack\n");
+    return;
+  }
+
+  if (expr->type->desc.type_attr.type_class != TC_STRING)
+  {
+    printf("push_const_string_to_stack: Trying to push a string when the expression is not actually a string\n");
+    return;
+  }
+
+  int size = expr->type->desc.type_attr.type_description.string->high;
+  int i;
+  for (i=0; i<size; ++i)
+    emit_consti((int)expr->value.string[i]);
+
+  emit_adjust(1); // make room for stack pointer
+  emit_call(0, "get_sp");
+  emit_consti(-size);
+  emit(ASC_ADDI);
+  
+  return size;
+}
+
 int push_expr(struct expr_t* expr)
 {
   if (!do_codegen)
@@ -68,10 +107,21 @@ int push_expr(struct expr_t* expr)
   if (expr == curr_simple_expr)
     curr_simple_expr_handled = 1;
 
-  if (expr->location)
+  if (expr->is_in_address_on_stack)
+  {
+    int tc = expr->type->desc.type_attr.type_class;
+    if (tc == TC_STRING || tc == TC_ARRAY || tc == TC_RECORD)
+      return 0; // leave address on top of stack
+    emit_pushi(-1);
+    return 1;
+  }
+  else if (expr->location)
   {
     if (expr->type->desc.type_attr.type_class == TC_STRING)
+    {
       emit_pusha(expr->location->display, expr->location->offset);
+      emit_comment("push_expr");
+    }
     else
       emit_push(expr->location->display, expr->location->offset);
     return 1;
@@ -260,6 +310,7 @@ void asc_increment_var_count(int size)
     return;
 
   function_list->varc = function_list->varc + size;
+  //printf("varcount size: %d\n", function_list->varc);
 }
 
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
@@ -279,7 +330,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       ///////
       for(; parm_list; parm_list=parm_list->next, ++i)
       {
-        if (parm_list->class = OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+        if (parm_list->class == OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
           size += parm_list->desc.var_attr.type->desc.type_attr.type_description.string->high;
         else
           size += 1;
@@ -319,10 +370,19 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
   }
 }
 
-void asc_next_parameter_location(struct location_t* location)
+void asc_next_parameter_location(struct location_t* location, int size)
 {
   location->display = get_current_level()+1;
-  location->offset = current_parameter_offset++;
+  location->offset = current_parameter_offset;
+  current_parameter_offset += size;
+}
+
+int asc_get_return_offset()
+{
+  if (current_parameter_offset)
+    return -current_parameter_offset - 2; 
+  else
+    return -3;
 }
 
 void asc_function_call (int section, void* info, int convert_int_to_real)
@@ -533,7 +593,7 @@ void asc_push_var(struct sym_rec* var)
   emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
 }
 
-void asc_assignment(struct sym_rec* var, struct expr_t* expr)
+void asc_assignment(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
 {
   if (!do_codegen)
     return;
@@ -542,7 +602,7 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
       tc2 = expr->type->desc.type_attr.type_class;
 
   if (tc1 == TC_STRING)
-    assign_strings(var, expr);
+    assign_strings(var, location_on_stack, expr);
   else
   {
     // else
@@ -556,11 +616,14 @@ void asc_assignment(struct sym_rec* var, struct expr_t* expr)
     if (convert_to_real)
       emit(ASC_ITOR);
 
-    emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    if (location_on_stack)
+      emit_popi(-1);
+    else
+      emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
   }
 }
 
-void assign_strings(struct sym_rec* var, struct expr_t* expr)
+void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* expr)
 {
   int len = expr->type->desc.type_attr.type_description.string->high;
   if (expr->is_const)
@@ -569,19 +632,24 @@ void assign_strings(struct sym_rec* var, struct expr_t* expr)
     for (i = 0; i < len; ++i)
     {
       emit_consti((int)expr->value.string[i]);
-      emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
+      if (location_on_stack)
+        emit_popi(-1);
+      else
+        emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
     }
   }
   else if (expr->location)
   {
-    emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    if (!location_on_stack)
+      emit_pusha(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+
     emit_pusha(expr->location->display, expr->location->offset);
     emit_consti(len);
     emit_call(0, BUILTIN_STR_COPY);
     emit_adjust(-3);
   }
   else
-    printf("assign_strings: String doesn't have a location and isn't constant...\n");
+    printf("assign_strings: expression doesn't have a location and isn't constant...\n");
 }
 
 void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)
@@ -674,20 +742,6 @@ void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
   int tc1 = operand1->type->desc.type_attr.type_class,
       tc2 = operand2->type->desc.type_attr.type_class;
 
-  int convert_to_real[2] = {0, 0};
-  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
-    convert_to_real[1] = 1;
-  else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
-    convert_to_real[0] = 1;
-
-  push_expr(operand1);
-  if (convert_to_real[0])
-    emit(ASC_ITOR);
-
-  push_expr(operand2);
-  if (convert_to_real[1])
-    emit(ASC_ITOR);
-
   if (tc1 == TC_STRING)
     string_comparison(op, operand1, operand2);
   else
@@ -696,6 +750,29 @@ void asc_comparisons(int op, struct expr_t* operand1, struct expr_t* operand2)
 
 void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
 {
+  if (operand1 == curr_simple_expr || operand2 == curr_simple_expr)
+    curr_simple_expr_handled = 1;
+
+  int excess = 0; // crap on the stack that we push in case of constant strings and addresses
+  if (operand1->is_const)
+    excess += push_const_string_to_stack(operand1);
+  else if (operand1->location)
+    emit_pusha(operand1->location->display, operand1->location->offset);
+
+  if (operand2->is_const)
+  {
+    excess += push_const_string_to_stack(operand2);
+    emit_adjust(1); // make room for stack pointer
+    emit_call(0, "get_sp");
+    emit_consti(-(operand2->type->desc.type_attr.type_description.string->high+2));
+    emit(ASC_ADDI);
+    emit_pushi(-1);
+    emit_call(0, "swap_top");
+    excess += 1;
+  }
+  else if (operand2->location)
+    emit_pusha(operand2->location->display, operand2->location->offset);
+
   emit_consti(operand1->type->desc.type_attr.type_description.string->high);
   switch(op)
   {
@@ -725,14 +802,42 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
       break;
     default:
       printf("string_comparison: Unknown comparison code\n");
-
   }
+  emit_adjust(1); // make room for stack pointer
+  emit_call(0, "get_sp");
+  emit_consti(-(excess+1));
+  emit(ASC_ADDI);
+  emit_call(0, "swap_top");
+  emit_popi(-1);
+  emit_adjust(-(excess-1));
 }
 
 void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
 {
   int tc1 = operand1->type->desc.type_attr.type_class,
       tc2 = operand2->type->desc.type_attr.type_class;
+
+  int convert_to_real[2] = {0, 0};
+  if (tc1 == TC_REAL && tc2 == TC_INTEGER)
+    convert_to_real[1] = 1;
+  else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
+    convert_to_real[0] = 1;
+
+  int swapped = 0;
+  push_expr(operand1);
+  if (convert_to_real[0])
+    emit(ASC_ITOR);
+  if (operand2->is_in_address_on_stack)
+  {
+    emit_call(0, "swap_top");
+    swapped = 1;
+  }
+
+  push_expr(operand2);
+  if (convert_to_real[1])
+    emit(ASC_ITOR);
+  if (swapped)
+    emit_call(0, "swap_top");
 
   int real_comparisons = 0;
 
@@ -828,7 +933,7 @@ void emit_pushi(int display)
     return;
 
   if (display < 0)
-    fprintf(asc_file, "\tPUSHI%d\n");
+    fprintf(asc_file, "\tPUSHI\n");
   else
     fprintf(asc_file, "\tPUSHI %d\n", display);
 }
@@ -847,7 +952,7 @@ void emit_pop(int display, int offset)
     return;
 
   if(display < 0)
-    fprintf(asc_file, "\tPOP %d\n", offset, display);
+    fprintf(asc_file, "\tPOP %d\n", offset);
   else
     fprintf(asc_file, "\tPOP %d[%d]\n", offset, display);
 }

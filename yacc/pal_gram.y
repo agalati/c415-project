@@ -26,6 +26,12 @@ struct sym_rec* parm_list = NULL;
 
 struct temp_array_var* temp_array_vars = NULL;
 
+struct var_info_t
+{
+  struct sym_rec* var;
+  int location_on_stack;
+};
+
 %}
 
  //%expect 1     /* bison knows to expect 1 s/r conflict */
@@ -45,6 +51,7 @@ struct temp_array_var* temp_array_vars = NULL;
   struct tc_subrange* range;
   struct plist_t*     plist;
   struct expr_t*      exprec;
+  struct var_info_t*  varinfo;
   }
 
 /* New tokens */
@@ -79,7 +86,8 @@ struct temp_array_var* temp_array_vars = NULL;
 %type   <symrec>  var_decl
 %type   <symrec>  f_parm
 %type   <symrec>  f_parm_list
-%type   <symrec>  var
+%type   <varinfo> var
+%type   <varinfo> subscripted_var
 %type   <exprec>  unsigned_num
 %type   <exprec>  unsigned_const
 %type   <exprec>  factor
@@ -89,7 +97,6 @@ struct temp_array_var* temp_array_vars = NULL;
 %type   <exprec>  expr
 %type   <exprec>  parm
 %type   <plist>   plist_finvok
-%type   <symrec>  subscripted_var
 %type   <integer> operator
 
 %% /* Start of grammer */
@@ -183,7 +190,7 @@ scalar_type             : O_BRACKET scalar_list C_BRACKET
                                   members->desc.const_attr.type = $$;
                                   struct sym_rec* sym_entry = addconst(members->name, $$);
                                   sym_entry->desc.const_attr.value.integer = members->desc.const_attr.value.integer;
-                                  printf("Adding scalar '%s' with value %d\n", members->name, members->desc.const_attr.value.integer);
+                                  //printf("Adding scalar '%s' with value %d\n", members->name, members->desc.const_attr.value.integer);
                                 }
                             }
                             else
@@ -310,21 +317,24 @@ structured_type         : ARRAY O_SBRACKET array_type C_SBRACKET OF type
 
 array_type              : simple_type
                           {
-                            if (isAlias("char", $1))
+                            //if ($1)
+                            //  printf("array typename: %s\n", $1->name);
+                            if ($1 && isAlias("char", $1))
                             {
                               $$ = (struct tc_subrange*)malloc(sizeof(struct tc_subrange));
                               $$->mother_type = $1;
                               $$->low = 0;
                               $$->high = 255;
                             }
-                            else if (isAlias("boolean", $1))
+                            else if ($1 && isAlias("boolean", $1))
                             {
+                              printf("this should print\n");
                               $$ = (struct tc_subrange*)malloc(sizeof(struct tc_subrange));
                               $$->mother_type = $1;
                               $$->low = 0;
                               $$->high = 1;
                             }
-                            else
+                            else if ($1) // if $1 is null, we've already printed an error
                             {
                               char error[1024];
                               sprintf(error, "Invalid index for array type.");
@@ -538,6 +548,8 @@ field_list              : field
                           {
                             $$ = $1;
                             prev_fields = $$;
+                            if (prev_fields)
+                              prev_fields->next = NULL;
                           }
                         | field_list S_COLON field
                           {
@@ -548,7 +560,7 @@ field_list              : field
                               prev_fields = $$;
                             }
                           }
-                        | error S_COLON field { yyerrok; yyclearin; }
+                        | error S_COLON field { $$ = NULL;  yyerrok; yyclearin; }
                         ;
 
 field                   : ID COLON type
@@ -738,8 +750,22 @@ f_parm                  : ID COLON ID
 
                             if (parm_error) s = NULL;
 
+                            int size = 1;
+                            if (s && s->class == OC_TYPE)
+                            {
+                              switch (s->desc.type_attr.type_class)
+                              {
+                                case TC_STRING:
+                                  size = s->desc.type_attr.type_description.string->high;
+                                  break;
+                                case TC_ARRAY:
+                                  break;
+                                case TC_RECORD:
+                                  break;
+                              }
+                            }
                             struct location_t location;
-                            asc_next_parameter_location(&location);
+                            asc_next_parameter_location(&location, size);
                             parm_list = addparm($1, s, parm_list, &location);
                             $$ = parm_list;
                           }
@@ -778,7 +804,7 @@ f_parm                  : ID COLON ID
                             if (parm_error) s = NULL;
 
                             struct location_t location;
-                            asc_next_parameter_location(&location);
+                            asc_next_parameter_location(&location, 1);
                             parm_list = addparm($2, s, parm_list, &location);
                             $$ = parm_list;
                           }
@@ -800,30 +826,30 @@ stat                    : simple_stat
 simple_stat             : var ASSIGNMENT expr
                         {
                           /* Check for nulls */
-                          if ($1 && $3 && $3->type)
+                          if ($1 && $1->var && $3 && $3->type)
                           {  
-                            if ($1->desc.var_attr.type != NULL)
+                            if ($1->var->desc.var_attr.type != NULL)
                             {
-                              if ($1->class == OC_CONST) {
+                              if ($1->var->class == OC_CONST) {
                                  char error[1024];
-                                 if ($1->name) {
-                                   sprintf(error, "cannot reassign constant '%s'", $1->name);
+                                 if ($1->var->name) {
+                                   sprintf(error, "cannot reassign constant '%s'", $1->var->name);
                                  } else {
                                    sprintf(error, "cannot reassign constant");
                                  }
                                  semantic_error(error);
-                              } else if ($1->class == OC_VAR || $1->class == OC_RETURN) {
-                                if (assignment_compatible($1->desc.var_attr.type, $3->type) == 0) {
+                              } else if ($1->var->class == OC_VAR || $1->var->class == OC_RETURN) {
+                                if (assignment_compatible($1->var->desc.var_attr.type, $3->type) == 0) {
                                   char error[1024];
                                   sprintf(error, "assignment type is incompatible", $1);
                                   semantic_error(error);
                                 } else {
-                                  asc_assignment($1, $3);
+                                  asc_assignment($1->var, $1->location_on_stack, $3);
                                 }
                               } else {
                                  char error[1024];
-                                 if ($1->name) {
-                                    sprintf(error, "Illegal assignment operation: %s is not a variable.", $1->name);
+                                 if ($1->var->name) {
+                                    sprintf(error, "Illegal assignment operation: %s is not a variable.", $1->var->name);
                                     semantic_error(error);
                                  }
                                  else {
@@ -913,8 +939,10 @@ proc_invok              : plist_finvok C_BRACKET
 
 var                     : ID
                           {
-                            $$ = globallookup($1);
-                            if (!$$)
+                            $$ = (struct var_info_t*)malloc(sizeof(struct var_info_t));
+                            $$->var = globallookup($1);
+                            $$->location_on_stack = 0;
+                            if (!$$->var)
                             {
                               char error[1024];
                               sprintf(error, "variable '%s' undeclared at this level", $1);
@@ -923,55 +951,70 @@ var                     : ID
                           }
                         | var PERIOD ID
                         {
-                          if ($1)
+                          struct sym_rec* oldvar = $1->var;
+                          $$ = $1;
+                          if ($1 && $1->var)
                           {
-                            if ($1->class == OC_VAR && $1->desc.var_attr.type)
+                            if ($1->var->class == OC_VAR && $1->var->desc.var_attr.type)
                             {
-                              if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_RECORD)
+                              if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_RECORD)
                               {
-                                struct sym_rec* field = $1->desc.var_attr.type->desc.type_attr.type_description.record->field_list;
+                                struct sym_rec* field = $1->var->desc.var_attr.type->desc.type_attr.type_description.record->field_list;
                                 for(; field != NULL; field = field->next)
                                   if (strcmp(field->name,$3)==0)
                                     break;
                                 // field is either the variable ID or null, we pass back both
-                                $$ = field;
-                                if (!$$)
+                                $$->var = field;
+                                if (!$$->var)
                                 {
                                   char error[1024];
-                                  sprintf(error, "'%s' is not a member of '%s'.", $3, $1->name);
+                                  sprintf(error, "'%s' is not a member of '%s'.", $3, oldvar->name);
                                   semantic_error(error);
+                                  free($$);
+                                  $$ = NULL;
                                 }
                               }
                               else
                               {
                                 char error[1024];
-                                sprintf(error, "Invalid use of . operator, '%s' is not a record.", $1->name);
+                                sprintf(error, "Invalid use of . operator, '%s' is not a record.", oldvar->name);
                                 semantic_error(error);
+                                free($$);
                                 $$ = NULL;
                               }
                             }
                             else
                             {
+                              free($$);
                               $$ = NULL;
                             }
                           }
                           else
+                          {
+                            free($$);
                             $$ = NULL;
+                          }
                         }
-                        | subscripted_var C_SBRACKET
+                        | subscripted_var C_SBRACKET { $$ = $1; }
                         ;
 
 subscripted_var         : var O_SBRACKET expr
                         {
-                          if ($1)
+                          int index = 0,
+                              upper = 0,
+                              lower = 0;
+
+                          if ($1 && $1->var)
                           {
-                             if ($1->class == OC_VAR && $1->desc.var_attr.type) 
+                             if ($1->var->class == OC_VAR && $1->var->desc.var_attr.type) 
                              {
-                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
+                                if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
                                 {
+                                  upper = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
+                                  lower = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
                                   if ($3 && $3->type)
                                   {
-                                    if ($3->type->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
+                                    if ($3->type->desc.type_attr.type_class != $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into array");
@@ -979,8 +1022,6 @@ subscripted_var         : var O_SBRACKET expr
                                     }
                                     else if ($3->is_const)
                                     {
-                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
-                                      int lower = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
                                       char error[1024];
                                       switch($3->type->desc.type_attr.type_class)
                                       {
@@ -991,9 +1032,10 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_REAL:
-                                          printf("Subscripting an array with a real, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a real, this should be caught by the time we get here\n");
                                           break;
                                         case TC_CHAR:
                                           if ($3->value.character > upper || $3->value.character < lower)
@@ -1001,6 +1043,7 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = (int)($3->value.character);
                                           break;
                                         case TC_BOOLEAN:
                                           if ($3->value.boolean > upper || $3->value.boolean < lower)
@@ -1008,36 +1051,64 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.boolean;
                                           break;
                                         case TC_STRING:
-                                          printf("Subscripting an array with a string, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a string, this should be caught by the time we get here\n");
                                           break;
                                         case TC_ARRAY:
-                                          printf("Subscripting an array with an array, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with an array, this should be caught by the time we get here\n");
                                           break;
                                         case TC_RECORD:
-                                          printf("Subscripting an array with a record, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a record, this should be caught by the time we get here\n");
                                           break;
                                         case TC_SUBRANGE:
-                                          printf("Subscripting an array with a subrange, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a subrange, this should be caught by the time we get here\n");
                                           break;
                                       }
                                     }
                                   }
-                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                                  $$->next = NULL;
-                                  $$->name = NULL;
-                                  $$->level = get_current_level();
-                                  $$->class = OC_VAR;
-                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+
+                                  $$ = $1;
+                                  struct sym_rec* oldvar_objtype = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+                                  struct location_t* old_location = &($1->var->desc.var_attr.location);
+                                  $$->var = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->var->next = NULL;
+                                  $$->var->name = NULL;
+                                  $$->var->level = get_current_level();
+                                  $$->var->class = OC_VAR;
+                                  $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+
+                                  index -= lower;
+                                  $$->var->desc.var_attr.location.display = old_location->display;
+                                  $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  if ($3->is_const)
+                                  {
+                                    $$->location_on_stack = 0;
+                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
+                                  }
+                                  else // the expression should already be on the stack
+                                  {
+                                    asc_push_expr_if_unhandled();
+                                    emit_consti(-lower);
+                                    emit(ASC_ADDI);
+                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
+                                    emit(ASC_MULI);
+                                    if (!($$->location_on_stack))
+                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    emit(ASC_ADDI);
+                                    $$->location_on_stack = 1;
+                                  }
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
-                                  new_temp_var->var = $$;
+                                  new_temp_var->var = $$->var;
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
-                                else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+                                else if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
                                 {
+                                  upper = $1->var->desc.var_attr.type->desc.type_attr.type_description.string->high;
+                                  lower = 1;
                                   if ($3 && $3->type)
                                   {
                                     if ($3->type->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
@@ -1048,7 +1119,6 @@ subscripted_var         : var O_SBRACKET expr
                                     }
                                     else if ($3->is_const)
                                     {
-                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.string->high;
                                       char error[1024];
                                       switch($3->type->desc.type_attr.type_class)
                                       {
@@ -1059,9 +1129,10 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of string bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_REAL:
-                                          printf("Subscripting a string with a real, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a real, this should be caught by the time we get here\n");
                                           break;
                                         case TC_CHAR:
                                           if ($3->value.character > upper)
@@ -1069,6 +1140,7 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = (int)($3->value.character);
                                           break;
                                         case TC_BOOLEAN:
                                           if ($3->value.boolean > upper)
@@ -1076,39 +1148,64 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.boolean;
                                           break;
                                         case TC_STRING:
-                                          printf("Subscripting a string with a string, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a string, this should be caught by the time we get here\n");
                                           break;
                                         case TC_ARRAY:
-                                          printf("Subscripting a string with an array, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with an array, this should be caught by the time we get here\n");
                                           break;
                                         case TC_RECORD:
-                                          printf("Subscripting a string with a record, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a record, this should be caught by the time we get here\n");
                                           break;
                                         case TC_SUBRANGE:
-                                          printf("Subscripting a string with a subrange, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a subrange, this should be caught by the time we get here\n");
                                           break;
                                       }
                                     }
                                   }
-                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                                  $$->next = NULL;
-                                  $$->name = NULL;
-                                  $$->level = get_current_level();
-                                  $$->class = OC_VAR;
-                                  $$->desc.var_attr.type = builtinlookup("char");
+
+                                  $$ = $1;
+                                  struct location_t* old_location = &($1->var->desc.var_attr.location);
+                                  $$->var = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->var->next = NULL;
+                                  $$->var->name = NULL;
+                                  $$->var->level = get_current_level();
+                                  $$->var->class = OC_VAR;
+                                  $$->var->desc.var_attr.type = builtinlookup("char");
+
+                                  index -= 1;
+                                  $$->var->desc.var_attr.location.display = old_location->display;
+                                  $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  if ($3->is_const)
+                                  {
+                                    $$->location_on_stack = 0;
+                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
+                                  }
+                                  else // the expression should already be on the stack
+                                  {
+                                    asc_push_expr_if_unhandled();
+                                    emit_consti(-lower);
+                                    emit(ASC_ADDI);
+                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
+                                    emit(ASC_MULI);
+                                    if (!($$->location_on_stack))
+                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    emit(ASC_ADDI);
+                                    $$->location_on_stack = 1;
+                                  }
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
-                                  new_temp_var->var = $$;
+                                  new_temp_var->var = $$->var;
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
                                 else 
                                 {
                                   char error[1024];
-                                  if ($1->name)
-                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
+                                  if ($1->var->name)
+                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->var->name);
                                   else
                                     sprintf(error, "cannot subscript variables that are not arrays or strings");
                                    semantic_error(error);
@@ -1119,15 +1216,21 @@ subscripted_var         : var O_SBRACKET expr
                         }
                         | subscripted_var COMMA expr
                         {
-                          if ($1)
+                          int index = 0,
+                              upper = 0,
+                              lower = 0;
+
+                          if ($1 && $1->var)
                           {
-                             if ($1->class == OC_VAR && $1->desc.var_attr.type) 
+                             if ($1->var->class == OC_VAR && $1->var->desc.var_attr.type) 
                              {
-                                if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
+                                if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
                                 {
+                                  upper = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
+                                  lower = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
                                   if ($3 && $3->type)
                                   {
-                                    if ($3->type->desc.type_attr.type_class != $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
+                                    if ($3->type->desc.type_attr.type_class != $1->var->desc.var_attr.type->desc.type_attr.type_description.array->subrange->mother_type->desc.type_attr.type_class)
                                     {
                                       char error[1024];
                                       sprintf(error, "Invalid index into array");
@@ -1135,8 +1238,6 @@ subscripted_var         : var O_SBRACKET expr
                                     }
                                     else if ($3->is_const)
                                     {
-                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->high;
-                                      int lower = $1->desc.var_attr.type->desc.type_attr.type_description.array->subrange->low;
                                       char error[1024];
                                       switch($3->type->desc.type_attr.type_class)
                                       {
@@ -1147,9 +1248,10 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_REAL:
-                                          printf("Subscripting an array with a real, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a real, this should be caught by the time we get here\n");
                                           break;
                                         case TC_CHAR:
                                           if ($3->value.character > upper || $3->value.character < lower)
@@ -1157,6 +1259,7 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = (int)($3->value.character);
                                           break;
                                         case TC_BOOLEAN:
                                           if ($3->value.boolean > upper || $3->value.boolean < lower)
@@ -1164,36 +1267,66 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "Array index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_STRING:
-                                          printf("Subscripting an array with a string, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a string, this should be caught by the time we get here\n");
                                           break;
                                         case TC_ARRAY:
-                                          printf("Subscripting an array with an array, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with an array, this should be caught by the time we get here\n");
                                           break;
                                         case TC_RECORD:
-                                          printf("Subscripting an array with a record, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a record, this should be caught by the time we get here\n");
                                           break;
                                         case TC_SUBRANGE:
-                                          printf("Subscripting an array with a subrange, this should be caught be the time we get here\n");
+                                          printf("Subscripting an array with a subrange, this should be caught by the time we get here\n");
                                           break;
                                       }
                                     }
                                   }
-                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                                  $$->next = NULL;
-                                  $$->name = NULL;
-                                  $$->level = get_current_level();
-                                  $$->class = OC_VAR;
-                                  $$->desc.var_attr.type = $1->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+
+                                  $$ = $1;
+                                  struct sym_rec* oldvar_objtype = $1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+                                  struct location_t* old_location = &($1->var->desc.var_attr.location);
+                                  $$->var = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->var->next = NULL;
+                                  $$->var->name = NULL;
+                                  $$->var->level = get_current_level();
+                                  $$->var->class = OC_VAR;
+                                  $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+
+                                  index -= lower;
+                                  $$->var->desc.var_attr.location.display = old_location->display;
+                                  $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  printf("here\n");
+                                  if ($3->is_const)
+                                  {
+                                    $$->location_on_stack = 0;
+                                    printf("offset of previous subscript: %d\n", $$->var->desc.var_attr.location.offset);
+                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
+                                  }
+                                  else // the expression should already be on the stack
+                                  {
+                                    asc_push_expr_if_unhandled();
+                                    emit_consti(-lower);
+                                    emit(ASC_ADDI);
+                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
+                                    emit(ASC_MULI);
+                                    if (!($$->location_on_stack))
+                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    emit(ASC_ADDI);
+                                    $$->location_on_stack = 1;
+                                  }
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
-                                  new_temp_var->var = $$;
+                                  new_temp_var->var = $$->var;
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
-                                else if ($1->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
+                                else if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
                                 {
+                                  upper = $1->var->desc.var_attr.type->desc.type_attr.type_description.string->high;
+                                  lower = 1;
                                   if ($3 && $3->type)
                                   {
                                     if ($3->type->desc.type_attr.type_class != builtinlookup("integer")->desc.type_attr.type_class)
@@ -1204,7 +1337,6 @@ subscripted_var         : var O_SBRACKET expr
                                     }
                                     else if ($3->is_const)
                                     {
-                                      int upper = $1->desc.var_attr.type->desc.type_attr.type_description.string->high;
                                       char error[1024];
                                       switch($3->type->desc.type_attr.type_class)
                                       {
@@ -1215,9 +1347,10 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of string bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_REAL:
-                                          printf("Subscripting a string with a real, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a real, this should be caught by the time we get here\n");
                                           break;
                                         case TC_CHAR:
                                           if ($3->value.character > upper)
@@ -1225,6 +1358,7 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = (int)($3->value.character);
                                           break;
                                         case TC_BOOLEAN:
                                           if ($3->value.boolean > upper)
@@ -1232,39 +1366,64 @@ subscripted_var         : var O_SBRACKET expr
                                             sprintf(error, "String index outside of array bounds");
                                             semantic_error(error);
                                           }
+                                          index = $3->value.integer;
                                           break;
                                         case TC_STRING:
-                                          printf("Subscripting a string with a string, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a string, this should be caught by the time we get here\n");
                                           break;
                                         case TC_ARRAY:
-                                          printf("Subscripting a string with an array, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with an array, this should be caught by the time we get here\n");
                                           break;
                                         case TC_RECORD:
-                                          printf("Subscripting a string with a record, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a record, this should be caught by the time we get here\n");
                                           break;
                                         case TC_SUBRANGE:
-                                          printf("Subscripting a string with a subrange, this should be caught be the time we get here\n");
+                                          printf("Subscripting a string with a subrange, this should be caught by the time we get here\n");
                                           break;
                                       }
                                     }
                                   }
-                                  $$ = (struct sym_rec*)malloc(sizeof(struct sym_rec));
-                                  $$->next = NULL;
-                                  $$->name = NULL;
-                                  $$->level = get_current_level();
-                                  $$->class = OC_VAR;
-                                  $$->desc.var_attr.type = builtinlookup("char");
+
+                                  $$ = $1;
+                                  struct location_t* old_location = &($1->var->desc.var_attr.location);
+                                  $$->var = (struct sym_rec*)malloc(sizeof(struct sym_rec));
+                                  $$->var->next = NULL;
+                                  $$->var->name = NULL;
+                                  $$->var->level = get_current_level();
+                                  $$->var->class = OC_VAR;
+                                  $$->var->desc.var_attr.type = builtinlookup("char");
+
+                                  index -= 1;
+                                  $$->var->desc.var_attr.location.display = old_location->display;
+                                  $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  if ($3->is_const)
+                                  {
+                                    $$->location_on_stack = 0;
+                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type) - 1;
+                                  }
+                                  else // the expression should already be on the stack
+                                  {
+                                    asc_push_expr_if_unhandled();
+                                    emit_consti(-lower);
+                                    emit(ASC_ADDI);
+                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
+                                    emit(ASC_MULI);
+                                    if (!($$->location_on_stack))
+                                      emit_pusha($$->var->desc.var_attr.location.display, $$->var->desc.var_attr.location.offset);
+                                    emit(ASC_ADDI);
+                                    $$->location_on_stack = 1;
+                                  }
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
-                                  new_temp_var->var = $$;
+                                  new_temp_var->var = $$->var;
                                   new_temp_var->next = temp_array_vars;
                                   temp_array_vars = new_temp_var;
                                 }
                                 else 
                                 {
                                   char error[1024];
-                                  if ($1->name)
-                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->name);
+                                  if ($1->var->name)
+                                    sprintf(error, "cannot subscript '%s', it is not an array or string", $1->var->name);
                                   else
                                     sprintf(error, "cannot subscript variables that are not arrays or strings");
                                   semantic_error(error);
@@ -1778,48 +1937,49 @@ term                    : factor { $$ = $1; }
 
 factor                  : var
                           {
-                            if($1)
+                            if($1 && $1->var)
                             {
                               char error[1024];
                               $$ = (struct expr_t*)malloc(sizeof(struct expr_t));
-                              switch($1->class)
+                              $$->is_in_address_on_stack = $1->location_on_stack;
+                              switch($1->var->class)
                               {
                                 // this should be an impossible case, and we have to stop code generation if we get this case
                                 case OC_TYPE:
-                                  $$->type = $1;
+                                  $$->type = $1->var;
                                   $$->location = NULL;
                                   $$->is_const = 0;
                                   break;
                                 case OC_VAR:
-                                  $$->type = $1->desc.var_attr.type;
-                                  $$->location = &($1->desc.var_attr.location);
+                                  $$->type = $1->var->desc.var_attr.type;
+                                  $$->location = &($1->var->desc.var_attr.location);
                                   $$->is_const = 0;
                                   //asc_push_var($1);
                                   break;
                                 case OC_CONST:
-                                  $$->type = $1->desc.const_attr.type;
+                                  $$->type = $1->var->desc.const_attr.type;
                                   $$->location = NULL;// &($1->desc.const_attr.location);
                                   $$->is_const = 1;
-                                  switch(get_type_class($1))
+                                  switch(get_type_class($1->var))
                                   {
                                     case TC_INTEGER:
-                                      $$->value.integer = $1->desc.const_attr.value.integer;
+                                      $$->value.integer = $1->var->desc.const_attr.value.integer;
                                       break;
                                     case TC_REAL:
-                                      $$->value.real = $1->desc.const_attr.value.real;
+                                      $$->value.real = $1->var->desc.const_attr.value.real;
                                       break;
                                     case TC_CHAR:
-                                      $$->value.character = $1->desc.const_attr.value.character;
+                                      $$->value.character = $1->var->desc.const_attr.value.character;
                                       break;
                                     case TC_BOOLEAN:
-                                      $$->value.boolean = $1->desc.const_attr.value.boolean;
+                                      $$->value.boolean = $1->var->desc.const_attr.value.boolean;
                                       break;
                                     case TC_STRING:
-                                      $$->value.string = $1->desc.const_attr.value.string;
+                                      $$->value.string = $1->var->desc.const_attr.value.string;
                                       break;
                                     case TC_SCALAR:
                                       //printf("Setting value of scalar '%s' to %d\n", $1->name, $1->desc.const_attr.value.integer);
-                                      $$->value.integer = $1->desc.const_attr.value.integer;
+                                      $$->value.integer = $1->var->desc.const_attr.value.integer;
                                       break;
                                     default:
                                       printf("factor: var - OC_CONST has some weird type_class that will probably break things\n");
@@ -1828,7 +1988,7 @@ factor                  : var
                                   }
                                   break;
                                 case OC_RETURN:
-                                  sprintf(error, "'%s' cannot appear on the RHS of a statement, it is a return type.", $1->name);
+                                  sprintf(error, "'%s' cannot appear on the RHS of a statement, it is a return type.", $1->var->name);
                                   semantic_error(error);
                                   free($$);
                                   $$ = NULL;
@@ -2069,7 +2229,7 @@ plist_finvok            : ID O_BRACKET parm
                                   if ($3 && $3->type && last_parm) {
                                   
                                   /* This should be an OC_VAR always */
-                                    if (last_parm->class == OC_VAR) {
+                                    if (last_parm->class == OC_VAR || last_parm->class == OC_ERROR) {
                                       if (!compare_types($3->type, last_parm->desc.var_attr.type, 1))
                                       {
                                         char error[1024];
@@ -2081,6 +2241,8 @@ plist_finvok            : ID O_BRACKET parm
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
                                         convert_int_to_real = 1;
                                     }
+                                    else
+                                      printf("last_parm->class == %d\n", last_parm->class);
                                   }
                                 }
 

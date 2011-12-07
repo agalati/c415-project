@@ -1,0 +1,23 @@
+program main (input, output);
+type
+  string = array [1..4] of char;
+var
+  str1 : array [1..4] of char;
+
+  function f1 (s : string) : integer;
+
+    procedure p (ps : string);
+    begin
+      if ps = s then
+        str1 := 'true'
+      else
+        str1 := 'fals'
+    end;
+
+  begin
+    p(s);
+  end;
+
+begin
+  f1('1234');
+end.

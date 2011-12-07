@@ -51,6 +51,7 @@ main (  int     argc,
 
 void semantic_error(char const* errmsg)
 {
+  stop_codegen();
   char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s", linebuf);
   free(linebuf);
@@ -67,6 +68,7 @@ void semantic_error(char const* errmsg)
 void
 lexerror(char const* invalid)
 {
+  stop_codegen();
   char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s", linebuf);
   free(linebuf);
@@ -83,6 +85,7 @@ lexerror(char const* invalid)
 void
 unterminated_string(void)
 {
+  stop_codegen();
   char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s", linebuf);
   free(linebuf);
@@ -99,6 +102,7 @@ unterminated_string(void)
 void
 illegal_string(void)
 {
+  stop_codegen();
   char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s", linebuf);
   free(linebuf);
@@ -115,6 +119,7 @@ illegal_string(void)
 void
 yyerror (char const *s)
 {
+  stop_codegen();
   char* linebuf = get_prog_line(yylloc.first_line);
   fprintf(stderr, "%s", linebuf);
   free(linebuf);

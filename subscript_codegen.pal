@@ -1,0 +1,29 @@
+program main (input, ouput);
+type
+  simplearray = array [1..6] of integer;
+  string = array [1..5] of char;
+var
+  //a1 : simplearray;
+  int1 : integer;
+  int2 : integer;
+  a2 : array [1..3] of simplearray;
+  //str : string;
+  //strarr : array [5..7] of string;
+begin
+  //a1[5] := -1;
+  //a2[2,1] := -2;
+  //str[5] := 'z';
+  //strarr[5] := 'test1';
+  //strarr[6] := 'test2';
+  //strarr[7] := 'test3';
+
+  //a1[5] := 99;
+  //int1 := 5;
+  //int2 := int1 - 1;
+  //a1[int2] := int1;
+
+  int1 := 3 div 2;
+  int2 := int1 + 1;
+  a2[int1][int2+1] := 99;
+  a2[int2][int1] := -99;
+end.

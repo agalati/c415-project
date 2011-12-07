@@ -25,6 +25,7 @@ struct expr_t
 {
   struct sym_rec*     type;
   struct location_t*  location; // a NULL location means we do not have an address.
+  int                 is_in_address_on_stack;
   int                 is_const; // if this is true, the value must be set appropriately
   union {
     int     integer;
