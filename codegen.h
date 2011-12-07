@@ -138,7 +138,9 @@ struct func_call_info_t
 {
   struct sym_rec* func;
   int argc;
-  int builtin;
+  int read;
+  int write;
+  int writeln;
 
   struct func_call_info_t* next;
 };

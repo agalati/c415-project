@@ -21,8 +21,9 @@
 /* Real level + 1 = current_level (so this value is initialized for level 0) */
 int current_level = 1;
 
-/* Variable offsets into the current display register */
-int current_offset = 0;
+/* Variable offsets into the current display register and the ones for the next level */
+int current_var_offset = 0;
+int next_level_var_offset = 0;
 
 /* The symbol table : levels -1 through 15 are available and map to [n+1] */
 struct sym_rec *sym_tab[MAX_LEVEL + 1];
@@ -345,7 +346,8 @@ void pushlevel(struct sym_rec* func_rec)
   pf_list = new_node;
 
   // reset variable offset counter
-  current_offset = 0;
+  current_var_offset = next_level_var_offset;
+  next_level_var_offset = 0;
 }
 
 /*****************************************
@@ -479,6 +481,7 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   s->level = current_level - 1;
   s->class = OC_VAR;
   s->desc.var_attr.type = type;
+  s->desc.var_attr.reference_semantics = 0; 
 
   int size = 1;
   int type_class = -1;
@@ -488,23 +491,10 @@ struct sym_rec *addvar(char* name, struct sym_rec* type)
   if (s && type)
     size = sizeof_type(type);
 
-  /*
-    if (type_class == TC_ARRAY)
-    {
-      size = sizeof_array(type);
-      printf("array size: %d\n", size);
-    }
-    else if (type_class == TC_STRING)
-      size = s->desc.var_attr.type->desc.type_attr.type_description.string->high;
-    else if (type_class == TC_RECORD)
-      size = sizeof_record(type);
-  }
-  */
-
   // set the variable's location
   s->desc.var_attr.location.display = current_level-1;
-  s->desc.var_attr.location.offset = current_offset;
-  current_offset += size;
+  s->desc.var_attr.location.offset = current_var_offset;
+  current_var_offset += size;
   asc_increment_var_count(size);
 
   s->next = sym_tab[current_level];
@@ -615,7 +605,7 @@ struct sym_rec *addtype(char* name, struct type_desc* type)
 }
 
 /* Add parameters to the parameter list and also add the variable to the next level */
-struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location)
+struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_list, struct location_t* location, int reference_semantics)
 {
   struct sym_rec *s;
   struct sym_rec *t;
@@ -634,6 +624,12 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
     s->desc.var_attr.type = type;
     s->desc.var_attr.location.display = location->display;
     s->desc.var_attr.location.offset = location->offset;
+    s->desc.var_attr.reference_semantics = reference_semantics;
+
+    if (reference_semantics)
+      next_level_var_offset = location->offset + 1; // if its passed by reference, we just have its address
+    else 
+      next_level_var_offset = location->offset + sizeof_type(type);
 
     /* Add to next level of symbol table */
     s->next = sym_tab[current_level + 1];
@@ -695,6 +691,7 @@ struct sym_rec *addparm(char* name, struct sym_rec* type, struct sym_rec* parm_l
   t->desc.var_attr.type = type;
   t->desc.var_attr.location.display = location->display;
   t->desc.var_attr.location.offset = location->offset;
+  t->desc.var_attr.reference_semantics = reference_semantics;
 
   t->next = parm_list;
   parm_list = t;
@@ -757,11 +754,6 @@ int get_type_class(struct sym_rec* s)
   if (type)
     return type->desc.type_attr.type_class;
   return -1;
-}
-
-int get_current_offset(void)
-{
-  return current_offset;
 }
 
 int sizeof_array(struct sym_rec* array)
