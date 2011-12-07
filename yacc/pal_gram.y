@@ -841,7 +841,7 @@ simple_stat             : var ASSIGNMENT expr
                                   sprintf(error, "assignment type is incompatible", $1);
                                   semantic_error(error);
                                 } else {
-                                  printf("Assigning to %s, with location_on_stack %d\n", $1->var->name, $1->location_on_stack);
+                                  //printf("Assigning to %s, with location_on_stack %d\n", $1->var->name, $1->location_on_stack);
                                   asc_assignment($1->var, $1->location_on_stack, $3);
                                 }
                               } else {

@@ -18,12 +18,11 @@
 struct function_info_t
 {
   char* name;
-  int   level, argc, varc;
-  int   handled;
+  int   level,
+        arg_size,
+        var_size,
+        handled;
 
-  /* This is what you'll adjust by */
-  int   size;
-  
   struct function_info_t* next;
 };
 
@@ -187,11 +186,12 @@ void write_function_info()
   fprintf(asc_file, "\n%s\n", function_list->name);
 
   int i;              /* argc */
-  for(i=function_list->size; i>0; --i)
+  for(i=function_list->arg_size; i>0; --i)
     emit_push(function_list->level, -(i+2));
 
-  //emit_adjust(function_list->argc);
-  emit_adjust(function_list->varc);
+  // dont't adjust for args, they get pushed onto the stack
+  //emit_adjust(function_list->arg_size);
+  emit_adjust(function_list->var_size);
   function_list->handled = 1;
 }
 
@@ -310,7 +310,7 @@ void asc_increment_var_count(int size)
   if (!do_codegen)
     return;
 
-  function_list->varc = function_list->varc + size;
+  function_list->var_size = function_list->var_size + size;
   //printf("varcount size: %d\n", function_list->varc);
 }
 
@@ -319,40 +319,30 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
   if (!do_codegen)
     return;
 
-  static int argc = -999;
-
-  static int size = 0;
-  
   switch(section)
   {
     case ASC_FUNCTION_BEGIN:
     {
-      int i=0;
-      ///////
+      int i=0, size=0;
       for(; parm_list; parm_list=parm_list->next, ++i)
       {
-        if (parm_list->class == OC_VAR && parm_list->desc.var_attr.type->desc.type_attr.type_class == TC_STRING)
-          size += parm_list->desc.var_attr.type->desc.type_attr.type_description.string->high;
+        if (parm_list->class == OC_VAR && parm_list->desc.var_attr.type)
+          size += sizeof_type(parm_list->desc.var_attr.type);
         else
           size += 1;
       }
-      ///////
-      argc = i;
       
       struct function_info_t* info = (struct function_info_t*)malloc(sizeof(struct function_info_t));
-      info->name = name;
-      info->level = get_current_level();
-      info->argc = argc;
-      info->varc = 0;
-      info->handled = 0;
-      info->next = function_list;
-
-      info->size = size;
-      size = 0;
+      info->name      = name;
+      info->level     = get_current_level();
+      info->arg_size  = size;
+      info->var_size  = 0;
+      info->handled   = 0;
+      info->next      = function_list;
       
-      function_list = info;
-      argc = -999;
-      current_parameter_offset = 0;
+      function_list             = info;
+      current_parameter_offset  = 0;
+
       break;
     }
     case ASC_FUNCTION_END:
@@ -360,8 +350,8 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       struct function_info_t* curr_function = function_list;
       function_list = function_list->next;
 
-      emit_adjust(-(curr_function->size));
-      emit_adjust(-(curr_function->varc));
+      emit_adjust(-(curr_function->arg_size));
+      emit_adjust(-(curr_function->var_size));
       emit_ret(get_current_level()+1);
       fprintf(asc_file, "\n");
 
@@ -760,13 +750,21 @@ void asc_math(int op, struct expr_t* operand1, struct expr_t* operand2)
   else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
     convert_to_real[0] = 1;
 
-  // Only pushes onto the stack if it isn't already there
+  int swapped = 0;
   push_expr(operand1);
   if (convert_to_real[0])
     emit(ASC_ITOR);
+  if (operand2->is_in_address_on_stack)
+  {
+    emit_call(0, "swap_top");
+    swapped = 1;
+  }
+
   push_expr(operand2);
   if (convert_to_real[1])
     emit(ASC_ITOR);
+  if (swapped)
+    emit_call(0, "swap_top");
 
   switch(op)
   {
@@ -801,9 +799,17 @@ void asc_integer_math(int op, struct expr_t* operand1, struct expr_t* operand2)
   if (!do_codegen)
     return;
 
-  // Only pushes onto the stack if it isn't already there
+  int swapped = 0;
   push_expr(operand1);
+  if (operand2->is_in_address_on_stack)
+  {
+    emit_call(0, "swap_top");
+    swapped = 1;
+  }
+
   push_expr(operand2);
+  if (swapped)
+    emit_call(0, "swap_top");
 
   switch(op)
   {
@@ -971,6 +977,7 @@ void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
       else
         emit(ASC_GTI);
       emit(ASC_NOT);
+
       break;
     case GREATER_EQUAL:
       if (real_comparisons)
