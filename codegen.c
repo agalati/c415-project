@@ -113,6 +113,7 @@ int push_expr(struct expr_t* expr)
     if (tc == TC_STRING || tc == TC_ARRAY || tc == TC_RECORD)
       return 0; // leave address on top of stack
     emit_pushi(-1);
+    emit_comment("push_expr: pushi");
     return 1;
   }
   else if (expr->location)
@@ -631,11 +632,20 @@ void assign_strings(struct sym_rec* var, int location_on_stack, struct expr_t* e
     int i;
     for (i = 0; i < len; ++i)
     {
-      emit_consti((int)expr->value.string[i]);
       if (location_on_stack)
+      {
+        emit(ASC_DUP);
+        emit_consti(i);
+        emit(ASC_ADDI);
+        emit_consti((int)expr->value.string[i]);
         emit_popi(-1);
+        fprintf(asc_file, "\n");
+      }
       else
+      {
+        emit_consti((int)expr->value.string[i]);
         emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset+i);
+      }
     }
   }
   else if (expr->location)
@@ -754,12 +764,20 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
     curr_simple_expr_handled = 1;
 
   int excess = 0; // crap on the stack that we push in case of constant strings and addresses
-  if (operand1->is_const)
+  if (operand1->is_in_address_on_stack)
+  {
+    printf("do nothing, its already there\n");
+  }// THIS IS LEGIT - we do nothing, since the addresses are the stack
+  else if (operand1->is_const)
     excess += push_const_string_to_stack(operand1);
   else if (operand1->location)
     emit_pusha(operand1->location->display, operand1->location->offset);
 
-  if (operand2->is_const)
+  if (operand2->is_in_address_on_stack)
+  {
+    printf("not doing anythign again\n");
+  }
+  else if (operand2->is_const)
   {
     excess += push_const_string_to_stack(operand2);
     emit_adjust(1); // make room for stack pointer
@@ -803,13 +821,18 @@ void string_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
     default:
       printf("string_comparison: Unknown comparison code\n");
   }
-  emit_adjust(1); // make room for stack pointer
-  emit_call(0, "get_sp");
-  emit_consti(-(excess+1));
-  emit(ASC_ADDI);
-  emit_call(0, "swap_top");
-  emit_popi(-1);
-  emit_adjust(-(excess-1));
+
+  // clear anything strings we pushed onto the stack becuase they were constant
+  if (excess)
+  {
+    emit_adjust(1); // make room for stack pointer
+    emit_call(0, "get_sp");
+    emit_consti(-(excess+1));
+    emit(ASC_ADDI);
+    emit_call(0, "swap_top");
+    emit_popi(-1);
+    emit_adjust(-(excess-1));
+  }
 }
 
 void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
