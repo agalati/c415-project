@@ -111,6 +111,7 @@ decls                   : const_decl_part
                           type_decl_part        
                           var_decl_part
                           proc_decl_part
+						  | error S_COLON	{ yyerrok; yyclearin; }
                         ;
 
 const_decl_part         : CONST const_decl_list S_COLON
