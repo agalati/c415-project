@@ -107,7 +107,15 @@ int push_expr(struct expr_t* expr)
   if (expr == curr_simple_expr)
     curr_simple_expr_handled = 1;
 
-  if (expr->location)
+  if (expr->is_in_address_on_stack)
+  {
+    int tc = expr->type->desc.type_attr.type_class;
+    if (tc == TC_STRING || tc == TC_ARRAY || tc == TC_RECORD)
+      return 0; // leave address on top of stack
+    emit_pushi(-1);
+    return 1;
+  }
+  else if (expr->location)
   {
     if (expr->type->desc.type_attr.type_class == TC_STRING)
     {
@@ -137,11 +145,6 @@ int push_expr(struct expr_t* expr)
       default:
         printf("push_expr: Trying to push something weird onto the stack\n");
     }
-    return 1;
-  }
-  else if (expr->is_in_address_on_stack)
-  {
-    emit_pushi(-1);
     return 1;
   }
 
@@ -820,13 +823,21 @@ void number_comparison(int op, struct expr_t* operand1, struct expr_t* operand2)
   else if (tc1 == TC_INTEGER && tc2 == TC_REAL)
     convert_to_real[0] = 1;
 
+  int swapped = 0;
   push_expr(operand1);
   if (convert_to_real[0])
     emit(ASC_ITOR);
+  if (operand2->is_in_address_on_stack)
+  {
+    emit_call(0, "swap_top");
+    swapped = 1;
+  }
 
   push_expr(operand2);
   if (convert_to_real[1])
     emit(ASC_ITOR);
+  if (swapped)
+    emit_call(0, "swap_top");
 
   int real_comparisons = 0;
 

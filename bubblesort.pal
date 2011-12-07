@@ -34,8 +34,8 @@ begin
                tmp := arr[j];
                arr[j] := arr[j + 1];
                arr[j + 1] := tmp;
-               j := j + 1;
             end;
+            j := j + 1;
          end;
          i := i - 1; 
       end;
