@@ -13,12 +13,14 @@ out using write and writeln.
 
 =====================================================}
 
-program builtins (input, output)
+program builtins (input, output);
 
 var
   a, b, c, l, m, n, o : real;
-  d, f, g, j, k, p : integer;
+  d, f, g, k, p : integer;
   e, h, i : char;
+  j : boolean;
+  
 begin
   a := sqrt(4);   // 2
   b := ln(2.71828); // 1
@@ -37,36 +39,36 @@ begin
   o := exp(10); // e^10
   p := sqr(2) // 4
   
-  write("sqrt of 4 should be 2, returns ");
+  write('sqrt of 4 should be 2, returns ');
   writeln(a);
-  write("ln of 2.71828 should be 1, returns ");
+  write('ln of 2.71828 should be 1, returns ');
   writeln(b);
-  write("sin of 3.1415 should be 0, returns ");
+  write('sin of 3.1415 should be 0, returns ');
   write(c);
-  write("ord of 'C' should be 67, returns ");
+  write('ord of \'C\' should be 67, returns ');
   writeln(d);
-  write("chr of 65 should be 'A', returns ");
+  write('chr of 65 should be \'A\', returns ');
   writeln(e);
-  write("trunc of 3.5 should be 3, returns ");
+  write('trunc of 3.5 should be 3, returns ');
   writeln(f);
-  write("round of 3.5 should be 4, returns ");
+  write('round of 3.5 should be 4, returns ');
   writeln(g);
-  write("succ of 'd' should be 'e', returns ");
+  write('succ of \'d\' should be \'e\', returns ');
   writeln(h);
-  write("pred of 'd' should be 'c', returns ");
+  write('pred of \'d\' should be \'c\', returns ');
   writeln(i);
-  write("odd of 5 should be 1, returns ");
+  write('odd of 5 should be 1, returns ');
   writeln(j);
-  write("abs of -21 should be 21, returns ");
+  write('abs of -21 should be 21, returns ');
   writeln(k);
-  write("cos of 0 should be 1, returns ");
+  write('cos of 0 should be 1, returns ');
   writeln(l);
-  write("tan of 0 should be 0, returns ");
+  write('tan of 0 should be 0, returns ');
   writeln(m);
-  write("arctan of 0 should be 0, returns ");
+  write('arctan of 0 should be 0, returns ');
   writeln(n);
-  write("exp of 10 should be e^10, returns ");
+  write('exp of 10 should be e^10, returns ');
   writeln(o);
-  write("sqr of 2 should be 4, returns ");
+  write('sqr of 2 should be 4, returns ');
   writeln(o);
 end.
