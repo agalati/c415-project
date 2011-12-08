@@ -1,0 +1,10 @@
+program main(input, output);
+var
+  b1 : boolean;
+  b2 : boolean;
+  b3 : boolean;
+begin
+  b1 := true;
+  b2 := true or false;
+  b3 := not (b2 and true);
+end.

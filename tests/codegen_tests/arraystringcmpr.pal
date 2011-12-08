@@ -1,0 +1,17 @@
+program main (input, output);
+type
+  string = array [1..5] of char;
+var
+  strarray : array [1..3] of string;
+  i : integer;
+begin
+  strarray[1] := 'test1';
+  i := 2;
+  strarray[i] := 'test2';
+
+  if strarray[1] <= strarray[2] then
+    strarray[3] := 'pass1'
+  else
+    strarray[3] := 'fail1';
+
+end.

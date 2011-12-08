@@ -177,7 +177,7 @@ void asc_increment_var_count(int size);
 void asc_subscript_var(struct var_info_t* info, struct location_t* location, int lower);
 
 void asc_next_parameter_location(struct location_t* location, int size);
-void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
+void asc_function_definition(int section, char* name, struct sym_rec* parm_list, int id);
 void asc_function_call(int section, void* info, int convert_int_to_real, int reference_semantics, int do_call);
 void handle_composite_arg(struct expr_t* arg);
 void bubble_copy(struct expr_t* arg);

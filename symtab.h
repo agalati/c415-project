@@ -111,10 +111,12 @@ struct var_desc {
 struct func_desc {
   struct sym_rec* return_type;
   struct sym_rec* parms;
+  int             id;
 };
 
 struct proc_desc {
   struct sym_rec* parms;    /* Points to the first parm (then check parm_next for NULL) */
+  int             id;
 };
 
 struct parm_desc {

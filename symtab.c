@@ -18,6 +18,8 @@
 #include "pal.h"
 #include "symtab.h"
 
+int function_counter = 1;
+
 /* Real level + 1 = current_level (so this value is initialized for level 0) */
 int current_level = 1;
 
@@ -527,6 +529,7 @@ struct sym_rec *addfunc(char* name, struct sym_rec* parm_list, struct sym_rec* r
   s->class = OC_FUNC;
   s->desc.func_attr.parms = parm_list;
   s->desc.func_attr.return_type = return_type;
+  s->desc.func_attr.id = function_counter++;
 
   func_rec = s;
 
@@ -567,6 +570,7 @@ struct sym_rec *addproc(char* name, struct sym_rec* parm_list)
   s->level = current_level - 1;
   s->class = OC_PROC;
   s->desc.proc_attr.parms = parm_list;
+  s->desc.proc_attr.id = function_counter++;
 
   s->next = sym_tab[current_level];
   sym_tab[current_level] = s;
