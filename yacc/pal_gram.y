@@ -322,7 +322,6 @@ array_type              : simple_type
                             }
                             else if ($1 && isAlias("boolean", $1))
                             {
-                              printf("this should print\n");
                               $$ = (struct tc_subrange*)malloc(sizeof(struct tc_subrange));
                               $$->mother_type = $1;
                               $$->low = 0;
@@ -2295,8 +2294,8 @@ plist_finvok            : ID O_BRACKET parm
                                           convert_int_to_real = 1;
                                       }
                                     }
-                                    else
-                                      printf("last_parm->class == %d\n", last_parm->class);
+                                    //else
+                                     // printf("last_parm->class == %d\n", last_parm->class);
                                   }
                                 }
 
