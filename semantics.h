@@ -27,6 +27,7 @@ struct expr_t
   struct location_t*  location; // a NULL location means we do not have an address.
   int                 is_in_address_on_stack;
   int                 is_const; // if this is true, the value must be set appropriately
+  int                 is_reference; // the location points to a stack location which has the address of this var
   union {
     int     integer;
     int     boolean;

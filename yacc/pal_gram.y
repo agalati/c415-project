@@ -26,12 +26,6 @@ struct sym_rec* parm_list = NULL;
 
 struct temp_array_var* temp_array_vars = NULL;
 
-struct var_info_t
-{
-  struct sym_rec* var;
-  int location_on_stack;
-};
-
 %}
 
  //%expect 1     /* bison knows to expect 1 s/r conflict */
@@ -581,6 +575,7 @@ field                   : ID COLON type
                               $$->level = get_current_level();
                               $$->class = OC_VAR;
                               $$->desc.var_attr.type = $3;
+                              $$->desc.var_attr.reference_semantics = 0;
                               if (!prev_fields)
                                 $$->desc.var_attr.location.offset = 0;
                               else
@@ -763,10 +758,9 @@ f_parm                  : ID COLON ID
 
                             struct location_t location;
                             asc_next_parameter_location(&location, size);
-                            parm_list = addparm($1, s, parm_list, &location);
+                            parm_list = addparm($1, s, parm_list, &location, 0);
                             $$ = parm_list;
                           }
-                        // TODO: We need to have some way of telling that this parameter was passed by reference
                         | VAR ID COLON ID
                         {
                             int parm_error = 0;
@@ -802,7 +796,7 @@ f_parm                  : ID COLON ID
 
                             struct location_t location;
                             asc_next_parameter_location(&location, 1);
-                            parm_list = addparm($2, s, parm_list, &location);
+                            parm_list = addparm($2, s, parm_list, &location, 1); // 1 because we passing by reference
                             $$ = parm_list;
                           }
                         ;
@@ -841,7 +835,7 @@ simple_stat             : var ASSIGNMENT expr
                                   sprintf(error, "assignment type is incompatible", $1);
                                   semantic_error(error);
                                 } else {
-                                  printf("Assigning to %s, with location_on_stack %d\n", $1->var->name, $1->location_on_stack);
+                                  //printf("Assigning to %s, with location_on_stack %d\n", $1->var->name, $1->location_on_stack);
                                   asc_assignment($1->var, $1->location_on_stack, $3);
                                 }
                               } else {
@@ -887,7 +881,7 @@ proc_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                           }
                         }
                         | ID O_BRACKET C_BRACKET
@@ -906,8 +900,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
                                 }
                               }
                               else if (proc->class == OC_FUNC)
@@ -919,8 +913,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
                                 }
                               }
                               else
@@ -974,10 +968,13 @@ var                     : ID
                                 else
                                 {
                                   emit_consti(field->desc.var_attr.location.offset);
-                                  if (!($1->location_on_stack))
+                                  if ($1->var->desc.var_attr.reference_semantics)
+                                    emit_push(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
+                                  else if (!($1->location_on_stack))
                                     emit_pusha(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
                                   emit(ASC_ADDI);
                                   $$->location_on_stack = 1;
+                                  $1->var->desc.var_attr.reference_semantics = 0;
                                 }
                               }
                               else
@@ -1085,27 +1082,12 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = oldvar_objtype;
 
-                                  //index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  /*
-                                  if ($3->is_const)
-                                  {
-                                    $$->location_on_stack = 0;
-                                    $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
-                                  }
-                                  else // the expression should already be on the stack
-                                  {
-                                  */
-                                  asc_push_expr_if_unhandled();
-                                  emit_consti(-lower);
-                                  emit(ASC_ADDI);
-                                  emit_consti(sizeof_type($$->var->desc.var_attr.type));
-                                  emit(ASC_MULI);
-                                  if (!($1->location_on_stack))
-                                    emit_pusha(old_location->display, old_location->offset);
-                                  emit(ASC_ADDI);
+
+                                  asc_subscript_var($1, old_location, lower);
                                   $$->location_on_stack = 1;
+                                  $$->var->desc.var_attr.reference_semantics = 0;
                                   //}
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
@@ -1183,26 +1165,12 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = builtinlookup("char");
 
-                                  //index -= 1;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  //if ($3->is_const)
-                                  //{
-                                  //  $$->location_on_stack = 0;
-                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
-                                  //}
-                                  //else // the expression should already be on the stack
-                                  //{
-                                    asc_push_expr_if_unhandled();
-                                    emit_consti(-lower);
-                                    emit(ASC_ADDI);
-                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
-                                    emit(ASC_MULI);
-                                    if (!($1->location_on_stack))
-                                      emit_pusha(old_location->display, old_location->offset);
-                                    emit(ASC_ADDI);
-                                    $$->location_on_stack = 1;
-                                  //}
+
+                                  asc_subscript_var($1, old_location, lower);
+                                  $$->location_on_stack = 1;
+                                  $$->var->desc.var_attr.reference_semantics = 0;
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1301,29 +1269,14 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->name = NULL;
                                   $$->var->level = get_current_level();
                                   $$->var->class = OC_VAR;
-                                  $$->var->desc.var_attr.type = oldvar_objtype; //$1->var->desc.var_attr.type->desc.type_attr.type_description.array->object_type;
+                                  $$->var->desc.var_attr.type = oldvar_objtype;
 
-                                  index -= lower;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  //if ($3->is_const)
-                                  //{
-                                  //  $$->location_on_stack = 0;
-                                  //  printf("offset of previous subscript: %d\n", $$->var->desc.var_attr.location.offset);
-                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type);
-                                  //}
-                                  //else // the expression should already be on the stack
-                                  //{
-                                    asc_push_expr_if_unhandled();
-                                    emit_consti(-lower);
-                                    emit(ASC_ADDI);
-                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
-                                    emit(ASC_MULI);
-                                    if (!($1->location_on_stack))
-                                      emit_pusha(old_location->display, old_location->offset);
-                                    emit(ASC_ADDI);
-                                    $$->location_on_stack = 1;
-                                  //}
+
+                                  asc_subscript_var($1, old_location, lower);
+                                  $$->location_on_stack = 1;
+                                  $$->var->desc.var_attr.reference_semantics = 0;
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1400,26 +1353,12 @@ subscripted_var         : var O_SBRACKET expr
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = builtinlookup("char");
 
-                                  index -= 1;
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
-                                  //if ($3->is_const)
-                                  //{
-                                  //  $$->location_on_stack = 0;
-                                  //  $$->var->desc.var_attr.location.offset += index * sizeof_type($$->var->desc.var_attr.type) - 1;
-                                  //}
-                                  //else // the expression should already be on the stack
-                                  //{
-                                    asc_push_expr_if_unhandled();
-                                    emit_consti(-lower);
-                                    emit(ASC_ADDI);
-                                    emit_consti(sizeof_type($$->var->desc.var_attr.type));
-                                    emit(ASC_MULI);
-                                    if (!($1->location_on_stack))
-                                      emit_pusha(old_location->display, old_location->offset);
-                                    emit(ASC_ADDI);
-                                    $$->location_on_stack = 1;
-                                  //}
+
+                                  asc_subscript_var($1, old_location, lower);
+                                  $$->location_on_stack = 1;
+                                  $$->var->desc.var_attr.reference_semantics = 0;
 
                                   struct temp_array_var* new_temp_var = (struct temp_array_var*)malloc(sizeof(struct temp_array_var));
                                   new_temp_var->var = $$->var;
@@ -1461,6 +1400,7 @@ expr                    : simple_expr { $$ = $1; asc_store_simple_expr($$); }
                               $$->location = NULL;
                               $$->is_const = 0;
                               $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
 
                               if  (   ($1->type->desc.type_attr.type_class != TC_SCALAR && $3->type->desc.type_attr.type_class == TC_SCALAR)
                                   ||  ($1->type->desc.type_attr.type_class == TC_SCALAR && $3->type->desc.type_attr.type_class != TC_SCALAR))
@@ -1592,7 +1532,6 @@ simple_expr             : term { $$ = $1; }
                             if ($2->type->desc.type_attr.type_class == TC_REAL || $2->type->desc.type_attr.type_class == TC_INTEGER)
                             {
                               $$ = $2;
-                              $$->is_in_address_on_stack = 0;
                               if ($2->is_const)
                               {
                                 if ($2->type->desc.type_attr.type_class == TC_REAL)
@@ -1601,6 +1540,8 @@ simple_expr             : term { $$ = $1; }
                                   $$->value.integer = -($2->value.integer);
                               }
                               $$->location = NULL;
+                              $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
                             }
                             else
                             {
@@ -1636,7 +1577,6 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1658,6 +1598,8 @@ simple_expr             : term { $$ = $1; }
                                   $$->is_const = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                             }
                             else
@@ -1686,7 +1628,6 @@ simple_expr             : term { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1708,6 +1649,8 @@ simple_expr             : term { $$ = $1; }
                                   $$->is_const = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                             }
                             else
@@ -1720,17 +1663,20 @@ simple_expr             : term { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = $1->value.boolean || $3->value.boolean;
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 else
                                 {
                                   asc_logic($2, $1, $3);
                                   $$->is_const = 0;
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                               }
                               else
@@ -1770,7 +1716,6 @@ term                    : factor { $$ = $1; }
                                 else
                                   $$ = $1;
 
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   if (  ($1->type->desc.type_attr.type_class == TC_REAL)
@@ -1791,8 +1736,11 @@ term                    : factor { $$ = $1; }
                                   asc_math($2, $1, $3);
                                   $$->is_const = 0;
                                   $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                             }
                             else
@@ -1823,7 +1771,6 @@ term                    : factor { $$ = $1; }
                                   $$ = (struct expr_t*)malloc(sizeof(struct expr_t));
                                   $$->type = builtinlookup("real");
                                 }
-                                $$->is_in_address_on_stack = 0;
 
                                 if ($1->is_const && $3->is_const)
                                 {
@@ -1842,14 +1789,18 @@ term                    : factor { $$ = $1; }
 
                                   $$->is_const = 1;
                                   $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 else
                                 {
                                   asc_math($2, $1, $3);
                                   $$->is_const = 0;
                                   $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 $$->location = NULL;
+                                $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                             }
                             else
@@ -1862,12 +1813,12 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) / ($3->value.integer);
                                   $$->location = NULL;
                                   $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 else
                                 {
@@ -1875,6 +1826,7 @@ term                    : factor { $$ = $1; }
                                   $$->location = NULL;
                                   $$->is_const = 0;
                                   $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                               }
                               else
@@ -1897,17 +1849,20 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_INTEGER && $3->type->desc.type_attr.type_class == TC_INTEGER)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.integer = ($1->value.integer) % ($3->value.integer);
                                   $$->location = NULL;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                                 else
                                 {
                                   asc_integer_math($2, $1, $3);
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
                                 }
                               }
                               else
@@ -1930,7 +1885,6 @@ term                    : factor { $$ = $1; }
                               if ($1->type->desc.type_attr.type_class == TC_BOOLEAN && $3->type->desc.type_attr.type_class == TC_BOOLEAN)
                               {
                                 $$ = $1;
-                                $$->is_in_address_on_stack = 0;
                                 if ($1->is_const && $3->is_const)
                                 {
                                   $$->value.boolean = ($1->value.boolean) && ($3->value.boolean);
@@ -1942,6 +1896,8 @@ term                    : factor { $$ = $1; }
                                   $$->location = NULL;
                                   $$->is_const = 0;
                                 }
+                                $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                               else
                               {
@@ -1972,17 +1928,20 @@ factor                  : var
                                   $$->type = $1->var;
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_reference = 0;
                                   break;
                                 case OC_VAR:
                                   $$->type = $1->var->desc.var_attr.type;
                                   $$->location = &($1->var->desc.var_attr.location);
                                   $$->is_const = 0;
+                                  $$->is_reference = $1->var->desc.var_attr.reference_semantics;
                                   //asc_push_var($1);
                                   break;
                                 case OC_CONST:
                                   $$->type = $1->var->desc.const_attr.type;
                                   $$->location = NULL;// &($1->desc.const_attr.location);
                                   $$->is_const = 1;
+                                  $$->is_reference = 0;
                                   switch(get_type_class($1->var))
                                   {
                                     case TC_INTEGER:
@@ -2041,6 +2000,7 @@ factor                  : var
                                   asc_logic($1, $2, NULL);
                                 $$->location = NULL;
                                 $$->is_in_address_on_stack = 0;
+                                $$->is_reference = 0;
                               }
                               else
                               {
@@ -2073,6 +2033,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->location = NULL;
                               $$->is_const = 1;
                               $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
                               $$->value.string = strdup(yylval.name);
                             }
                             else
@@ -2082,6 +2043,7 @@ unsigned_const          : unsigned_num { $$ = $1; }
                               $$->location = NULL;
                               $$->is_const = 1;
                               $$->is_in_address_on_stack = 0;
+                              $$->is_reference = 0;
                               $$->value.character = yylval.name[0];
                             }
                           }
@@ -2098,6 +2060,7 @@ unsigned_num            : INT_CONST
                             $$->location = NULL;
                             $$->is_const = 1;
                             $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
                             $$->value.integer = yylval.integer;
                           }
 						            | REAL_CONST
@@ -2107,6 +2070,7 @@ unsigned_num            : INT_CONST
                             $$->location = NULL;
                             $$->is_const = 1;
                             $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
                             $$->value.real = yylval.real_t;
                           }
 						            ;                                
@@ -2130,11 +2094,13 @@ func_invok              : plist_finvok C_BRACKET
                             $$->type = $1->return_type; 
                             $$->location = NULL;
                             $$->is_const = 0;
+                            $$->is_in_address_on_stack = 0;
+                            $$->is_reference = 0;
 
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                           } else {
                             $$ = NULL;
                           }
@@ -2154,9 +2120,11 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->type = func->desc.func_attr.return_type;
                                   $$->location = NULL;
                                   $$->is_const = 0;
+                                  $$->is_in_address_on_stack = 0;
+                                  $$->is_reference = 0;
 
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
                                 }
                                 else
                                 {
@@ -2194,6 +2162,7 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->name = func->name;
                                 $$->level = func->level;
 
+                                struct sym_rec* last_parm = NULL;
                                 if (isIOFunc($$))
                                 {
                                   if($3 && $3->type && !checkIOArg($3->type))
@@ -2246,7 +2215,6 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 else
                                 {
-                                  struct sym_rec* last_parm = NULL;
                                   for(func = $$->parmlist; func != NULL; func = func->next)
                                   {
                                     $$->counter = $$->counter + 1; 
@@ -2264,10 +2232,25 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
 
                                       if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                        convert_int_to_real = 1;
+                                      {
+                                        if (last_parm->desc.var_attr.reference_semantics)
+                                        {
+                                          char error[1024];
+                                          sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                          semantic_error(error);
+                                        }
+                                        else
+                                          convert_int_to_real = 1;
+                                      }
                                     }
                                     else
                                       printf("last_parm->class == %d\n", last_parm->class);
@@ -2279,8 +2262,11 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  if (last_parm)
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                                  else
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2295,6 +2281,7 @@ plist_finvok            : ID O_BRACKET parm
                                 $$->name = func->name;
                                 $$->level = func->level;
 
+                                struct sym_rec* last_parm = NULL;
                                 if (isIOFunc($$))
                                 {
                                   if($3 && $3->type && !checkIOArg($3->type))
@@ -2306,7 +2293,6 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 else
                                 {
-                                  struct sym_rec* last_parm = NULL;
                                   for(func = $$->parmlist; func != NULL; func = func->next)
                                   {
                                     $$->counter = $$->counter + 1;
@@ -2324,10 +2310,25 @@ plist_finvok            : ID O_BRACKET parm
                                         sprintf(error, "Incompatible parameter passed to '%s' in position %d", $1, $$->max - $$->counter + 1);
                                         semantic_error(error);
                                       }
+                                      else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
+                                      {
+                                        char error[1024];
+                                        sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1, $$->max - $$->counter + 1);
+                                        semantic_error(error);
+                                      }
 
                                       if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                           last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                        convert_int_to_real = 1;
+                                      {
+                                        if (last_parm->desc.var_attr.reference_semantics)
+                                        {
+                                          char error[1024];
+                                          sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                          semantic_error(error);
+                                        }
+                                        else
+                                          convert_int_to_real = 1;
+                                      }
                                     }
                                   }
                                 }
@@ -2337,8 +2338,12 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0); 
-                                  asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  if (last_parm)
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                                  else
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
+
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2362,6 +2367,7 @@ plist_finvok            : ID O_BRACKET parm
                         | plist_finvok COMMA parm
                         {
                           int convert_int_to_real = 0;
+                          struct sym_rec* last_parm = NULL;
                           if ($1) {
                             if (isIOFunc($1))
                             {
@@ -2375,8 +2381,6 @@ plist_finvok            : ID O_BRACKET parm
                             else
                             {
                               int i;
-                              struct sym_rec* last_parm = NULL;
-                              
                               for(i = 1, last_parm = $1->parmlist; last_parm != NULL && i < $1->counter; last_parm = last_parm->next, i++);
 
                               if ($1->counter <= 0)
@@ -2396,16 +2400,36 @@ plist_finvok            : ID O_BRACKET parm
                                       semantic_error(error);
                                     }
                                   }
+                                  else if (last_parm->desc.var_attr.reference_semantics && !($3->location) && !($3->is_in_address_on_stack))
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Unable to find the address of the parameter passed by reference to '%s' in position %d", $1->name, $$->max - $$->counter + 1);
+                                    semantic_error(error);
+                                  }
 
                                   if ($3->type->desc.type_attr.type_class == TC_INTEGER &&
                                       last_parm->desc.var_attr.type->desc.type_attr.type_class == TC_REAL)
-                                    convert_int_to_real = 1;
+                                  {
+                                    if (last_parm->desc.var_attr.reference_semantics)
+                                    {
+                                      char error[1024];
+                                      sprintf(error, "Cannot pass an integer type by reference to a real type");
+                                      semantic_error(error);
+                                    }
+                                    else
+                                      convert_int_to_real = 1;
+                                  }
                                 }
                               }
                             }
                               
                             if ($3 && $3->type)
-                              asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real);
+                            {
+                              if (last_parm)
+                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                              else
+                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
+                            }
 
                             $1->counter = $1->counter - 1;
                             $$ = $1;

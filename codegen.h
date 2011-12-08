@@ -134,11 +134,19 @@
 
 #define BUILTIN_STR_COPY  "string_copy"
 
+struct var_info_t
+{
+  struct sym_rec* var;
+  int location_on_stack;
+};
+
 struct func_call_info_t
 {
   struct sym_rec* func;
   int argc;
-  int builtin;
+  int read;
+  int write;
+  int writeln;
 
   struct func_call_info_t* next;
 };
@@ -166,9 +174,11 @@ void asc_notify_last_token(int token);
 
 void asc_increment_var_count(int size);
 
+void asc_subscript_var(struct var_info_t* info, struct location_t* location, int lower);
+
 void asc_next_parameter_location(struct location_t* location, int size);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
-void asc_function_call(int section, void* info, int convert_int_to_real);
+void asc_function_call(int section, void* info, int convert_int_to_real, int reference_semantics);
 void handle_composite_arg(struct expr_t* arg);
 void bubble_copy(struct expr_t* arg);
 
