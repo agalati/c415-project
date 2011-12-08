@@ -229,7 +229,7 @@ void asc_stop()
   if (!do_codegen)
     return;
 
-  emit_dump();
+  //emit_dump();
   emit(ASC_STOP);
 
   int num_builtin_files = 11;
@@ -1474,7 +1474,7 @@ void emit_dump(void)
   if (!do_codegen)
     return;
 
-  fprintf(asc_file, "!D\n");
+  //fprintf(asc_file, "!D\n");
 }
 
 void emit(char* op)
