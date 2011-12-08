@@ -37,7 +37,7 @@ begin
   m := tan(0); // 0
   n := arctan(0); // 0
   o := exp(10); // e^10
-  p := sqr(2) // 4
+  p := sqr(2); // 4
   
   write('sqrt of 4 should be 2, returns ');
   writeln(a);
