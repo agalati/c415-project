@@ -317,6 +317,20 @@ void asc_increment_var_count(int size)
   //printf("varcount size: %d\n", function_list->varc);
 }
 
+void asc_subscript_var(struct var_info_t* info, struct location_t* location, int lower)
+{
+  asc_push_expr_if_unhandled();
+  emit_consti(-lower);
+  emit(ASC_ADDI);
+  emit_consti(sizeof_type(info->var->desc.var_attr.type));
+  emit(ASC_MULI);
+  if (info->var->desc.var_attr.reference_semantics)
+    emit_push(location->display, location->offset);
+  else if (!(info->location_on_stack))
+    emit_pusha(location->display, location->offset);
+  emit(ASC_ADDI);
+}
+
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
 {
   if (!do_codegen)
@@ -669,6 +683,12 @@ void asc_assignment(struct sym_rec* var, int var_address_on_stack, struct expr_t
 
     if (var_address_on_stack)
       emit_popi(-1);
+    else if (var->desc.var_attr.reference_semantics)
+    {
+      emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+      emit_call(0, "swap_top");
+      emit_popi(-1);
+    }
     else
       emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
   }
@@ -748,6 +768,8 @@ void asc_memcpy(struct sym_rec* var, int var_address_on_stack, struct expr_t* ex
         emit_consti((int)expr->value.string[i]);
         emit_popi(-1);
       }
+      // get rid of the original address
+      emit_adjust(-1);
     }
     else if (expr->location)
     {
