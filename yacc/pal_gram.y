@@ -2117,6 +2117,7 @@ func_invok              : plist_finvok C_BRACKET
                         }
                         | ID O_BRACKET C_BRACKET
                           {
+                            $$ = NULL;
                             char error[1024];
                             struct sym_rec* func = isCurrentFunction($1);
                             if (!func)
@@ -2140,12 +2141,14 @@ func_invok              : plist_finvok C_BRACKET
                                 {
                                   sprintf(error, "Missing arguments for function '%s'.", $1);
                                   semantic_error(error);
+                                  $$ = NULL;
                                 }
                               }
                               else
                               {
                                 sprintf(error, "Attempting to call '%s' which is not a function.", $1);
                                 semantic_error(error);
+                                $$ = NULL;
                               }
                             } else {
                               sprintf(error, "Attempting to call '%s' which is has not been declared.", $1);
