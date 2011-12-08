@@ -58,5 +58,6 @@ begin
 	y := identity(identity(y));
 	proc1 (y);
 	proc1 (identity(y));				{ (c) }
+##semantic:58: Unable to find the address of the parameter passed by reference to 'proc1' in position 1
 end.
 

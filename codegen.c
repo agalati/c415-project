@@ -111,16 +111,31 @@ int push_expr(struct expr_t* expr)
     int tc = expr->type->desc.type_attr.type_class;
     if (tc == TC_STRING || tc == TC_ARRAY || tc == TC_RECORD)
       return 0; // leave address on top of stack
+    emit_comment("push_expr: address on stack");
     emit_pushi(-1);
-    emit_comment("push_expr: pushi");
+    return 1;
+  }
+  else if (expr->is_reference)
+  {
+    if (!expr->location)
+    {
+      printf("push_expr: reference doesn't have a location\n");
+      return 0;
+    }
+
+    emit_comment("push_expr: pushing a reference");
+    emit_push(expr->location->display, expr->location->offset);
+    emit_pushi(-1);
     return 1;
   }
   else if (expr->location)
   {
+    emit_comment("push_expr: using location");
+    // I don't think we should be using push_expr for complex types
     if (expr->type->desc.type_attr.type_class == TC_STRING)
     {
+      emit_comment("push_expr: pushing a string...");
       emit_pusha(expr->location->display, expr->location->offset);
-      emit_comment("push_expr");
     }
     else
       emit_push(expr->location->display, expr->location->offset);
@@ -128,6 +143,7 @@ int push_expr(struct expr_t* expr)
   }
   else if (expr->is_const)
   {
+    emit_comment("push_expr: pushing a constant");
     switch(expr->type->desc.type_attr.type_class)
     {
       case TC_INTEGER:
@@ -192,7 +208,7 @@ void write_function_info()
   for(i=function_list->arg_size; i>0; --i)
     emit_push(function_list->level, -(i+2));
 
-  // dont't adjust for args, they get pushed onto the stack
+  // dont't adjust for args, they get pushed onto the stack above
   //emit_adjust(function_list->arg_size);
   emit_adjust(function_list->var_size);
   function_list->handled = 1;
@@ -317,6 +333,20 @@ void asc_increment_var_count(int size)
   //printf("varcount size: %d\n", function_list->varc);
 }
 
+void asc_subscript_var(struct var_info_t* info, struct location_t* location, int lower)
+{
+  asc_push_expr_if_unhandled();
+  emit_consti(-lower);
+  emit(ASC_ADDI);
+  emit_consti(sizeof_type(info->var->desc.var_attr.type));
+  emit(ASC_MULI);
+  if (info->var->desc.var_attr.reference_semantics)
+    emit_push(location->display, location->offset);
+  else if (!(info->location_on_stack))
+    emit_pusha(location->display, location->offset);
+  emit(ASC_ADDI);
+}
+
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
 {
   if (!do_codegen)
@@ -329,7 +359,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       int i=0, size=0;
       for(; parm_list; parm_list=parm_list->next, ++i)
       {
-        if (parm_list->class == OC_VAR && parm_list->desc.var_attr.type)
+        if (!parm_list->desc.var_attr.reference_semantics && parm_list->class == OC_VAR && parm_list->desc.var_attr.type)
           size += sizeof_type(parm_list->desc.var_attr.type);
         else
           size += 1;
@@ -653,7 +683,7 @@ void asc_assignment(struct sym_rec* var, int var_address_on_stack, struct expr_t
   int tc1 = var->desc.var_attr.type->desc.type_attr.type_class,
       tc2 = expr->type->desc.type_attr.type_class;
 
-  if (tc1 == TC_STRING || tc1 == TC_RECORD || tc1 == TC_ARRAY)
+  if (tc2 == TC_STRING || tc2 == TC_RECORD || tc2 == TC_ARRAY)
     asc_memcpy(var, var_address_on_stack, expr);
   else
   {
@@ -669,6 +699,12 @@ void asc_assignment(struct sym_rec* var, int var_address_on_stack, struct expr_t
 
     if (var_address_on_stack)
       emit_popi(-1);
+    else if (var->desc.var_attr.reference_semantics)
+    {
+      emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+      emit_call(0, "swap_top");
+      emit_popi(-1);
+    }
     else
       emit_pop(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
   }
@@ -678,6 +714,26 @@ void asc_memcpy(struct sym_rec* var, int var_address_on_stack, struct expr_t* ex
 {
   int len = sizeof_type(expr->type);
   int tc = expr->type->desc.type_attr.type_class;
+
+  //  if we have a reference to the expression, push the address on the stack
+  //  then set expr->is_in_address_on_stack and follow that logic path
+  if (expr->is_reference)
+  {
+    if (!(expr->location))
+      printf("asc_memcpy: trying to copy to a reference that doesn't have a location\n");
+
+    emit_push(expr->location->display, expr->location->offset);
+    expr->is_in_address_on_stack = 1;
+  }
+
+  //  if we have a reference to the var, push the address on the stack then set
+  //  var_address_on_stack to follow that logic path
+  if (var->desc.var_attr.reference_semantics)
+  {
+    emit_push(var->desc.var_attr.location.display, var->desc.var_attr.location.offset);
+    var_address_on_stack = 1;
+  }
+
   if (expr->is_in_address_on_stack && var_address_on_stack)
   {
     emit_consti(len);
@@ -748,6 +804,8 @@ void asc_memcpy(struct sym_rec* var, int var_address_on_stack, struct expr_t* ex
         emit_consti((int)expr->value.string[i]);
         emit_popi(-1);
       }
+      // get rid of the original address
+      emit_adjust(-1);
     }
     else if (expr->location)
     {

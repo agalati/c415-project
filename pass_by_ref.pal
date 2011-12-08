@@ -1,0 +1,23 @@
+program main (input, ouput);
+type
+  arr = array [1..10] of real;
+var
+  a : integer;
+  rarr : arr;
+
+  function reffunc (var b : integer) : real;
+  begin
+    b := 9999;
+    reffunc := b;
+  end;
+
+  procedure refproc (var r : arr);
+  begin
+    r[3] := 99.99;
+  end;
+
+begin
+  a := 3333;
+  rarr[1] := reffunc(a);
+  refproc(rarr);
+end.

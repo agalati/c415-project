@@ -1,0 +1,53 @@
+program main (input, output);
+type
+  rec = record
+          a : integer;
+          b : real
+        end;
+var
+  a : integer;
+  r : rec;
+  
+  procedure p1(var ref : integer);
+  begin
+  end;
+
+  procedure p2(i : integer; var ref : integer);
+  begin
+  end;
+
+  procedure p3(var ref : integer; i : integer);
+  begin
+  end;
+
+  function f1(var ref : integer) : integer;
+  begin
+  end;
+
+  function f2(i : integer; var ref : integer) : integer;
+  begin
+  end;
+
+  function f3(var ref : integer; i : integer) : integer;
+  begin
+  end;
+
+begin
+  p1(a);
+  //p1(a+2);
+
+  p2(2, r.a);
+  //p2(2, a+a);
+
+  //p3(a, 1);
+  //p3(a*a, a);
+
+  //f1(a);
+  //f1(a/a);
+
+  //f2(a, a);
+  //f2(0, a div a);
+
+  //f3(a, 0);
+  //f3(0, 0);
+end.
