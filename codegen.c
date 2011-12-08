@@ -92,7 +92,7 @@ int push_const_string_to_stack(struct expr_t* expr)
 
   emit_adjust(1); // make room for stack pointer
   emit_call(0, "get_sp");
-  emit_consti(-size);
+  emit_consti(-(size+1));
   emit(ASC_ADDI);
   
   return size;
@@ -443,37 +443,6 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
       struct expr_t* arg = (struct expr_t*)info;
       int expr_tc = arg->type->desc.type_attr.type_class;
 
-      // if it is passed by reference we leave the address on the stack
-      if (!reference_semantics)
-      {
-        emit_comment("passing by value");
-        if (expr_tc == TC_STRING || expr_tc == TC_RECORD || expr_tc == TC_ARRAY)
-        {
-          handle_composite_arg(arg);
-          call_info->argc += sizeof_type(arg->type);
-        }
-        else
-        {
-          push_expr(arg);
-          if (convert_int_to_real)
-            emit(ASC_ITOR);
-          call_info->argc++;
-        }
-      }
-      else
-      {
-        emit_comment("passing by reference");
-        if (!(arg->is_in_address_on_stack))
-        {
-          if (!(arg->location))
-            printf("asc_function_call: trying to pass by reference something without an address\n");
-          else
-            emit_pusha(arg->location->display, arg->location->offset);
-        }
-
-        call_info->argc++;
-      }
-
       if (call_info->read)
       {
         if (!(arg->location) && !(arg->is_in_address_on_stack))
@@ -517,33 +486,106 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
             return;
           }
         }
+        return;
       }
-      else if (call_info->write)
+      else if (call_info->write || call_info->writeln)
       {
+        int excess = 0;
+        if (expr_tc == TC_STRING)
+        {
+          if (arg->is_in_address_on_stack); // THIS IS LEGIT - we do nothing, since the addresses are the stack
+          else if (arg->is_const)
+            excess = push_const_string_to_stack(arg);
+          else if (arg->location)
+            emit_pusha(arg->location->display, arg->location->offset);
+          emit_consti(sizeof_type(arg->type));
+        }
+        else
+        {
+          push_expr(arg);
+          excess = 1;
+        }
+        switch(arg->type->desc.type_attr.type_class)
+        {
+          case TC_INTEGER:
+            emit_call(0, "write_int");
+            break;
+          case TC_REAL:
+            emit_call(0, "write_real");
+            break;
+          case TC_CHAR:
+            emit_call(0, "write_char");
+            break;
+          case TC_STRING:
+            emit_call(0, "write_string");
+            emit_adjust(-2);
+            break;
+          default:
+          {
+            char error[1024];
+            sprintf(error, "Invalid argument to %s", call_info->func->name);
+            semantic_error(error);
+            return;
+          }
+        }
+        emit_adjust(-excess);
+        return;
       }
-      else if (call_info->writeln)
+
+      // if it is passed by reference we leave the address on the stack
+      if (!reference_semantics)
       {
+        emit_comment("passing by value");
+        if (expr_tc == TC_STRING || expr_tc == TC_RECORD || expr_tc == TC_ARRAY)
+        {
+          handle_composite_arg(arg);
+          call_info->argc += sizeof_type(arg->type);
+        }
+        else
+        {
+          push_expr(arg);
+          if (convert_int_to_real)
+            emit(ASC_ITOR);
+          call_info->argc++;
+        }
       }
+      else
+      {
+        emit_comment("passing by reference");
+        if (!(arg->is_in_address_on_stack))
+        {
+          if (!(arg->location))
+            printf("asc_function_call: trying to pass by reference something without an address\n");
+          else
+            emit_pusha(arg->location->display, arg->location->offset);
+        }
+
+        call_info->argc++;
+      }
+
       break;
     }
     case ASC_FUNCTION_CALL_END:
     {
-      if (call_info->read || call_info->write || call_info->writeln)
-        return;
-
-      // make room for return value if room has not been made by args
-      if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
-        emit_adjust(1);
-
-      emit_call(call_info->func->level+1, call_info->func->name);
-
-      if (call_info->argc)
+      if (!call_info->read && !call_info->write && !call_info->writeln)
       {
-        if (call_info->func->class == OC_FUNC)
-          emit_adjust(-(call_info->argc-1));
-        else
-          emit_adjust(-(call_info->argc));
+        // make room for return value if room has not been made by args
+        if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
+          emit_adjust(1);
+
+        emit_call(call_info->func->level+1, call_info->func->name);
+
+        if (call_info->argc)
+        {
+          if (call_info->func->class == OC_FUNC)
+            emit_adjust(-(call_info->argc-1));
+          else
+            emit_adjust(-(call_info->argc));
+        }
       }
+      else if (call_info->writeln)
+        emit_call(0, "writeln");  
+      
       struct func_call_info_t* curr = call_info;
       call_info = call_info->next;
       free(curr);
