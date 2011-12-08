@@ -9,6 +9,7 @@ begin
   write(a);
   write(a, b, c);
   write(a, b, c, d);
+##semantic:11: Invalid argument to write
   write(d);
 
   writeln();

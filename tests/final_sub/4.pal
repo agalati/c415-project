@@ -57,8 +57,6 @@ begin
   writeln(h);
   write('pred of \'d\' should be \'c\', returns ');
   writeln(i);
-  write('odd of 5 should be 1, returns ');
-  writeln(j);
   write('abs of -21 should be 21, returns ');
   writeln(k);
   write('cos of 0 should be 1, returns ');
