@@ -1,15 +1,16 @@
 {====================================================
 Test Program 2.pal 
-Tests: Semantic Errors - procedure with return type, function without return 
+Tests: Semantic Errors - too few arguments, too many arguments, exit found outside a loop
 type and junk after 'end.'
 Written by: Group 4
 -----------------------------------
 
 Location and Description of Errors
 -----------------------------------
-This program has a procedure which specifies a return type on line 124, as well as 
-a function which does not specify a return type on line 127.  It also tries to writeln
-after 'end.' on line 133.  
+This test makes a call to ord() without giving it an argument on line 139.
+There is a dangling exit on line 141.
+It also calls a function defined here and passes it too many arguments on line 143.
+
 
 =====================================================}
 
@@ -90,12 +91,21 @@ var
 		c4 : a3;
 
 function yow( got : integer; got2 : char) : integer;
-begin;
-end;
+	begin;
+	end;
 
 procedure yowza( pleebs : integer);
-begin;
-end;
+	begin;
+	end;
+
+procedure procforever(cha : char);
+	begin 
+	end;
+
+function funcforever(too : integer) : integer;
+	begin 
+		funcforever := 99 
+	end;
 
 { Begin program }
 begin
@@ -116,18 +126,20 @@ begin
 		
 		vc := ca1*10;
 		
+		while b4[1] > 0 do
+		begin
+			b4[1] := b4[1] - 1
+		end;
+		
 		if true then
 			write('this will print')
 		else	
 			writeln('this wont print');
 			
-		procedure procforever(cha : char) : integer;	{ ERROR - procedure should not have a return type }
-		begin end;
-
-		function funcforever(too : integer);		{ ERROR - function should have a return type }
-		begin funcforever := 99 end;
-		
+		b4[1] := ord();	{ ERROR - missing argument for ord function call }
+			
+		exit;		{ ERROR - exit statement is outside of a loop }
+			
+			a4[1] := funcforever(1, 2, 3);	{ ERROR - too many arguments being passed to function }
 		
 end. 
-
-		writeln('why am I writing after the end of program?!');	{ ERROR - program continues after end of program declarator}

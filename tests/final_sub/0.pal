@@ -1,19 +1,18 @@
 {====================================================
 Test Program 0.pal 
-Tests: Semantic Errors - declarations using reserve words
+Tests: Semantic Errors - problems with declaring, redeclaring and using an unknown type
 Written by: Group 4
 -----------------------------------
 
 Location and Description of Errors
 -----------------------------------
-The errors in this program are all found in different declarations.  The first error can be
-found on line 16, where the reserve word "mod" is given as the program name.
-The second error can be found on line 24.  The reserve word "while" is used to declare a constant.
-Lastly the third error can be found on line 33, the reserve word "program" is used to declare a type.  
+In this test a variable is declared using a name which is already declared as a 
+type on line 36. A variable is defined using an unknown type on line 40, and 
+another is declared twice in the same scope on line 43.
 
 =====================================================}
 
-program mod (input, output);		{ ERROR - using the reserve word "mod" for program name}
+program test1 (input, output);
 
 
 { Constant declarations }
@@ -21,7 +20,7 @@ const
         a = 1;
         b = 2;
         c = 3;
-        while = 4;	{ ERROR - using the reserve word "while" to declare a constant }
+		d = 4;
         string = 'that\'s one nice looking string';
         string1 = a + b + c + d;
 
@@ -30,22 +29,23 @@ type
         int = integer;    
         int1 = int;
         fixed = real;    
-        program = array[1..100] of int;   	{ ERROR - using the reserve word "program" to declare a type }
         holder = array[-5..-1] of char;  
        
 { Variable declarations }
 var
+		holder : fixed;	{ ERROR - attempt to define a variable which has already been defined as a type }
         plane, trains, automobiles : integer;
         horse, cart, buggy : char;
         wackywavinginflatiblearmsman : array[1..10] of real;
-		problems : array[1..10] of integer;
+		problems : array[1..10] of uhoh;		{ ERROR - uhoh is not a defined type }
+		a2 : integer;
+		b2 : integer;
+		plane : fixed;	{ ERROR - attempt to redefine a var which has already been declared in this scope }
 
 { Begin program }
 begin
         plane := a + b + c + d;
         trains := a - b - c - d;
-        wackywavinginflatiblearmsman[0] := 33;
-        buggy := 'taxi';
         cart := 'b';
         horse := buggy;
 end. 
