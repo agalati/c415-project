@@ -1,15 +1,15 @@
 {====================================================
 Test Program 1.pal 
-Tests: Semantic Errors - extra and missing semicolons
+Tests: Semantic Errors - using incorrect operators
 Written by: Group 4
 -----------------------------------
 
 Location and Description of Errors
 -----------------------------------
 This tests a bunch of our semantics, but hopefully without error.  The errors come
-from two missing semicolons, and one extra semicolon.  The missing semicolons
-are found on lines 46 and 60, while the extra is on line 119.
-
+from two the end of the program where we use incorrect operators for certain simple types.
+On line 118 we use '+' and '-' on chars.  On line 120 we use the real division operator
+to assign to an int variable.  And on line 122 we use the int division operator to divide reals.
 =====================================================}
 
 program prog1 (input, output);		
@@ -43,7 +43,7 @@ const
 		// division tests
 		cd1 = 2 / 2;
 		cd2 = 2 / 3;
-		cd3 = 2.0 / 3.0 { missing semicolon here }
+		cd3 = 2.0 / 3.0;
 		cd4 = cd1 / cd3;
 		
 { Type declaration }
@@ -57,7 +57,7 @@ type
         holder = array[-5..-1] of char;  
 		newtype = integer;
 		a3 = array [1..100] of int;
-		b3 = array [char] of boolean { missing semicolon here as well }
+		b3 = array [char] of boolean;
 		c3 = array [boolean] of char;
 		d3 = array [1..1] of integer;
 		e3 = array [1..2] of array [1..2] of boolean;
@@ -89,11 +89,11 @@ var
 		c4 : a3;
 
 function yow( got : integer; got2 : char) : integer;
-begin;
+begin
 end;
 
 procedure yowza( pleebs : integer);
-begin;
+begin
 end;
 
 { Begin program }
@@ -115,9 +115,16 @@ begin
 		
 		vc := ca1*10;
 		
+		cart := 'b' + 'c' - 'd'; { ERROR - using operators on chars }
+		
+		x := 12 / 2;  { ERROR - using wrong division operator }
+		
+		x := 12.5 div 1.3;	{ ERROR - using wrong division operator }
+		
 		if true then
-			write('do we see the extra semicolon?'); { we have an extra semicolon here }
+			write('do we see the extra semicolon?')
 		else	
 			writeln('did we catch it?');
+		
 
 end. 
