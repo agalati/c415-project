@@ -881,7 +881,7 @@ proc_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0, 1);
                           }
                         }
                         | ID O_BRACKET C_BRACKET
@@ -900,8 +900,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0, 1);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0, 1);
                                 }
                               }
                               else if (proc->class == OC_FUNC)
@@ -913,8 +913,8 @@ proc_invok              : plist_finvok C_BRACKET
                                 }
                                 else
                                 {
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, proc, 0, 0, 1);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, proc, 0, 0, 1);
                                 }
                               }
                               else
@@ -2109,7 +2109,7 @@ func_invok              : plist_finvok C_BRACKET
                             struct sym_rec* func = isCurrentFunction($1->name);
                             if (!func)
                               func = globallookup($1->name);
-                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
+                            asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0, 1);
                           } else {
                             $$ = NULL;
                           }
@@ -2132,8 +2132,8 @@ func_invok              : plist_finvok C_BRACKET
                                   $$->is_in_address_on_stack = 0;
                                   $$->is_reference = 0;
 
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
-                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0, 1);
+                                  asc_function_call(ASC_FUNCTION_CALL_END, func, 0, 0, 1);
                                 }
                                 else
                                 {
@@ -2158,6 +2158,7 @@ plist_finvok            : ID O_BRACKET parm
                           {
                             struct sym_rec* func = isCurrentFunction($1);
                             int convert_int_to_real = 0;
+                            int do_general_function_call = 1;
                             if (!func)
                               func = globallookup($1);
                             if (func)
@@ -2183,6 +2184,7 @@ plist_finvok            : ID O_BRACKET parm
                                 }
                                 else if (isORDFunc($$))
                                 {
+                                  do_general_function_call = 0;
                                   if ($3 && $3->type && !isORDType($3->type))
                                   {
                                     char error[1024];
@@ -2191,9 +2193,12 @@ plist_finvok            : ID O_BRACKET parm
                                   }
                                   // why do we need this
                                   $$->counter = 1;
+
+                                  asc_ord_func($3);
                                 }
                                 else if (isPREDFunc($$) || isSUCCFunc($$))
                                 {
+                                  do_general_function_call = 0;
                                   if ($3 && $3->type && !isORDType($3->type))
                                   {
                                     char error[1024];
@@ -2206,9 +2211,15 @@ plist_finvok            : ID O_BRACKET parm
                                   }
                                   // more magic code
                                   $$->counter = 1;
+
+                                  if (isPREDFunc($$))
+                                    asc_pred_func($3);
+                                  else
+                                    asc_succ_func($3);
                                 }
                                 else if (isABSFunc($$) || isSQRFunc($$))
                                 {
+                                  do_general_function_call = 0;
                                   if ($3 && $3->type && !isIntOrRealType($3->type))
                                   {
                                     char error[1024];
@@ -2221,6 +2232,11 @@ plist_finvok            : ID O_BRACKET parm
                                   }
                                   // more magic code
                                   $$->counter = 1;
+
+                                  if (isABSFunc($$))
+                                    asc_abs_func($3);
+                                  else
+                                    asc_sqr_func($3);
                                 }
                                 else
                                 {
@@ -2271,11 +2287,11 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0, do_general_function_call);
                                   if (last_parm)
-                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics, do_general_function_call);
                                   else
-                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0, do_general_function_call);
                                 }
 
                                 $$->counter = $$->counter - 1;
@@ -2347,11 +2363,11 @@ plist_finvok            : ID O_BRACKET parm
                                   func = isCurrentFunction($1);
                                   if (!func)
                                     func = globallookup($1);
-                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0);
+                                  asc_function_call(ASC_FUNCTION_CALL_BEGIN, func, 0, 0, 1);
                                   if (last_parm)
-                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics, 1);
                                   else
-                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
+                                    asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0, 1);
 
                                 }
 
@@ -2435,9 +2451,9 @@ plist_finvok            : ID O_BRACKET parm
                             if ($3 && $3->type)
                             {
                               if (last_parm)
-                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics);
+                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, last_parm->desc.var_attr.reference_semantics, 1);
                               else
-                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0);
+                                asc_function_call(ASC_FUNCTION_CALL_ARG, $3, convert_int_to_real, 0, 1);
                             }
 
                             $1->counter = $1->counter - 1;

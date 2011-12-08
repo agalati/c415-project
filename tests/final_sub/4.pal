@@ -36,7 +36,7 @@ begin
   l := cos(0); // 1
   m := tan(0); // 0
   n := arctan(0); // 0
-  o := exp(10); // e^10
+  o := exp(2); // e^10
   p := sqr(2); // 4
   
   write('sqrt of 4 should be 2, returns ');
@@ -65,8 +65,8 @@ begin
   writeln(m);
   write('arctan of 0 should be 0, returns ');
   writeln(n);
-  write('exp of 10 should be e^10, returns ');
+  write('exp of 2 should be e^2, returns ');
   writeln(o);
   write('sqr of 2 should be 4, returns ');
-  writeln(o);
+  writeln(p);
 end.

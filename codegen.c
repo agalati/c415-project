@@ -409,17 +409,25 @@ int asc_get_return_offset()
     return -3;
 }
 
-void asc_function_call (int section, void* info, int convert_int_to_real, int reference_semantics)
+void asc_function_call (int section, void* info, int convert_int_to_real, int reference_semantics, int do_call)
 {
   if (!do_codegen)
     return;
 
   static struct func_call_info_t* call_info = NULL; 
+  static int skip_call = 0;
+
+  if (skip_call)
+    return;
 
   switch(section)
   {
     case ASC_FUNCTION_CALL_BEGIN:
     {
+      skip_call = !do_call;
+      if (skip_call)
+        return;
+
       struct sym_rec* func = (struct sym_rec*)info;
 
       struct func_call_info_t* info = (struct func_call_info_t*)malloc(sizeof(struct func_call_info_t));
@@ -630,6 +638,82 @@ void bubble_copy(struct expr_t* arg)
     emit_call(0, "swap_top");
   }
   emit_adjust(-1); // get rid of last dup'ed address
+}
+
+void asc_ord_func(struct expr_t* arg)
+{
+  push_expr(arg);
+}
+
+void asc_pred_func(struct expr_t* arg)
+{
+  int low = arg->type->desc.type_attr.type_description.subrange->low;
+  push_expr(arg);
+  emit_consti(-1);
+  emit(ASC_ADDI);
+  emit(ASC_DUP);
+  emit_consti(low);
+  emit(ASC_LTI);
+  emit_ifnz("pred_fail");
+}
+
+void asc_succ_func(struct expr_t* arg)
+{
+  int high = arg->type->desc.type_attr.type_description.subrange->high;
+  push_expr(arg);
+  emit_consti(1);
+  emit(ASC_ADDI);
+  emit(ASC_DUP);
+  emit_consti(high);
+  emit(ASC_GTI);
+  emit_ifnz("succ_fail");
+}
+
+void asc_sqr_func(struct expr_t* arg)
+{
+  push_expr(arg);
+  switch(arg->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      emit_call(0, "sqri");
+      break;
+    case TC_REAL:
+      emit_call(0, "sqrr");
+      break;
+    default:
+    {
+      char error[1024];
+      sprintf(error, "Cannot pass an integer type by reference to a real type");
+      semantic_error(error);
+      break;
+    }
+  }
+}
+
+void asc_abs_func(struct expr_t* arg)
+{
+  push_expr(arg);
+  switch(arg->type->desc.type_attr.type_class)
+  {
+    case TC_INTEGER:
+      emit_call(0, "absi");
+      break;
+    case TC_REAL:
+      emit_call(0, "absr");
+      break;
+    default:
+    {
+      char error[1024];
+      sprintf(error, "Cannot pass an integer type by reference to a real type");
+      semantic_error(error);
+      break;
+    }
+  }
+}
+
+void asc_chr_func(struct expr_t* arg)
+{
+  push_expr(arg);
 }
 
 char* required_builtins(char* name)

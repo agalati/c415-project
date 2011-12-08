@@ -178,9 +178,16 @@ void asc_subscript_var(struct var_info_t* info, struct location_t* location, int
 
 void asc_next_parameter_location(struct location_t* location, int size);
 void asc_function_definition(int section, char* name, struct sym_rec* parm_list);
-void asc_function_call(int section, void* info, int convert_int_to_real, int reference_semantics);
+void asc_function_call(int section, void* info, int convert_int_to_real, int reference_semantics, int do_call);
 void handle_composite_arg(struct expr_t* arg);
 void bubble_copy(struct expr_t* arg);
+
+void asc_ord_func(struct expr_t* arg);
+void asc_pred_func(struct expr_t* arg);
+void asc_succ_func(struct expr_t* arg);
+void asc_sqr_func(struct expr_t* arg);
+void asc_abs_func(struct expr_t* arg);
+void asc_chr_func(struct expr_t* arg);
 
 void builtin_function_call(struct func_call_info_t* call_info, int section, void* info, int convert_int_to_real);
 char* required_builtins(char* name);
