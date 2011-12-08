@@ -1,0 +1,157 @@
+{ ___________________________________________________
+-------------------------------------------------------------
+	Let's tests some functions and procedures - yo
+
+_____________________________________________________
+-------------------------------------------------------------}
+program procsandfuncs(input, output);
+
+{ Constant Declarations }
+const
+	five = 5;
+	negfive = -5;
+	char1 = 'a';
+	char2 = 'b';
+	r1 = 0.9;
+	r2 = 3.14159;
+	bool1 = true;
+	
+{ Type Declarations }
+type
+	rec1 = record
+		f1 : integer;
+		f2 : real;
+		f3 : char;
+		f4 : boolean
+	end;
+	
+	string = array[1..100] of char;
+	
+	music = (rock, classical, pop, jazz, blues);
+
+{ Variable Declarations }
+var
+	int1, int2, int3, int4, int5 : integer;
+	arec1, arec2, arec3, arec4 : rec1;
+	str1, str2, str3, str4, str5 : string;
+	real1, real2, real3, real4, real5 : real;
+	arr1, arr2, arr3, arr4 : array[1..10] of integer;
+
+{
+	call proc1(positive int) -> proc2(positive int) |
+	proc2 writes 'I'm done' <- proc2(neg int) <- proc1(neg int)<-
+	
+	call proc1(neg int) -> proc2(neg int) -> 'I'm done'
+}
+procedure proc1 (anint : integer);
+
+	procedure proc2 (anint2 : integer);
+	begin
+		if anint2 is > 0 then
+			proc1(-1);
+		else
+			wrireln('I\'m done');
+		end
+	end;
+	
+begin 
+	if anint is > 0 then
+		proc2(100);
+	else
+		proc2(-100);
+	end
+end;
+
+{
+	Adds three numbers, negates the result and returns
+}
+function func1 (addme1, addme2, addme3 : integer) : integer;
+var
+a : integer;
+
+begin
+	a := addme1 + addme2 + addme3;
+	func1 := -a;
+end;
+
+
+{ 
+	Returns the next character after the input char
+	loops to a on a 'z'
+}
+function func2 (checkme : char) : char;
+var
+out : char;
+
+begin
+	if checkme = 'a' then
+		out := 'b';
+	if checkme = 'b' then
+		out := 'c';
+	if checkme = 'c' then
+		out := 'd';
+	if checkme = 'd' then
+		out := 'e';
+	if checkme = 'e' then
+		out := 'f';
+	if checkme = 'f' then
+		out := 'g';
+	if checkme = 'g' then
+		out := 'h';
+	if checkme = 'h' then
+		out := 'i';
+	if checkme = 'i' then
+		out := 'j';
+	if checkme = 'j' then
+		out := 'k';
+	if checkme = 'k' then
+		out := 'l';
+	if checkme = 'l' then
+		out := 'm';
+	if checkme = 'm' then
+		out := 'n';
+	if checkme = 'n' then
+		out := 'o';
+	if checkme = 'o' then
+		out := 'p';
+	if checkme = 'p' then
+		out := 'q';
+	if checkme = 'q' then
+		out := 'r';
+	if checkme = 'r' then
+		out := 's';
+	if checkme = 's' then
+		out := 't';
+	if checkme = 't' then
+		out := 'u';
+	if checkme = 'u' then
+		out := 'v';
+	if checkme = 'v' then
+		out := 'w';
+	if checkme = 'w' then
+		out := 'x';
+	if checkme = 'x' then
+		out := 'y';
+	if checkme = 'y' then
+		out := 'z';
+	if checkme = 'z' then
+		out := 'a';
+		
+	func2 := out;
+end;
+
+{ Main Program }
+begin
+
+	proc1(five);
+	proc2(negfive);
+
+	int1 := func1(five, negfive, 1);
+	str1[1] := func2('b');
+	
+	proc1(func1(1, 1, 1));
+
+
+end.
+
+

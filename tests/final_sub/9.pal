@@ -9,7 +9,7 @@ Written by: Group 4
 Description
 -----------------------------------
 #All the errors from 8.pal - There are record errors on lines 33 & 35, an array error on line 59,
-a too long string on line 73 and an incorrect assignment attempt on line 78.
+and an incorrect assignment attempt on line 78.
 
 #plus - duplicate field in a record line 55.  Attempt at returning incorrect type in
 a function on line 68. 'exit' found outside a loop on line 80.  
@@ -69,7 +69,6 @@ begin
 end;
 
 begin
-	{ ERROR - length of string exceeds 255 }
 	stringer := 'hhhhhhoooooooo00000000000000000000000000000oooooowwwwwwwwwwwww looooooooooooooo00000000000000000000000000000000000oooooooooooonnnnnnnnnggggggggggggggggggggggggg iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiissssssssssssssssssssssssssssssss tttttttttttttttttttttttttttttttttttttttttttttttttttttttthhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiisssssssssssssssssssssssssssssssssssssssssssssss sssssssssssssssssssssssssssssttttttttttttttttttttttttttttttttttrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrriiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiinnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnngggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg??????????????????????????????????????????';
     arr1 := anonEnum; { ERROR - incorrect type assignment }
 	arr1[1] := yup;
