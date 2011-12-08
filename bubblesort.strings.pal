@@ -1,0 +1,48 @@
+program sort(input, output);
+const
+   MaxElts = 10;
+type
+   string        = array [1..2] of char;
+   StringArrType = array [1..MaxElts] of string; 
+
+var
+   i, j, size : integer;
+   tmp        : string;
+   arr        : StringArrType;
+              
+begin
+
+   { Set up array }
+   arr[1] := 'Aa';
+   arr[2] := 'Cc';
+   arr[3] := 'Dd';
+   arr[4] := 'Bb';
+   arr[5] := 'Ee';
+   arr[6] := 'Gg';
+   arr[7] := 'Hh';
+   arr[8] := 'Ff';
+   arr[9] := 'Jj';
+   arr[10] := 'Ii';
+
+   size := MaxElts;
+
+   {* Sort using bubble sort. *}
+   i := size; // - 1;
+   while i > 0 do
+      begin
+         j := 1;
+         while j < i do begin
+            if arr[j] > arr[j + 1] then begin
+               tmp := arr[j];
+               arr[j] := arr[j + 1];
+               arr[j + 1] := tmp;
+            end;
+            j := j + 1;
+         end;
+         i := i - 1; 
+      end;
+
+   {* Print. *
+   FOR i := 1 TO size DO
+                  writeln(arr[i])}
+end.
