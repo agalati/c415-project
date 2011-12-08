@@ -7,7 +7,7 @@ begin
   c := chr(ord('c'));
   b := chr(98) = chr(ord('c'));
   chr('c');
-##semantic:9: Incompatible parameter passed to 'chr' in position 1
+##semantic:9: Argmument of 'chr' must be an integer type
   b := chr(0);
 ##semantic:10: assignment type is incompatible
 end.

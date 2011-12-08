@@ -1,0 +1,11 @@
+program main (input, ouput);
+type
+  scl = (mon, tues, wed);
+  scalararray = array [mon..wed] of integer;
+var
+  a : scalararray;
+begin
+  a[mon] := 99;
+  a[tues] := -99;
+  a[wed] := 999;
+end.

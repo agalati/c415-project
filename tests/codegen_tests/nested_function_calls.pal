@@ -1,0 +1,16 @@
+program nested (input, output);
+var
+  a : real;
+  b : integer;
+
+  function f1(a : integer; b : integer; c : real) : integer;
+  begin
+    f1 := a + b;
+  end;
+
+begin
+  a := sqrt(ln(sin(cos(0))+100));
+  b := 7;
+  b := f1(f1(1, 2, 3), b, f1(7, 8, 9.0)); // 12
+  b := f1(f1(f1(1, 2, 3), b, f1(7, 8, 9.0)), f1(f1(1, 2, 3), b, f1(7, 8, 9.0)), f1(f1(1, 2, 3), b, f1(7, 8, 9.0))); // 12
+end.

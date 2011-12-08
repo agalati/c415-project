@@ -1,0 +1,10 @@
+program main(input, output);
+type 
+  string = array [1..5] of char;
+var
+  str : string;
+  c : char;
+begin
+  str := 'hello';
+  c := str[5];
+end.

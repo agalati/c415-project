@@ -101,7 +101,7 @@ program                 : program_head decls compound_stat PERIOD	 { asc_stop();
 
 program_head            : PROGRAM ID O_BRACKET ID COMMA ID C_BRACKET S_COLON
                           { 
-                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, NULL);
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, NULL, 0);
                             asc_start($2);
                           }
 
@@ -618,15 +618,16 @@ proc_decl_list          : proc_decl
 proc_decl               : proc_heading decls compound_stat S_COLON
                           {
                             poplevel();
-                            asc_function_definition(ASC_FUNCTION_END, NULL, NULL);
+                            asc_function_definition(ASC_FUNCTION_END, NULL, NULL, 0);
                           }
                         //| error S_COLON { yyerrok; yyclearin; }
                         ;
 
 proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                           {
+                            struct sym_rec* proc = NULL;
                             if(locallookup($2) == NULL)
-                              addproc($2, parm_list);
+                              proc = addproc($2, parm_list);
                             else
                             {
                               char error[1024];
@@ -634,7 +635,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               semantic_error(error);
                             }
                             pushlevel(NULL);
-                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list);
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list, proc ? proc->desc.proc_attr.id : -1);
                             parm_list = NULL;
                           }
                         | PROCEDURE error f_parm_decl S_COLON { yyerrok; yyclearin; parm_list = NULL; pushlevel(NULL);}
@@ -674,7 +675,7 @@ proc_heading            : PROCEDURE ID f_parm_decl S_COLON
                               }
                             }
                             pushlevel(func_rec);
-                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list);
+                            asc_function_definition(ASC_FUNCTION_BEGIN, $2, parm_list, func_rec ? func_rec->desc.func_attr.id : -1);
                             parm_list = NULL;
                           }
                         | FUNCTION ID f_parm_decl S_COLON

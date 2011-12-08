@@ -1,0 +1,18 @@
+program iftest (input, output);
+var
+  a : boolean;
+  b : integer;
+begin
+  a := true;
+  b := 0;
+
+  if not a then
+  begin
+    b := 1; 
+  end
+  else
+  begin
+    b := 2;
+  end;
+
+end.

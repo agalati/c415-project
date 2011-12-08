@@ -21,7 +21,8 @@ struct function_info_t
   int   level,
         arg_size,
         var_size,
-        handled;
+        handled,
+        id;
 
   struct function_info_t* next;
 };
@@ -202,7 +203,8 @@ void write_function_info()
   if (function_list->level != get_current_level())
     return;
 
-  fprintf(asc_file, "\n%s\n", function_list->name);
+  fprintf(asc_file, "# %s", function_list->name);
+  fprintf(asc_file, "\nf%d\n", function_list->id);
 
   int i;              /* argc */
   for(i=function_list->arg_size; i>0; --i)
@@ -219,7 +221,7 @@ void asc_start(char* program_name)
   if (!do_codegen)
     return;
 
-  emit_goto(program_name);
+  emit_goto("f0");
 }
 
 void asc_stop()
@@ -347,7 +349,7 @@ void asc_subscript_var(struct var_info_t* info, struct location_t* location, int
   emit(ASC_ADDI);
 }
 
-void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
+void asc_function_definition(int section, char* name, struct sym_rec* parm_list, int id)
 {
   if (!do_codegen)
     return;
@@ -372,6 +374,7 @@ void asc_function_definition(int section, char* name, struct sym_rec* parm_list)
       info->var_size  = 0;
       info->handled   = 0;
       info->next      = function_list;
+      info->id        = id;
       
       function_list             = info;
       current_parameter_offset  = 0;
@@ -587,7 +590,18 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
         if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
           emit_adjust(1);
 
-        emit_call(call_info->func->level+1, call_info->func->name);
+        if (call_info->func->level == -1)
+          emit_call(call_info->func->level+1, call_info->func->name);
+        else
+        {
+          fprintf(asc_file, "# %s", call_info->func->name);
+          if (call_info->func->class == OC_FUNC)
+            fprintf(asc_file, "\n\tcall %d, f%d\n", call_info->func->level+1, call_info->func->desc.func_attr.id);
+          else if (call_info->func->class == OC_PROC)
+            fprintf(asc_file, "\n\tcall %d, p%d\n", call_info->func->level+1, call_info->func->desc.proc_attr.id);
+          else
+            emit_comment("asc_function_call: trying to call something neither a procedure nor a function");
+        }
 
         if (call_info->argc)
         {
