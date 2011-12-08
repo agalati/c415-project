@@ -43,6 +43,7 @@ int last_token = -1;
 %x COMMENT
 %%
  /* Handles { comments \n\n\n } */
+\r									/* dos carriage return */
 ^[ \t]*"{"                        DB_PRINTF("Entering COMMENT----- "); BEGIN COMMENT; /* Gotta get that comment */
 ^[ \t]*"{".*"}"[ \t]*\n           new_position_line(); /* One line comment */
 <COMMENT>"}"[ \t]*\n              BEGIN 0; new_position_line();
