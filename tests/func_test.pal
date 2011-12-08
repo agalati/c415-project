@@ -47,25 +47,23 @@ procedure proc1 (anint : integer);
 
 	procedure proc2 (anint2 : integer);
 	begin
-		if anint2 is > 0 then
-			proc1(-1);
+		if anint2 > 0 then
+			proc1(-1)
 		else
-			wrireln('I\'m done');
-		end
+			writeln('I\'m done');
 	end;
 	
 begin 
-	if anint is > 0 then
-		proc2(100);
+	if anint > 0 then
+		proc2(100)
 	else
 		proc2(-100);
-	end
 end;
 
 {
 	Adds three numbers, negates the result and returns
 }
-function func1 (addme1, addme2, addme3 : integer) : integer;
+function func1 (addme1 :integer; addme2 : integer; addme3 : integer) : integer;
 var
 a : integer;
 
@@ -144,7 +142,7 @@ end;
 begin
 
 	proc1(five);
-	proc2(negfive);
+	proc1(negfive);
 
 	int1 := func1(five, negfive, 1);
 	str1[1] := func2('b');
