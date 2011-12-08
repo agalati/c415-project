@@ -37,7 +37,7 @@ begin
   m := tan(0); // 0
   n := arctan(0); // 0
   o := exp(10); // e^10
-  p := sqr(2) // 4
+  p := sqr(2); // 4
   
   write('sqrt of 4 should be 2, returns ');
   writeln(a);
@@ -57,8 +57,6 @@ begin
   writeln(h);
   write('pred of \'d\' should be \'c\', returns ');
   writeln(i);
-  write('odd of 5 should be 1, returns ');
-  writeln(j);
   write('abs of -21 should be 21, returns ');
   writeln(k);
   write('cos of 0 should be 1, returns ');

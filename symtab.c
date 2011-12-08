@@ -50,7 +50,7 @@ struct tc_boolean   base_boolean;
 //  struct tc_subrange  subrange;
 
 /* The built in params aren't included here */
-#define INIT_ITEMS 27
+#define INIT_ITEMS 28
 
 struct sym_rec init_items[] = {
   /* Predefined Types */
@@ -103,8 +103,8 @@ struct sym_rec init_items[] = {
   [39] = { .name = "exp_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
   [40] = { .name = "ln_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
   [41] = { .name = "cos_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [42] = { .name = "arctan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
-  [43] = { .name = "tan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [42] = { .name = "tan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
+  [43] = { .name = "arctan_parm", .level = 0, .class = OC_VAR, .desc.var_attr.type = NULL },
   
 };
 
@@ -299,20 +299,24 @@ void sym_tab_init()
   init_items[24].desc.func_attr.return_type = &init_items[3];
   init_items[25].desc.func_attr.return_type = &init_items[3];
   init_items[26].desc.func_attr.return_type = &init_items[3];
+  init_items[27].desc.func_attr.return_type = &init_items[3];
   
   /* Set types for params */
   /* Hardcode succ(), pred(), ord() and the special logic at URL above */
   init_items[28].desc.var_attr.type = &init_items[0];
   init_items[29].desc.var_attr.type = &init_items[3];
   init_items[30].desc.var_attr.type = &init_items[3];
+  init_items[31].desc.var_attr.type = &init_items[3];
   init_items[33].desc.var_attr.type = &init_items[0];
+  init_items[34].desc.var_attr.type = &init_items[0];
   init_items[36].desc.var_attr.type = &init_items[3];
   init_items[37].desc.var_attr.type = &init_items[3];
   init_items[38].desc.var_attr.type = &init_items[3];
   init_items[39].desc.var_attr.type = &init_items[3];
   init_items[40].desc.var_attr.type = &init_items[3];
   init_items[41].desc.var_attr.type = &init_items[3];
-  
+  init_items[42].desc.var_attr.type = &init_items[3];
+  init_items[43].desc.var_attr.type = &init_items[3];
   
   /* Fill table with initial items */
   for (sym_tab[0] = &init_items[0], i = 1; i < INIT_ITEMS; i++) {

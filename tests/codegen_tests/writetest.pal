@@ -1,0 +1,19 @@
+program main (input, output);
+var
+  a : integer;
+  b : real;
+  c : char;
+  d : array [1..4] of char;
+begin
+
+  a := 10;
+  d := 'test';
+  writeln('a constant \nstring\t\t\t appears');
+  write(10, 13.11, 'c', 'superduper');
+  //writeln();
+  //write();
+  //read(b);
+  //read(c);
+  //read(d);
+  //read(a, b, c, d);
+end.

@@ -1,0 +1,13 @@
+program main (input, output);
+var
+  a : integer;
+  b : real;
+  c : char;
+  d : array [1..4] of char;
+begin
+
+  //read(b);
+  //read(c);
+  //read(d);
+  read(a, b, c, d);
+end.
