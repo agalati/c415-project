@@ -271,6 +271,18 @@ int isORDFunc(struct plist_t* p)
   return 0;
 }
 
+
+int isCHRFunc(struct plist_t* p)
+{
+  if (!p)
+    return 0;
+
+  if (p->level == -1 && (strcmp(p->name, "chr") == 0))
+    return 1;
+
+  return 0;
+}
+
 int isIntOrRealType(struct sym_rec* parm)
 {
   if (!parm)

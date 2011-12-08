@@ -417,9 +417,6 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
   static struct func_call_info_t* call_info = NULL; 
   static int skip_call = 0;
 
-  if (skip_call)
-    return;
-
   switch(section)
   {
     case ASC_FUNCTION_CALL_BEGIN:
@@ -448,6 +445,9 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
     }
     case ASC_FUNCTION_CALL_ARG:
     {
+      if (skip_call)
+        return;
+
       struct expr_t* arg = (struct expr_t*)info;
       int expr_tc = arg->type->desc.type_attr.type_class;
 
@@ -575,6 +575,12 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
     }
     case ASC_FUNCTION_CALL_END:
     {
+      if (skip_call)
+      {
+        skip_call = 0;
+        return;
+      }
+
       if (!call_info->read && !call_info->write && !call_info->writeln)
       {
         // make room for return value if room has not been made by args
@@ -647,7 +653,16 @@ void asc_ord_func(struct expr_t* arg)
 
 void asc_pred_func(struct expr_t* arg)
 {
-  int low = arg->type->desc.type_attr.type_description.subrange->low;
+  int low;
+  if (arg->type->desc.type_attr.type_class == TC_CHAR)
+    low = 0;
+  else if (arg->type->desc.type_attr.type_class == TC_BOOLEAN)
+    low = 0;
+  else if (arg->type->desc.type_attr.type_class == TC_SCALAR)
+    low = arg->type->desc.type_attr.type_description.subrange->low;
+  else
+    return;
+
   push_expr(arg);
   emit_consti(-1);
   emit(ASC_ADDI);
@@ -659,7 +674,16 @@ void asc_pred_func(struct expr_t* arg)
 
 void asc_succ_func(struct expr_t* arg)
 {
-  int high = arg->type->desc.type_attr.type_description.subrange->high;
+  int high;
+  if (arg->type->desc.type_attr.type_class == TC_CHAR)
+    high = 255;
+  else if (arg->type->desc.type_attr.type_class == TC_BOOLEAN)
+    high = 1;
+  else if (arg->type->desc.type_attr.type_class == TC_SCALAR)
+    high = arg->type->desc.type_attr.type_description.subrange->high;
+  else
+    return;
+
   push_expr(arg);
   emit_consti(1);
   emit(ASC_ADDI);

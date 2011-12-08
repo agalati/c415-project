@@ -2196,6 +2196,20 @@ plist_finvok            : ID O_BRACKET parm
 
                                   asc_ord_func($3);
                                 }
+                                else if (isCHRFunc($$))
+                                {
+                                  do_general_function_call = 0;
+                                  if ($3 && $3->type && $3->type->desc.type_attr.type_class != TC_INTEGER)
+                                  {
+                                    char error[1024];
+                                    sprintf(error, "Argmument of '%s' must be an integer type", $$->name);
+                                    semantic_error(error);
+                                  }
+                                  // why do we need this
+                                  $$->counter = 1;
+
+                                  asc_chr_func($3);
+                                }
                                 else if (isPREDFunc($$) || isSUCCFunc($$))
                                 {
                                   do_general_function_call = 0;

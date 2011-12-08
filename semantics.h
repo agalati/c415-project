@@ -51,6 +51,7 @@ int isSQRFunc(struct plist_t* p);
 int isPREDFunc(struct plist_t* p);
 int isSUCCFunc(struct plist_t* p);
 int isORDFunc(struct plist_t* p);
+int isCHRFunc(struct plist_t* p);
 int isIOFunc(struct plist_t* p);
 
 int isIntOrRealType(struct sym_rec* parm);
