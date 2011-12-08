@@ -428,11 +428,11 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
       info->argc = 0;
 
       if (func == builtinlookup("read") || func == builtinlookup("readln"))
-        info->read = 0;
+        info->read = 1;
       else if (func == builtinlookup("write"))
-        info->write = 0;
+        info->write = 1;
       else if (func == builtinlookup("writeln"))
-        info->writeln = 0;
+        info->writeln = 1;
 
       call_info = info;
 
@@ -476,6 +476,47 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
 
       if (call_info->read)
       {
+        if (!(arg->location) && !(arg->is_in_address_on_stack))
+        {
+          char error[1024];
+          sprintf(error, "Cannot determine address of agrument to %s", call_info->func->name);
+          semantic_error(error);
+          return;
+        }
+
+        if (arg->is_reference)
+          emit_push(arg->location->display, arg->location->offset);
+        else if (!arg->is_in_address_on_stack)
+          emit_pusha(arg->location->display, arg->location->offset);
+        // we don't have to do anything if the address is already on the stack
+        
+        switch(arg->type->desc.type_attr.type_class)
+        {
+          case TC_INTEGER:
+            emit_call(0, "read_int");
+            emit_adjust(-1);
+            break;
+          case TC_REAL:
+            emit_call(0, "read_real");
+            emit_adjust(-1);
+            break;
+          case TC_CHAR:
+            emit_call(0, "read_char");
+            emit_adjust(-1);
+            break;
+          case TC_STRING:
+            emit_consti(sizeof_type(arg->type));
+            emit_call(0, "read_string");
+            emit_adjust(-2);
+            break;
+          default:
+          {
+            char error[1024];
+            sprintf(error, "Invalid argument to %s", call_info->func->name);
+            semantic_error(error);
+            return;
+          }
+        }
       }
       else if (call_info->write)
       {
@@ -487,6 +528,9 @@ void asc_function_call (int section, void* info, int convert_int_to_real, int re
     }
     case ASC_FUNCTION_CALL_END:
     {
+      if (call_info->read || call_info->write || call_info->writeln)
+        return;
+
       // make room for return value if room has not been made by args
       if (call_info->argc == 0 && call_info->func->class == OC_FUNC)
         emit_adjust(1);

@@ -934,6 +934,7 @@ var                     : ID
                             $$ = (struct var_info_t*)malloc(sizeof(struct var_info_t));
                             $$->var = globallookup($1);
                             $$->location_on_stack = 0;
+                            //printf("found var %s with reference semantics %d\n", $$->var->name, $$->var->desc.var_attr.reference_semantics);
                             if (!$$->var)
                             {
                               char error[1024];
@@ -968,7 +969,7 @@ var                     : ID
                                 else
                                 {
                                   emit_consti(field->desc.var_attr.location.offset);
-                                  if ($1->var->desc.var_attr.reference_semantics)
+                                  if (oldvar->desc.var_attr.reference_semantics)
                                     emit_push(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
                                   else if (!($1->location_on_stack))
                                     emit_pusha(oldvar->desc.var_attr.location.display, oldvar->desc.var_attr.location.offset);
@@ -1009,6 +1010,8 @@ subscripted_var         : var O_SBRACKET expr
 
                           if ($1 && $1->var)
                           {
+                          
+                             struct sym_rec* oldvar = $1->var;
                              if ($1->var->class == OC_VAR && $1->var->desc.var_attr.type) 
                              {
                                 if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
@@ -1077,14 +1080,16 @@ subscripted_var         : var O_SBRACKET expr
                                   struct location_t* old_location = &($1->var->desc.var_attr.location);
                                   $$->var = (struct sym_rec*)malloc(sizeof(struct sym_rec));
                                   $$->var->next = NULL;
-                                  $$->var->name = NULL;
+                                  $$->var->name = "array_tmp";
                                   $$->var->level = get_current_level();
                                   $$->var->class = OC_VAR;
                                   $$->var->desc.var_attr.type = oldvar_objtype;
 
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  $$->var->desc.var_attr.reference_semantics = oldvar->desc.var_attr.reference_semantics;
 
+                                  //printf("Subscripting %s with reference semantics %d\n", $1->var->name, oldvar->desc.var_attr.reference_semantics);
                                   asc_subscript_var($1, old_location, lower);
                                   $$->location_on_stack = 1;
                                   $$->var->desc.var_attr.reference_semantics = 0;
@@ -1167,6 +1172,7 @@ subscripted_var         : var O_SBRACKET expr
 
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  $$->var->desc.var_attr.reference_semantics = oldvar->desc.var_attr.reference_semantics;
 
                                   asc_subscript_var($1, old_location, lower);
                                   $$->location_on_stack = 1;
@@ -1198,6 +1204,7 @@ subscripted_var         : var O_SBRACKET expr
 
                           if ($1 && $1->var)
                           {
+                             struct sym_rec* oldvar = $1->var;
                              if ($1->var->class == OC_VAR && $1->var->desc.var_attr.type) 
                              {
                                 if ($1->var->desc.var_attr.type->desc.type_attr.type_class == TC_ARRAY)
@@ -1273,6 +1280,7 @@ subscripted_var         : var O_SBRACKET expr
 
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  $$->var->desc.var_attr.reference_semantics = oldvar->desc.var_attr.reference_semantics;
 
                                   asc_subscript_var($1, old_location, lower);
                                   $$->location_on_stack = 1;
@@ -1355,6 +1363,7 @@ subscripted_var         : var O_SBRACKET expr
 
                                   $$->var->desc.var_attr.location.display = old_location->display;
                                   $$->var->desc.var_attr.location.offset = old_location->offset;
+                                  $$->var->desc.var_attr.reference_semantics = oldvar->desc.var_attr.reference_semantics;
 
                                   asc_subscript_var($1, old_location, lower);
                                   $$->location_on_stack = 1;
