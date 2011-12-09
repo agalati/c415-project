@@ -385,6 +385,8 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
   if (!left || !right)
     return 0;
 
+  if (right->class != OC_TYPE || left->class != OC_TYPE)
+    return 0;
   /*
   printf("LHS name: %s\n", left->name);
   printf("RHS name: %s\n", right->name);
@@ -406,10 +408,10 @@ int assignment_compatible(struct sym_rec* left, struct sym_rec* right)
   {
     return 1;
   }
-
+    
   if (right->desc.type_attr.type_class != left->desc.type_attr.type_class)
     return 0;
-
+  
   switch(left->desc.type_attr.type_class)
   {
   case TC_INTEGER:

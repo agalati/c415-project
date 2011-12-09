@@ -11,7 +11,7 @@ var
    arr        : StringArrType;
               
 begin
-
+   size := MaxElts;
    { Set up array }
    arr[1] := 'Aa';
    arr[2] := 'Cc';
@@ -24,6 +24,21 @@ begin
    arr[9] := 'Jj';
    arr[10] := 'Ii';
 
+   writeln('Enter ', size, ' strings:');
+   i := size;
+   while i > 0 do
+   begin
+      read(arr[i]);
+      i := i - 1;
+   end;
+
+   i := size;
+   while i > 0 do
+   begin
+      writeln(arr[i]);
+      i := i - 1;
+   end; 
+   
    size := MaxElts;
 
    {* Sort using bubble sort. *}
@@ -41,6 +56,14 @@ begin
          end;
          i := i - 1; 
       end;
+
+   writeln('Sorted array:');
+   i := 1;
+   while i <= size do
+   begin
+      writeln(arr[i]);
+      i := i + 1;
+   end; 
 
    {* Print. *
    FOR i := 1 TO size DO

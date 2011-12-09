@@ -19,127 +19,127 @@ program prog1 (input, output);
 
 { Constant declarations }
 const
-        a1 = 1;
-        b1 = 2;
-        c1 = 3;
-        d1 = 4;
-        string1 = a1 + b1 + c1 + d1;
-		ca = 10;
-		cstr = 'abcde';
-		cb = true;
-		  
-		// addition tests
-		ca1 = 1 + 1;
-		ca2 = 1 + 2 + 3;
-
-		// subtraction tests
-		cm1 = 1 - 1;
-		cm2 = 4 - 2 - 1;
-
-		// multiplication tests
-		cp1 = 2 * 2;
-		cp2 = 2 * 2.5;
-		cp3 = 2.5 * 2;
-		cp4 = 2.5 * 2.5;
-
-		// division tests
-		cd1 = 2 / 2;
-		cd2 = 2 / 3;
-		cd3 = 2.0 / 3.0;
-		cd4 = cd1 / cd3;
-		
-{ Type declaration }
-type
-		tlist = (zero, one, two, fourteen);
-		string = array[1..7] of char;
-        int = integer;    
-        int1 = int;
-        fixed = real;    
-        pro = array[1..100] of int;
-        holder = array[-5..-1] of char;  
-		newtype = integer;
-		a3 = array [1..100] of int;
-		b3 = array [char] of boolean;
-		c3 = array [boolean] of char;
-		d3 = array [1..1] of integer;
-		e3 = array [1..2] of array [1..2] of boolean;
-		f3 = array [1..1] of integer;
-		g3 = array [1..10] of newtype;
-		h3 = array [1..10] of array [boolean] of array [char] of array [-50..1000] of array[1..1] of array [1..2] of newtype;
-       
+   a1      = 1;
+   b1      = 2;
+   c1      = 3;
+   d1      = 4;
+   string1 = a1 + b1 + c1 + d1;
+   ca      = 10;
+   cstr    = 'abcde';
+   cb      = true;
+           
+// addition tests
+   ca1 = 1 + 1;
+   ca2 = 1 + 2 + 3;
+   
+// subtraction tests
+   cm1 = 1 - 1;
+   cm2 = 4 - 2 - 1;
+   
+// multiplication tests
+   cp1 = 2 * 2;
+   cp2 = 2 * 2.5;
+   cp3 = 2.5 * 2;
+   cp4 = 2.5 * 2.5;
+   
+// division tests
+   cd1 = 2 / 2;
+   cd2 = 2 / 3;
+   cd3 = 2.0 / 3.0;
+   cd4 = cd1 / cd3;
+   
+{ Type declaration } 
+type                 
+   tlist   = (zero, one, two, fourteen);
+   string  = array[1..7] of char;
+   int     = integer;    
+   int1    = int;
+   fixed   = real;    
+   pro     = array[1..100] of int;
+   holder  = array[-5..-1] of char;  
+   newtype = integer;
+   a3      = array [1..100] of int;
+   b3      = array [char] of boolean;
+   c3      = array [boolean] of char;
+   d3      = array [1..1] of integer;
+   e3      = array [1..2] of array [1..2] of boolean;
+   f3      = array [1..1] of integer;
+   g3      = array [1..10] of newtype;
+   h3      = array [1..10] of array [boolean] of array [char] of array [-50..1000] of array[1..1] of array [1..2] of newtype;
+           
 { Variable declarations }
 var
-        plane, trains, automobiles : integer;
-        horse, cart : char;
-        wack : array[1..10] of real;
-		problems : array[1..10] of integer;
-		new : a3;
-		new1 : h3;
-		vc : integer;
-		vl : tlist;
-		vanon : (mon, tues, wed);
-		x : integer;
-		y : integer;
-		answer : integer;
-		flag : char;
-		str : string;
-		s : real;
-		pie : real;
-		
-		a4 : a3;
-		b4 : a3;
-		c4 : a3;
-
+   plane, trains, automobiles : integer;
+   horse, cart                : char;
+   wack                       : array[1..10] of real;
+   problems                   : array[1..10] of integer;
+   new                        : a3;
+   new1                       : h3;
+   vc                         : integer;
+   vl                         : tlist;
+   vanon                      : (mon, tues, wed);
+   x                          : integer;
+   y                          : integer;
+   answer                     : integer;
+   flag                       : char;
+   str                        : string;
+   s                          : real;
+   pie                        : real;
+                              
+a4 : a3;
+   b4 : a3;
+   c4 : a3;
+   
 function yow( got : integer; got2 : char) : integer;
-	begin;
-	end;
+begin;
+end;
 
 procedure yowza( pleebs : integer);
-	begin;
-	end;
+begin;
+end;
 
 procedure procforever(cha : char);
-	begin 
-	end;
+begin 
+end;
 
 function funcforever(too : integer) : integer;
-	begin 
-		funcforever := 99 
-	end;
+begin 
+   funcforever := 99 
+end;
 
 { Begin program }
 begin
-        cart := 'b';
-		
-		a4[1] := 0;
-	    a4[3] := 1;
-	    a4[7] := 0;
-	    a4[8] := 1;
-
-	    b4[1] := 13;
-	    b4[52] := 99;
-	    b4[100] := 50;
-
-	    c4[99] := ord('c');
-	    c4[98] := ord('a');
-	    c4[97] := ord('M');
-		
-		vc := ca1*10;
-		
-		while b4[1] > 0 do
-		begin
-			b4[1] := b4[1] - 1
-		end;
-		
-		if true then
-			write('this will print')
-		else	
-			writeln('this wont print');
-			
-		b4[1] := ord();	{ ERROR - missing argument for ord function call }
-			
-		exit;		{ ERROR - exit statement is outside of a loop }
-			
-			a4[1] := funcforever(1, 2, 3);	{ ERROR - too many arguments being passed to function }
-		
+   cart := 'b';
+   
+   a4[1] := 0;
+   a4[3] := 1;
+   a4[7] := 0;
+   a4[8] := 1;
+   
+   b4[1] := 13;
+   b4[52] := 99;
+   b4[100] := 50;
+   
+   c4[99] := ord('c');
+   c4[98] := ord('a');
+   c4[97] := ord('M');
+   
+   vc := ca1*10;
+   
+   while b4[1] > 0 do
+   begin
+      b4[1] := b4[1] - 1
+   end;
+   
+   if true then
+      write('this will print')
+   else	
+      writeln('this wont print');
+   
+//   b4[1] := ord();	{ ERROR - missing argument for ord function call }
+   
+   exit;		{ ERROR - exit statement is outside of a loop }
+   
+   a4[1] := funcforever();	{ ERROR - too many arguments being passed to function }
+   
 end. 
